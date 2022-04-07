@@ -53,9 +53,11 @@ int main() {
     // NOTE: Defined outside the render loop unlike the old-style GL
     // What makes this work is vbo
     float vertices[] = { 
-        0.0, 0.5, 1.0, 0.0, 0.0, 
-        -0.5, -0.5, 0.0, 1.0, 0.0,
-        0.5, -0.5, 0.0, 0.0, 1.0 };
+        -0.5, -0.5, 0.5,
+         0.5, -0.5, 0.5, 
+         0.5,  0.5, 0.5, 
+        -0.5,  0.5, 0.5, 
+    };
 
     // Create VBO and transfer the data to graphics card memory
     GLuint vbo;
@@ -74,6 +76,8 @@ int main() {
     // Vertex Shader
     string compilerOut;
     auto status = meshviewer::ShaderLoader().loadVertexShader("./shaders/vertex.shader", compilerOut);
+    cout << "XXX" << endl;
+    cout << compilerOut << endl;
     if (!get<0>(status)) {
         throw compilerOut;
     }
@@ -118,20 +122,28 @@ int main() {
                           2,                    //number of values for this attribute
                           GL_FLOAT,             //data type 
                           GL_FALSE,             //data normalization status
-                          5*sizeof(float),      //stride--each vertex has 5 float entries 
+                          3*sizeof(float),      //stride--each vertex has 5 float entries 
                           0                     //offset into the array
                          );
     
-    GLint colorAttrib = glGetAttribLocation(shaderProgram, "colorVS");
+    GLint colorAttrib = glGetAttribLocation(shaderProgram, "color");
     glEnableVertexAttribArray(colorAttrib);
     glVertexAttribPointer(colorAttrib,              //attrib identifier
-                          3,                        //number of values for this attribute
+                          1,                        //number of values for this attribute
                           GL_FLOAT,                 //data type 
                           GL_FALSE,                 //data normalization status
-                          5*sizeof(float),          //stride--each vertex has 5 float entries 
+                          3*sizeof(float),          //stride--each vertex has 5 float entries 
                           (void*)(2*sizeof(float))  //offset into the array. 2 float entries are vertex
                                                     //coordinates
                          );
+
+    // Define connectivity array
+    GLuint faces[] = {0, 1, 2, 
+                      0, 2, 3};
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(faces), faces, GL_STATIC_DRAW);
 
 
     // Rendering loop
@@ -139,10 +151,17 @@ int main() {
         // Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES,
-                     0 /*skip count into vbo array*/,
-                     3 /* Number of entries to consider from the vbo array*/);
-
+        // Draw arrays
+        //glDrawArrays(GL_TRIANGLES,
+        //             0 /*skip count into vbo array*/,
+        //             3 /* Number of entries to consider from the vbo array*/);
+        
+        // Draw Elements
+        glDrawElements(GL_TRIANGLES, 6, // Number of indices in the connectivity array
+                       GL_UNSIGNED_INT, // Type of the array
+                       0                // Offset into the array
+                      );
+        
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
