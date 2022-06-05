@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include <limits>
+#include <iostream>
 using namespace std;
 
 namespace meshviewer {
@@ -36,7 +37,6 @@ const Face& Mesh::getFace(unsigned faceIndex) const {
 const Bounds& Mesh::getBounds() {
     if (!m_bounds) {
         m_bounds.emplace();
-        Bounds b;
         for (auto& v : m_vertices) {
             if (v.x < m_bounds->xmin) m_bounds->xmin = v.x;
             if (v.y < m_bounds->ymin) m_bounds->ymin = v.y;
@@ -57,6 +57,15 @@ void Mesh::removeDuplicateVertices() {
     for (auto& v : m_vertices) {
 
     }
+}
+
+Vertex Mesh::getCentroid() {
+    if (!m_bounds) {
+        getBounds();
+    }
+    return Vertex { (this->m_bounds->xmax + this->m_bounds->xmin) * 0.5f,
+                    (this->m_bounds->ymax + this->m_bounds->ymin) * 0.5f,
+                    (this->m_bounds->zmax + this->m_bounds->zmin) * 0.5f };
 }
 
 }

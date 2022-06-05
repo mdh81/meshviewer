@@ -30,10 +30,10 @@ struct Bounds {
     Bounds() { 
         xmin = std::numeric_limits<float>::max();
         ymin = std::numeric_limits<float>::max();
-        ymin = std::numeric_limits<float>::max();
-        xmax = std::numeric_limits<float>::min();
-        ymax = std::numeric_limits<float>::min();
-        zmax = std::numeric_limits<float>::min();
+        zmin = std::numeric_limits<float>::max();
+        xmax = -xmin;
+        ymax = -ymin;
+        zmax = -zmin;
     }
     Bounds(float xmi, float ymi, float zmi, float xmx, float ymx, float zmx) :
         xmin(xmi), ymin(ymi), zmin(zmi), xmax(xmx), ymax(ymx), zmax(zmx) { }
