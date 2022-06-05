@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(MeshViewer VERSION 0.1.0)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # get gtest
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/e2239ee6043f73722e7aa812a459f54a28552929.zip
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG release-1.11.0
 )
 FetchContent_MakeAvailable(googletest)
 
@@ -18,16 +19,17 @@ add_library(
     STLReader.cpp
     Viewer.cpp
     ShaderLoader.cpp
+    Camera.cpp
 )
 
 set(
   glIncDirs
-  /usr/local/include
+  /opt/homebrew/include
 )
 
 set (
   glLibDirs
-  /usr/local/lib
+  /opt/homebrew/lib
 )
 
 target_include_directories(
@@ -79,7 +81,7 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders/ DESTINATION ${INSTALL_PATH}
 # This is the tester app
 add_executable(
     gl101
-    gl101.cpp
+    3dShape.cpp
 )
 target_link_libraries(
     gl101 

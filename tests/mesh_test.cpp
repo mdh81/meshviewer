@@ -23,3 +23,14 @@ TEST(Mesh, RemoveDuplicateVertices) {
     ASSERT_NE(numOrigVertices, numNewVertices);
     ASSERT_EQ(numNewVertices, 12);
 }
+
+TEST(Mesh, TestCentroid) {
+    Mesh m;
+    m.initialize(2, 1);
+    m.addVertex(-5, 0, 0);
+    m.addVertex(+5, 0, 0);
+    common::Vertex centroid = m.getCentroid();
+    ASSERT_FLOAT_EQ(centroid.x, 0.0) << "Centroid X coordinate is incorrect" << endl;
+    ASSERT_FLOAT_EQ(centroid.y, 0.0) << "Centroid Y coordinate is incorrect" << endl;
+    ASSERT_FLOAT_EQ(centroid.z, 0.0) << "Centroid Z coordinate is incorrect" << endl;
+}

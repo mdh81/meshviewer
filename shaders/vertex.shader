@@ -1,11 +1,12 @@
 #version 410 core
 
-in vec2 position;
-in float color;
-out float colorVS;
+in vec3 position;
+in vec3 wireframeColor;
+out vec3 colorVS;
+uniform mat4 transformMatrix;
 
 void main()
 {
-    colorVS = color;
-    gl_Position = vec4(position, 0.0, 1.0);
+    colorVS = wireframeColor;
+    gl_Position = transformMatrix * vec4(position, 1.0);
 }

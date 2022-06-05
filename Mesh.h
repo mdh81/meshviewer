@@ -26,11 +26,15 @@ class Mesh {
         const common::Vertex& getVertex(unsigned vertexIndex) const;
         const common::Face& getFace(unsigned faceIndex) const;
         const common::Bounds& getBounds();
+        common::Vertex getCentroid();
         const common::Vertices& getVertices() const { return m_vertices; }
         void getVertexData(size_t& numBytes, common::Vertex** vertexData) const {
             numBytes = m_numVertices * sizeof(common::Vertex);
             *vertexData = const_cast<common::Vertex*>(m_vertices.data());
         }
+
+    private:
+        void calculateBounds();
 
     private:
         unsigned m_numVertices;

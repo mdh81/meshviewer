@@ -1,8 +1,13 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 #include <exception>
+#include <array>
+#include <memory>
+#include <chrono>
+#include <cmath>
 using namespace std;
 
 #include "ShaderLoader.h"
@@ -19,12 +24,16 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto window = glfwCreateWindow(640, 480, "TestApp", nullptr, nullptr);
+    auto window = glfwCreateWindow(640, 480, "3DShape", nullptr, nullptr);
     if(!window) {
         glfwTerminate();
         throw std::runtime_error("Unable to create GLFW Window");
     }
     glfwMakeContextCurrent(window);
+    
+    // Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
 
     // Initialize GLEW 
     glewExperimental = true;
@@ -37,26 +46,16 @@ int main() {
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    // Any call to glVertexAttribPointer will cause OpenGL to
-    // store that information in this vao. This has the helpful
-    // side-effect of not having to call glVertexAttribPointer
-    // every time you switch to new vertex data 
-    // TODO: Whatever the fuck the above means
-
-    // Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 	// Dark grey background
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
-    // Define vertices
-    // NOTE: Defined outside the render loop unlike the old-style GL
-    // What makes this work is vbo
-    float vertices[] = { 
-        -0.5, -0.5, 0.5,
-         0.5, -0.5, 0.5, 
-         0.5,  0.5, 0.5, 
-        -0.5,  0.5, 0.5, 
+    // Vertices of a tetrahedron
+    float tetVertices[] = { 
+        -1.0,  -1.0,  1.0,
+         1.0,  -1.0,  1.0, 
+         0.0,  -1.0, -1.0, 
+         0.0,   1.0,  0.0, 
     };
 
     // Create VBO and transfer the data to graphics card memory
@@ -71,7 +70,7 @@ int main() {
     // graphics card once and redrawn multiple times. This forces the
     // graphics card to store it in the most efficient memory bank that
     // allows fast reads
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(tetVertices), tetVertices, GL_STATIC_DRAW);
 
     // Vertex Shader
     string compilerOut;
@@ -92,70 +91,106 @@ int main() {
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShaderId);
     glAttachShader(shaderProgram, fragmentShaderId); 
-    // Again this is a bad design, hard-coding shader names into
-    // c++ code is error-prone
     glBindFragDataLocation(shaderProgram, 0, "colorFS");
 
     // Link program
     glLinkProgram(shaderProgram);
     glUseProgram(shaderProgram);
 
-    // Method 2: Set color by modifying "uniform"
+    // Check the program
+    GLint result;
+    int infoLogLength;
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
+	glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if ( infoLogLength > 0 ){
+		std::unique_ptr<char> pProgramErrorMessage {new char[infoLogLength+1]};
+		glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, pProgramErrorMessage.get());
+		cout << pProgramErrorMessage.get();
+	}
+
+    // TODO: Why does the tutorial delete detach and delete shader?
+
+    // Set a single color for the tet
     // Uniform variables are applied to each vertex
-    // This is most likely what will be used for Mesh rendering
-    // GLint colorId = glGetUniformLocation(shaderProgram, "triangleColor");
-    // glUniform3f(colorId, 1.0, 0.2, 0.3);
+    GLint colorId = glGetUniformLocation(shaderProgram, "wireframeColor");
+    glUniform3f(colorId, 0.7, 0.2, 0.2);
 
-    // Method 3: Set color via attributes 
-
-    // Set Attributes
-    // TODO: This is a shitty design, how the fuck does the c++ program
-    // know what the attribute name in the shader is, it's awkward that
-    // a change in the shader would need c++ code to be rebuilt 
-    // EXPLORE ways to keep variable names in a config file and load
-    // it into glsl and c++ code
+    // Define layout of vertex data
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
-                          2,                    //number of values for this attribute
+                          3,                    //number of values for this attribute
                           GL_FLOAT,             //data type 
                           GL_FALSE,             //data normalization status
-                          3*sizeof(float),      //stride--each vertex has 5 float entries 
+                          3*sizeof(float),      //stride--each vertex has 3 float entries 
                           0                     //offset into the array
                          );
     
-    GLint colorAttrib = glGetAttribLocation(shaderProgram, "color");
-    glEnableVertexAttribArray(colorAttrib);
-    glVertexAttribPointer(colorAttrib,              //attrib identifier
-                          1,                        //number of values for this attribute
-                          GL_FLOAT,                 //data type 
-                          GL_FALSE,                 //data normalization status
-                          3*sizeof(float),          //stride--each vertex has 5 float entries 
-                          (void*)(2*sizeof(float))  //offset into the array. 2 float entries are vertex
-                                                    //coordinates
-                         );
-
     // Define connectivity array
-    GLuint faces[] = {0, 1, 2, 
-                      0, 2, 3};
+    GLuint faces[] = {0, 2, 1, 
+                      0, 3, 2,
+                      1, 2, 3, 
+                      0, 1, 3};
     GLuint ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(faces), faces, GL_STATIC_DRAW);
 
+    // Set up transform matrices
+    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
+
+    // Projection: Converts to homogenous coordinates
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 640.f/480.f, 0.1f, 100.0f);
+
+    // View: Converts to camera coordinates
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    viewMatrix[3] = glm::vec4(0,0,-5,1);
+    
+    // Model: Converts to world coordinates. 
+    // This demo model is in the world coordinates, so we have an identity 
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+    float rotY = 0;
+
+    auto start = chrono::steady_clock::now();
 
     // Rendering loop
 	do {
         // Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT);
 
-        // Draw arrays
-        //glDrawArrays(GL_TRIANGLES,
-        //             0 /*skip count into vbo array*/,
-        //             3 /* Number of entries to consider from the vbo array*/);
+        auto now = chrono::steady_clock::now();
+        auto elapsed = chrono::duration_cast<chrono::milliseconds>(now-start).count();
+
+        if (elapsed >= 100) {
+            rotY += 5.f;
+            start = chrono::steady_clock::now();
+        }
+
+        // Rotate about y-axis by rotY
+        viewMatrix[0][0] = cos(rotY * 0.0174533);
+        viewMatrix[0][1] = 0.0f;
+        viewMatrix[0][2] = -sin(rotY * 0.0174533);
         
+        viewMatrix[1][0] = 0.0f;
+        viewMatrix[1][1] = 1.0f;
+        viewMatrix[1][2] = 0.0f; 
+        
+        viewMatrix[2][0] = -sin(rotY * 0.0174533);
+        viewMatrix[2][1] = 0.0f;
+        viewMatrix[2][2] = -cos(rotY * 0.0174533);
+        
+        // Combined Transform
+        glm::mat4 compositeTransform = projectionMatrix * viewMatrix * modelMatrix;
+
+        glUniformMatrix4fv(matrixId,
+                           1 /*num matrices*/,
+                           GL_FALSE /*transpose*/,
+                           &compositeTransform[0][0]);
+
         // Draw Elements
-        glDrawElements(GL_TRIANGLES, 6, // Number of indices in the connectivity array
+        glDrawElements(GL_LINES,
+                       12,              // Number of indices in the connectivity array
                        GL_UNSIGNED_INT, // Type of the array
                        0                // Offset into the array
                       );
