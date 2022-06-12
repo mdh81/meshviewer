@@ -1,8 +1,14 @@
 #include "Viewer.h"
 #include "Types.h"
 #include "Mesh.h"
-#include "GL/glew.h"
+#include "ShaderLoader.h"
+#include "Util.h"
+
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "GLFW/glfw3.h"
+
+#include <string>
 using namespace std;
 
 namespace meshviewer {
@@ -41,70 +47,170 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     } 
 }
 
-void Viewer::displayMesh(const Mesh& mesh) {
-    if (!m_window) 
-        throw std::runtime_error("Unexpected program state");
+// TODO: Designate a directory to load shaders from
+GLuint Viewer::createShaderProgram() {
+    
+    // Vertex Shader
+    string compilerOut;
+    auto status = meshviewer::ShaderLoader().loadVertexShader("./shaders/vertex.shader", compilerOut);
+    if (!get<0>(status)) {
+        throw compilerOut;
+    }
+    GLuint vertexShaderId = get<1>(status);
 
-    // Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+    // Fragment Shader
+    status = meshviewer::ShaderLoader().loadFragmentShader("./shaders/fragment.shader", compilerOut);
+    if (!get<0>(status)) {
+        throw compilerOut;
+    }
+    GLuint fragmentShaderId = get<1>(status);
 
-	// Dark grey background
-	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    // Create shader program
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShaderId);
+    glAttachShader(shaderProgram, fragmentShaderId); 
+    glBindFragDataLocation(shaderProgram, 0, "colorFS");
 
+    // Link program
+    glLinkProgram(shaderProgram);
+    cout << "Calling glUseProgram " << shaderProgram << endl;
+    glUseProgram(shaderProgram);
+
+    // Check the program
+    GLint result;
+    int infoLogLength;
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
+	glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if ( infoLogLength > 0 ){
+		std::unique_ptr<char> pProgramErrorMessage {new char[infoLogLength+1]};
+		glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, pProgramErrorMessage.get());
+		cerr << pProgramErrorMessage.get();
+        throw std::runtime_error("Failed to load shaders" + std::string(pProgramErrorMessage.get()));
+	}
+
+    return shaderProgram;
+}
+
+void Viewer::setVertexData(const Mesh& mesh, const GLuint shaderProgram) {
     // Create vertex array object for managing vertex attributes
     // Currently we are not setting any vertex attributes
-    // TODO: Write a primer GitHub article on VAO
     GLuint vaObj;
     glGenVertexArrays(1, &vaObj);
     glBindVertexArray(vaObj);
 
     // Create vertex buffer object
-    // TODO: Write a primer GitHub article on VertexBufferObject 
     GLuint vbObj;
     glGenBuffers(1, &vbObj);
     // Make the vertex buffer object the current buffer
     glBindBuffer(GL_ARRAY_BUFFER, vbObj);
 
     // Upload vertex data to the vertex buffer object
-    // TODO: Can I simply pass a pointer to vertices by casting struct Vertex* to
-    // float*: So far it appears okay. Aligment for Vertex is 4 bytes, size is 12 bytes
-    // a multiple of 4, so there is no padding in the Vertex object's memory layout
-    /*size_t numBytes = 0;
+    // Casting Vertex* to float* seems okay since the struct Vertex doesn't have
+    // any padding due to the fact that it's alignment being 4 bytes and it's total
+    // size being 12 (a multiple of 4).
+    size_t numBytes = 0;
     common::Vertex* vertexData;
-    mesh.getVertexData(numBytes, &vertexData);
-    glBufferData(GL_ARRAY_BUFFER, numBytes, reinterpret_cast<GLfloat*>(vertexData), GL_STATIC_DRAW);*/
+    mesh.getVertexData(numBytes, vertexData);
+    glBufferData(GL_ARRAY_BUFFER, numBytes, reinterpret_cast<GLfloat*>(vertexData), GL_STATIC_DRAW);
 
-    static const GLfloat g_vertex_buffer_data[] = { 
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f,
-	};
+    // Define layout of vertex data
+    GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib,            //attrib identifier
+                          3,                    //number of values for this attribute
+                          GL_FLOAT,             //data type 
+                          GL_FALSE,             //data normalization status
+                          3*sizeof(float),      //stride--each vertex has 3 float entries 
+                          0                     //offset into the array
+                         );
+}
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+void Viewer::setElementData(const Mesh& mesh) {
+    
+    // Create element buffer object
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    
+    // Upload connectivity data to element buffer object
+    size_t numBytes;
+    GLuint* faceData;
+    mesh.getConnectivityData(numBytes, faceData);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, numBytes, faceData, GL_STATIC_DRAW);
+    
+}
+
+void Viewer::setColors(const GLuint shaderProgram) {
+
+	// Dark grey background
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    
+    // Set wireframe color for the mesh 
+    GLint colorId = glGetUniformLocation(shaderProgram, "wireframeColor");
+    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.76f, 0.61f, 0.2f)));
+}
+
+void Viewer::setTransformations(const GLuint shaderProgram) {
+    // Set up transform matrices
+    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
+
+    // Projection: Converts to homogenous coordinates
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 640.f/480.f, 0.1f, 100.0f);
+
+    // View: Converts to camera coordinates
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    viewMatrix[3] = glm::vec4(0,0,-5,1);
+    
+    // Model: Converts to world coordinates. 
+    // This demo model is in the world coordinates, so we have an identity 
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+    // Combined Transform
+    glm::mat4 compositeTransform = projectionMatrix * viewMatrix * modelMatrix;
+
+    glUniformMatrix4fv(matrixId,
+                       1 /*num matrices*/,
+                       GL_FALSE /*transpose*/,
+                       &compositeTransform[0][0]);
+}
+
+void Viewer::displayMesh(const Mesh& mesh) {
+    // Window must have been created by the time display is called
+    if (!m_window) 
+        throw std::runtime_error("Unexpected program state");
+
+    // Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    // Load shaders
+    GLuint shaderProgram = createShaderProgram(); 
+
+    // Define vertices
+    setVertexData(mesh, shaderProgram);
+
+   // Define elements
+   setElementData(mesh); 
+
+    // Define colors
+    setColors(shaderProgram);
+    
+    // Setup model, view and projection transformations
+    setTransformations(shaderProgram);
 
     // Rendering loop
 	do{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT);
 
-        glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vbObj);
-		glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
-
-		// Draw the triangle !
-		//glDrawArrays(GL_TRIANGLES, 0, mesh.getNumberOfVertices());
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glDisableVertexAttribArray(0);
-
-		// Swap buffers
+		// Draw
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDrawElements(GL_TRIANGLES,
+                       mesh.getNumberOfVertices(), // Number of elements
+                       GL_UNSIGNED_INT,            // Type of element buffer data
+                       0                           // Offset into element buffer data       
+                      );
+		
+        // Swap buffers
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
 

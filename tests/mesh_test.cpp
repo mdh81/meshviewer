@@ -34,3 +34,25 @@ TEST(Mesh, TestCentroid) {
     ASSERT_FLOAT_EQ(centroid.y, 0.0) << "Centroid Y coordinate is incorrect" << endl;
     ASSERT_FLOAT_EQ(centroid.z, 0.0) << "Centroid Z coordinate is incorrect" << endl;
 }
+
+TEST(Mesh, TestConnectivityData) {
+    Mesh m;
+    m.initialize(4, 2);
+    m.addVertex(-5, -5, 0);
+    m.addVertex(+5, -5, 0);
+    m.addVertex(+5, +5, 0);
+    m.addVertex(-5, +5, 0);
+    m.addFace({0, 1, 3});
+    m.addFace({1, 2, 3});
+    size_t numBytes = 0;
+    unsigned* connData; 
+    m.getConnectivityData(numBytes, connData);
+    ASSERT_EQ(24, numBytes);
+    ASSERT_EQ(0, connData[0]);
+    ASSERT_EQ(1, connData[1]);
+    ASSERT_EQ(3, connData[2]);
+
+    ASSERT_EQ(1, connData[3]);
+    ASSERT_EQ(2, connData[4]);
+    ASSERT_EQ(3, connData[5]);
+}

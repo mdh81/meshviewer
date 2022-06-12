@@ -68,4 +68,32 @@ Vertex Mesh::getCentroid() {
                     (this->m_bounds->zmax + this->m_bounds->zmin) * 0.5f };
 }
 
+void Mesh::getVertexData(size_t& numBytes, common::Vertex*& pVertexData) const {
+    numBytes = m_numVertices * sizeof(common::Vertex);
+    pVertexData = const_cast<common::Vertex*>(m_vertices.data());
+}
+
+void Mesh::buildConnectivityData() {
+    m_connectivityDataSize = 0;
+    for (size_t i = 0; i < m_numFaces; ++i) {
+        m_connectivityDataSize += (m_faces.at(i).size() * sizeof(unsigned));
+    }
+    m_connectivity.reset(new unsigned[m_connectivityDataSize]); 
+    for (size_t i = 0, offset = 0; i < m_numFaces; ++i) {
+        size_t faceDataSize = m_faces.at(i).size() * sizeof(unsigned);
+        memcpy(m_connectivity.get() + offset, m_faces.at(i).data(), faceDataSize);
+        offset += m_faces.at(i).size();
+    }
+}
+
+void Mesh::getConnectivityData(size_t& numBytes, unsigned*& pConnData) const {
+    // C++ doesn't provide a way out of const cast to support lazy loading that's
+    // necessary here. Not all meshes will be rendered and until a mesh is rendered
+    // there is no need to get connectivity data out of a mesh like below
+    if (!m_connectivity) const_cast<Mesh*>(this)->buildConnectivityData();
+    numBytes = m_connectivityDataSize;
+    pConnData = m_connectivity.get(); 
+}
+
+
 }
