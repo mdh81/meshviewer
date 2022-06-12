@@ -13,28 +13,42 @@ namespace meshviewer {
 class Mesh {
     public:
         Mesh() = default;
+        
         ~Mesh() = default;
+        
         //TODO: Define copy and move semantics
 
     public:
+        // TODO: Allow creation of meshes without this call. Make addVertex
+        // and addFace allocate memory as needed. Come up with resonable
+        // default initial allocation
         void initialize(const unsigned numVerts, const unsigned numFaces);
-        void addVertex(const float x, const float y, const float z);
-        void addFace(const std::initializer_list<unsigned>& vertexIds);
-        void removeDuplicateVertices();
-        unsigned getNumberOfVertices() const { return m_numVertices; }
-        unsigned getNumberOfFaces() const { return m_numFaces; }
-        const common::Vertex& getVertex(unsigned vertexIndex) const;
-        const common::Face& getFace(unsigned faceIndex) const;
-        const common::Bounds& getBounds();
-        common::Vertex getCentroid();
-        const common::Vertices& getVertices() const { return m_vertices; }
-        void getVertexData(size_t& numBytes, common::Vertex** vertexData) const {
-            numBytes = m_numVertices * sizeof(common::Vertex);
-            *vertexData = const_cast<common::Vertex*>(m_vertices.data());
-        }
 
-    private:
-        void calculateBounds();
+        void addVertex(const float x, const float y, const float z);
+        
+        void addFace(const std::initializer_list<unsigned>& vertexIds);
+        
+        void removeDuplicateVertices();
+        
+        unsigned getNumberOfVertices() const { return m_numVertices; }
+        
+        unsigned getNumberOfFaces() const { return m_numFaces; }
+        
+        const common::Vertices& getVertices() const { return m_vertices; }
+        
+        const common::Faces& getConnectivity() const { return m_faces; }
+        
+        const common::Vertex& getVertex(unsigned vertexIndex) const;
+        
+        const common::Face& getFace(unsigned faceIndex) const;
+        
+        const common::Bounds& getBounds();
+        
+        common::Vertex getCentroid();
+        
+        void getVertexData(size_t& numBytes, common::Vertex*& vertexData) const;
+        
+        void getConnectivityData(size_t& numBytes, unsigned*& connData) const;
 
     private:
         unsigned m_numVertices;
@@ -43,6 +57,11 @@ class Mesh {
         common::Faces m_faces;
         std::optional<common::Bounds> m_bounds;
         std::optional<Octree> m_octree;
+        std::unique_ptr<unsigned> m_connectivity;
+        size_t m_connectivityDataSize;
+
+    private:
+        void buildConnectivityData();
 };
 
 }

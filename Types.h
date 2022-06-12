@@ -23,6 +23,14 @@ using Vertices = std::vector<Vertex>;
 using Face = std::vector<unsigned>;
 using Faces = std::vector<Face>;
 
+inline std::ostream& operator<<(std::ostream& os, const Face& f) {
+    os << '[';
+    for (size_t i = 0; i < f.size(); ++i) { 
+        os << f.at(i) << (i == f.size() - 1 ? ']' : ','); 
+    }
+    return os;
+}
+
 struct Bounds {
     float xmin, xmax;
     float ymin, ymax;

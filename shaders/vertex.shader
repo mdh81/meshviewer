@@ -1,7 +1,7 @@
 #version 410 core
 
 in vec3 position;
-in vec3 wireframeColor;
+uniform vec3 wireframeColor;
 out vec3 colorVS;
 uniform mat4 transformMatrix;
 
