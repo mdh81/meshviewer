@@ -2,6 +2,10 @@
 #define CAMERA_H
 
 #include <memory>
+#include "GL/glew.h"
+#include "Types.h"
+#include "glm/matrix.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace meshviewer {
 
@@ -16,35 +20,29 @@ class Camera {
         };
 
     public:
-        Camera(const Mesh&, const ProjectionType proj = ProjectionType::Perspective);
+        // TODO: Define creation semantics
+        Camera(const Mesh&, const GLuint shaderProgram, const ProjectionType projType = 
+               ProjectionType::Perspective);
         ~Camera() = default;
-    
-    
-    private:
-        class Projection {
-            public:
-                Projection(const Mesh&);
-                virtual void setupView() = 0;
-                void fitViewToModel();
-                virtual ~Projection() = default;
-            private:
-                const Mesh& m_mesh;
-        };
         
-        class PerspectiveProjection : public Projection {
-            public:
-                PerspectiveProjection(const Mesh&);
-                void setupView();
-        };
-
-        class OrthographicProjection : public Projection {
-            public:
-                OrthographicProjection(const Mesh&);
-                void setupView();
-        };
+        // Applies the camera parameters and generates a view
+        void apply();
+        
+        // Makes the camera orbit around the specified axis 
+        void setOrbitOn(const common::Axis& axis) { m_orbitAxis = axis; m_orbitOn = true; }
+        void setOrbitOff() { m_orbitOn = false; }
 
     private:
-        std::unique_ptr<Projection> m_projection;
+        void getModelTransform(glm::mat4&);
+        void getViewTransform(glm::mat4&);
+        void getProjectionTransform(glm::mat4&);
+
+    private:
+        const Mesh& m_mesh;
+        const GLuint m_shaderProgram;
+        ProjectionType m_projectionType;
+        common::Axis m_orbitAxis;
+        bool m_orbitOn;
 };
 
 }

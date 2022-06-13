@@ -87,5 +87,13 @@ class EnumIterator {
 
 using byte = char;
 
+enum class Axis
+{
+    X,
+    Y,
+    Z,
+    Arbitrary
+};
+
 } }
 #endif

@@ -73,7 +73,6 @@ GLuint Viewer::createShaderProgram() {
 
     // Link program
     glLinkProgram(shaderProgram);
-    cout << "Calling glUseProgram " << shaderProgram << endl;
     glUseProgram(shaderProgram);
 
     // Check the program
@@ -150,28 +149,35 @@ void Viewer::setColors(const GLuint shaderProgram) {
     glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.76f, 0.61f, 0.2f)));
 }
 
-void Viewer::setTransformations(const GLuint shaderProgram) {
-    // Set up transform matrices
-    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
+void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
+    if (!m_camera) {
+        m_camera.reset(new Camera(mesh, shaderProgram, Camera::ProjectionType::Perspective));
+    }
+    m_camera->setOrbitOn(common::Axis::Y);
 
-    // Projection: Converts to homogenous coordinates
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 640.f/480.f, 0.1f, 100.0f);
+//
+//    // Set up transform matrices
+//    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
+//
+//    // Projection: Converts to homogenous coordinates
+//    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 640.f/480.f, 0.1f, 100.0f);
+//
+//    // View: Converts to camera coordinates
+//    glm::mat4 viewMatrix = glm::mat4(1.0f);
+//    viewMatrix[3] = glm::vec4(0,0,-20,1);
+//    
+//    // Model: Converts to world coordinates. 
+//    // This demo model is in the world coordinates, so we have an identity 
+//    glm::mat4 modelMatrix = glm::mat4(1.0f);
+//
+//    // Combined Transform
+//    glm::mat4 compositeTransform = projectionMatrix * viewMatrix * modelMatrix;
+//
+//    glUniformMatrix4fv(matrixId,
+//                       1 /*num matrices*/,
+//                       GL_FALSE /*transpose*/,
+//                       &compositeTransform[0][0]);
 
-    // View: Converts to camera coordinates
-    glm::mat4 viewMatrix = glm::mat4(1.0f);
-    viewMatrix[3] = glm::vec4(0,0,-5,1);
-    
-    // Model: Converts to world coordinates. 
-    // This demo model is in the world coordinates, so we have an identity 
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-
-    // Combined Transform
-    glm::mat4 compositeTransform = projectionMatrix * viewMatrix * modelMatrix;
-
-    glUniformMatrix4fv(matrixId,
-                       1 /*num matrices*/,
-                       GL_FALSE /*transpose*/,
-                       &compositeTransform[0][0]);
 }
 
 void Viewer::displayMesh(const Mesh& mesh) {
@@ -195,12 +201,15 @@ void Viewer::displayMesh(const Mesh& mesh) {
     setColors(shaderProgram);
     
     // Setup model, view and projection transformations
-    setTransformations(shaderProgram);
+    setView(mesh, shaderProgram);
 
     // Rendering loop
 	do{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT);
+
+        // Update camera
+        m_camera->apply();
 
 		// Draw
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

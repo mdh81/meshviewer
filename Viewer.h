@@ -1,7 +1,9 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 #include "Mesh.h"
+#include "Camera.h"
 #include "GL/glew.h"
+#include <memory>
 
 class GLFWwindow;
 
@@ -27,6 +29,7 @@ class Viewer {
         unsigned m_windowWidth;
         unsigned m_windowHeight;
         GLFWwindow* m_window;
+        std::unique_ptr<Camera> m_camera;
 
     // Member functions
     private:
@@ -34,7 +37,7 @@ class Viewer {
         void setVertexData(const Mesh&, const GLuint shaderProgram);
         void setElementData(const Mesh&);
         void setColors(const GLuint shaderProgram);
-        void setTransformations(const GLuint shaderProgram);
+        void setView(const Mesh&, const GLuint shaderProgram);
 };
 
 }
