@@ -12,13 +12,9 @@ namespace meshviewer {
 
 class Mesh;
 
-struct OctreeOutputDecorator {
-    bool debugOn;
-};
-
 class Octree : public MeshViewerObject {
     public:
-        Octree(Mesh& mesh, const unsigned maxVerticesInOctant = 100, const OctreeOutputDecorator& decorator = {false}); 
+        Octree(Mesh& mesh, const unsigned maxVerticesInOctant = 100); 
         Mesh& getMesh() const { return m_mesh; }
         unsigned char getDepth() const { return m_depth; }
 
@@ -94,7 +90,6 @@ class Octree : public MeshViewerObject {
     
     private:
         void getLeafOctants(Octree::Octant& octant, Octree::Octant::LeafOctants& leafOctants);
-        bool isDebugOn() const { return m_decorator.debugOn; }
 
     private:
         Mesh& m_mesh;
@@ -104,7 +99,6 @@ class Octree : public MeshViewerObject {
         using LevelToVerticesMap = std::unordered_map<unsigned, VertexIndexSet>; 
         LevelToVerticesMap m_levelToVerticesMap; 
         unsigned char m_depth;
-        const OctreeOutputDecorator m_decorator;
 };
 
 }

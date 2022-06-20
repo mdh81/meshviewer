@@ -48,7 +48,8 @@ TEST(Octree, TestSubdivision) {
     ASSERT_EQ(octree.getDepth(), 1);
 
     // Create octree with 10 vertices per octant
-    Octree octree1(*spMesh.get(), 10, {true});
+    Octree octree1(*spMesh.get(), 10);
+    octree1.debugOn();
     // There should be more octants due to multiple subdivisions
     ASSERT_GE(octree1.getDepth(), 1);
     // Assert that child octants are in the correct position

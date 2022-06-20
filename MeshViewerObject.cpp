@@ -7,6 +7,7 @@ size_t MeshViewerObject::sm_instanceCount = 0;
     
 MeshViewerObject::MeshViewerObject() {
     m_id = ++sm_instanceCount;
+    m_debugOn = false;
 }
 
 bool MeshViewerObject::operator==(const MeshViewerObject& another) const {

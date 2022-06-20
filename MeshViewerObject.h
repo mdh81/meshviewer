@@ -2,6 +2,7 @@
 #define MESH_VIEWER_OBJECT_H
 
 #include <cstddef> // for size_t
+#include <iostream>
 
 namespace meshviewer {
 
@@ -14,7 +15,7 @@ class MeshViewerObject {
         // Compares object identifiers
         bool operator==(const MeshViewerObject& another) const;
         // Turns debug on or off
-        void debugOn() { m_debugOn = true; }
+        void debugOn() { std::cout<<"Turning debug on" << std::endl; m_debugOn = true; }
         void debugOff() { m_debugOn = false; }
         bool isDebugOn() { return m_debugOn; }
         size_t getId() { return m_id; }
