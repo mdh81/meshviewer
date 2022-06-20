@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "PerspectiveCamera.h"
 #include "OrthographicCamera.h"
+#include "Mesh.h"
 
 #include <memory>
 

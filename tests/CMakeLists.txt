@@ -21,9 +21,19 @@ add_executable(
     shaderloader_test.cpp
 )
 
+add_executable(
+    object_test
+    object_test.cpp
+)
+
+add_executable(
+    camera_factory_test
+    camera_factory_test.cpp
+)
+
 # Convenience variables
-set(allTests mesh_test stlreader_test octree_test viewer_test shaderloader_test)
-set(nonViewerTests mesh_test stlreader_test octree_test)
+set(allTests mesh_test stlreader_test octree_test viewer_test shaderloader_test object_test camera_factory_test)
+set(nonViewerTests mesh_test stlreader_test octree_test object_test camera_factory_test)
 
 # All tests (viewer and non-viewer) link against gtest and meshviewer
 foreach(test ${nonViewerTests})

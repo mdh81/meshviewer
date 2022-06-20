@@ -59,7 +59,7 @@ void Camera::getViewTransform(glm::mat4& viewMatrix) {
     moveBack[3] = glm::vec4(0, 0, -1*bounds.zlen(), 1);
 
     static bool printed = false;
-    if (!printed) {
+    if (!printed && m_debugOn) {
         std::cout << "Mesh Centroid: " << centroid << std::endl;
         std::cout << "Mesh Bounds: " << bounds << std::endl;
         std::cout << "Moving the mesh back along Z by " << bounds.zlen() << std::endl;
