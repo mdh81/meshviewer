@@ -13,11 +13,10 @@ using namespace common;
 // Initialize static variable
 Octree* Octree::Octant::sm_octree = nullptr;
 
-Octree::Octree(Mesh& mesh, const unsigned maxVerticesInOctant, const OctreeOutputDecorator& decorator) :
+Octree::Octree(Mesh& mesh, const unsigned maxVerticesInOctant) :
     m_mesh(mesh),
     m_maxVerticesInOctant(maxVerticesInOctant),
-    m_depth(1),
-    m_decorator(decorator) {
+    m_depth(1) {
     
     // All octants share a pointer to this parent octree
     // to keep per octant overhead to a minimum
