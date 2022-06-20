@@ -9,15 +9,20 @@ namespace meshviewer {
 // by its identifier 
 class MeshViewerObject {
     public:
-        MeshViewerObject();
-        bool operator == (const MeshViewerObject& another) const;
         // TODO: Experiment with creation semantics
-        void debugOn() { m_debug = true; }
-        void debugOff() { m_debug = false; }
+        MeshViewerObject();
+        // Compares object identifiers
+        bool operator==(const MeshViewerObject& another) const;
+        // Turns debug on or off
+        void debugOn() { m_debugOn = true; }
+        void debugOff() { m_debugOn = false; }
+        bool isDebugOn() { return m_debugOn; }
+        size_t getId() { return m_id; }
     private:
         size_t m_id;
         static size_t sm_instanceCount;
-        bool m_debug;
+    protected:
+        bool m_debugOn;
 };
 
 }

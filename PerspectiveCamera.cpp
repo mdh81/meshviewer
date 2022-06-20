@@ -41,7 +41,7 @@ void PerspectiveCamera::getProjectionTransform(glm::mat4& projectionMatrix) {
     projectionMatrix = glm::perspective(m_fieldOfView, 640.f/480.f, AC, AC + bounds.zlen());
 
     static bool printed = false;
-    if (!printed) {
+    if (!printed && m_debugOn) {
         std::cout << "Y-Length = " << bounds.ylen() << std::endl;
         std::cout << "Z-Length = " << bounds.zlen() << std::endl;
         std::cout << "AC = " << AC << std::endl;

@@ -1,6 +1,7 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 #include "Types.h"
+#include "MeshViewerObject.h"
 #include <array>
 #include <exception>
 #include <memory>
@@ -15,7 +16,7 @@ struct OctreeOutputDecorator {
     bool debugOn;
 };
 
-class Octree {
+class Octree : public MeshViewerObject {
     public:
         Octree(Mesh& mesh, const unsigned maxVerticesInOctant = 100, const OctreeOutputDecorator& decorator = {false}); 
         Mesh& getMesh() const { return m_mesh; }

@@ -1,4 +1,5 @@
 #include "MeshViewerObject.h"
+#include <iostream>
 
 namespace meshviewer {
 
@@ -9,6 +10,9 @@ MeshViewerObject::MeshViewerObject() {
 }
 
 bool MeshViewerObject::operator==(const MeshViewerObject& another) const {
+    if (m_debugOn) {
+        std::cout << "Comparing object with id " << m_id << " to another object with id " << another.m_id << std::endl;
+    }
     return m_id == another.m_id;
 }
 
