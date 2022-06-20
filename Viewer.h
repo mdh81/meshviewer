@@ -1,7 +1,10 @@
-#ifndef VIEWER_H
-#define VIEWER_H
+#ifndef MESH_VIEWER_VIEWER_H
+#define MESH_VIEWER_VIEWER_H
+
 #include "Mesh.h"
 #include "Camera.h"
+#include "MeshViewerObject.h"
+
 #include "GL/glew.h"
 #include <memory>
 
@@ -9,7 +12,7 @@ class GLFWwindow;
 
 namespace meshviewer {
 
-class Viewer {
+class Viewer : public MeshViewerObject {
     public:
         ~Viewer() = default;
         void displayMesh(const Mesh& mesh);
@@ -29,7 +32,6 @@ class Viewer {
         unsigned m_windowWidth;
         unsigned m_windowHeight;
         GLFWwindow* m_window;
-        std::unique_ptr<Camera> m_camera;
 
     // Member functions
     private:

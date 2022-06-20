@@ -6,7 +6,7 @@
 
 namespace meshviewer {
 
-class STLReader {
+class STLReader : public MeshViewerObject {
     public:
         STLReader(const std::string& fn) : m_fileName(fn) {}             
         STLReader(const STLReader&) = delete;

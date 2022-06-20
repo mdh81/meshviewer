@@ -1,12 +1,15 @@
-#ifndef SHADER_LOADER_H
-#define SHADER_LOADER_H
+#ifndef MESH_VIEWER_SHADER_LOADER_H
+#define MESH_VIEWER_SHADER_LOADER_H
+
+#include "MeshViewerObject.h"
+
 #include "GL/glew.h"
 #include <string>
 #include <tuple>
 
 namespace meshviewer {
 
-    class ShaderLoader {
+    class ShaderLoader : public MeshViewerObject {
         public:
             ShaderLoader() : m_outputSize(1024) {}
         public:

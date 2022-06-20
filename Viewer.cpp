@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "ShaderLoader.h"
 #include "Util.h"
+#include "CameraFactory.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -150,10 +151,8 @@ void Viewer::setColors(const GLuint shaderProgram) {
 }
 
 void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
-    if (!m_camera) {
-        m_camera.reset(new Camera(mesh, shaderProgram, Camera::ProjectionType::Perspective));
-    }
-    m_camera->setOrbitOn(common::Axis::Y);
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh, CameraFactory::ProjectionType::Perspective); 
+    camera.setOrbitOn(common::Axis::Y);
 
 //
 //    // Set up transform matrices
@@ -203,13 +202,15 @@ void Viewer::displayMesh(const Mesh& mesh) {
     // Setup model, view and projection transformations
     setView(mesh, shaderProgram);
 
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh, CameraFactory::ProjectionType::Perspective);
+
     // Rendering loop
 	do{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT);
 
         // Update camera
-        m_camera->apply();
+        camera.apply(shaderProgram);
 
 		// Draw
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
