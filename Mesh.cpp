@@ -34,20 +34,24 @@ const Face& Mesh::getFace(unsigned faceIndex) const {
     return m_faces.at(faceIndex);
 }
 
-const Bounds& Mesh::getBounds() {
+const Bounds& Mesh::getBounds() const {
     if (!m_bounds) {
-        m_bounds.emplace();
-        for (auto& v : m_vertices) {
-            if (v.x < m_bounds->xmin) m_bounds->xmin = v.x;
-            if (v.y < m_bounds->ymin) m_bounds->ymin = v.y;
-            if (v.z < m_bounds->zmin) m_bounds->zmin = v.z;
-
-            if (v.x > m_bounds->xmax) m_bounds->xmax = v.x;
-            if (v.y > m_bounds->ymax) m_bounds->ymax = v.y;
-            if (v.z > m_bounds->zmax) m_bounds->zmax = v.z;
-        }
+        const_cast<Mesh*>(this)->buildBounds();
     }
     return m_bounds.value();
+}
+
+void Mesh::buildBounds() {
+    m_bounds.emplace();
+    for (auto& v : m_vertices) {
+        if (v.x < m_bounds->xmin) m_bounds->xmin = v.x;
+        if (v.y < m_bounds->ymin) m_bounds->ymin = v.y;
+        if (v.z < m_bounds->zmin) m_bounds->zmin = v.z;
+
+        if (v.x > m_bounds->xmax) m_bounds->xmax = v.x;
+        if (v.y > m_bounds->ymax) m_bounds->ymax = v.y;
+        if (v.z > m_bounds->zmax) m_bounds->zmax = v.z;
+    }
 }
 
 void Mesh::removeDuplicateVertices() {
@@ -59,7 +63,7 @@ void Mesh::removeDuplicateVertices() {
     }
 }
 
-Vertex Mesh::getCentroid() {
+Vertex Mesh::getCentroid() const {
     if (!m_bounds) {
         getBounds();
     }

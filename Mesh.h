@@ -1,16 +1,17 @@
-#ifndef MESH_H
-#define MESH_H
+#ifndef MESH_VIEWER_MESH_H
+#define MESH_VIEWER_MESH_H
 #include <memory>
 #include <initializer_list>
 #include <array>
 #include <vector>
 #include <optional>
 #include "Types.h"
+#include "MeshViewerObject.h"
 #include "Octree.h"
 
 namespace meshviewer {
 
-class Mesh {
+class Mesh : public MeshViewerObject {
     public:
         Mesh() = default;
 
@@ -42,9 +43,9 @@ class Mesh {
 
         const common::Face& getFace(unsigned faceIndex) const;
 
-        const common::Bounds& getBounds();
+        const common::Bounds& getBounds() const;
 
-        common::Vertex getCentroid();
+        common::Vertex getCentroid() const;
 
         void getVertexData(size_t& numBytes, common::Vertex*& vertexData) const;
 
@@ -62,6 +63,7 @@ class Mesh {
 
     private:
         void buildConnectivityData();
+        void buildBounds();
 };
 
 }

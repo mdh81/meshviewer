@@ -55,7 +55,7 @@ struct Bounds {
 
 inline std::ostream& operator<<(std::ostream& os, const Bounds& b) {
     os << "Min:[" << b.xmin << "," << b.ymin << "," << b.zmin << "] "; 
-    os << "Max:[" << b.xmax << "," << b.ymax << "," << b.zmax << "]" << std::endl;
+    os << "Max:[" << b.xmax << "," << b.ymax << "," << b.zmax << "]";
     return os;
 }
 

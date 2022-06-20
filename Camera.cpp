@@ -7,16 +7,9 @@ namespace meshviewer {
 
 using namespace common;
 
-Camera::Camera(const Mesh& mesh, const GLuint shaderProgram, const ProjectionType projectionType) 
-    : m_mesh(mesh)
-    , m_shaderProgram(shaderProgram)
-    , m_projectionType(projectionType) {
-    
-}
-
-void Camera::apply() {
+void Camera::apply(const GLuint shaderProgram) {
     // Get the composite transform matrix in the shader
-    GLuint matrixId = glGetUniformLocation(m_shaderProgram, "transformMatrix");
+    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
 
     // Assemble model, view and projection matrices
     glm::mat4 modelMatrix;
@@ -51,12 +44,30 @@ void Camera::getViewTransform(glm::mat4& viewMatrix) {
     // camera coordinate system. Camera in OpenGL is fixed at global origin looking
     // down the -Z axis. Moving the model so it is within the frame of the camera
     // is accomplished by the view transform
-    viewMatrix = glm::mat4(1.0f);
-    viewMatrix[3] = glm::vec4(0,0,-20,1);
-}
+    
+    // Get the centroid of the mesh 
+    // Translate the mesh so it's at world origin
+    auto translateToOrigin = glm::mat4(1.0f);
+    common::Vertex centroid = m_mesh.getCentroid();
+    translateToOrigin[3] = glm::vec4(-centroid.x, -centroid.y, -centroid.z, 1.f);
 
-void Camera::getProjectionTransform(glm::mat4& projectionMatrix) {
-    projectionMatrix = glm::perspective(glm::radians(45.f), 640.f/480.f, 0.1f, 100.0f);
+    common::Bounds bounds = m_mesh.getBounds();
+
+    // Translate along -Z by the length of the mesh along Z axis so the camera
+    // is in front of the mesh by a distance of zlen(mesh)/2
+    auto moveBack = glm::mat4(1.0f);
+    moveBack[3] = glm::vec4(0, 0, -1*bounds.zlen(), 1);
+
+    static bool printed = false;
+    if (!printed) {
+        std::cout << "Mesh Centroid: " << centroid << std::endl;
+        std::cout << "Mesh Bounds: " << bounds << std::endl;
+        std::cout << "Moving the mesh back along Z by " << bounds.zlen() << std::endl;
+        printed = true;
+    }
+    
+    // Combine the translations and produce the view transform 
+    viewMatrix = moveBack * translateToOrigin;
 }
 
 }

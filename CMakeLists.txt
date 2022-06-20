@@ -20,6 +20,9 @@ add_library(
     Viewer.cpp
     ShaderLoader.cpp
     Camera.cpp
+    OrthographicCamera.cpp
+    PerspectiveCamera.cpp
+    MeshViewerObject.cpp
 )
 
 set(
