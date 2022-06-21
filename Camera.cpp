@@ -12,20 +12,17 @@ void Camera::apply(const GLuint shaderProgram) {
     GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
 
     // Assemble model, view and projection matrices
-    glm::mat4 modelMatrix;
-    getModelTransform(modelMatrix);
+    buildModelTransform();
 
-    glm::mat4 viewMatrix;
-    getViewTransform(viewMatrix);
+    buildViewTransform();
 
-    glm::mat4 projectionMatrix;
-    getProjectionTransform(projectionMatrix); 
+    buildProjectionTransform(); 
 
     // Combined Transform
     // The matrix multiplication order is the reverse order of actual transformations
     // Object -> Global, Global -> Camera, Camera -> Homogenous Coordinates 
     // TODO: Setup an octave session and observe the conversion to homogenous coordinates
-    glm::mat4 compositeTransform = projectionMatrix * viewMatrix * modelMatrix;
+    glm::mat4 compositeTransform = m_projectionTransform * m_viewTransform * m_modelTransform;
 
     glUniformMatrix4fv(matrixId,
                        1 /*num matrices*/,
@@ -33,13 +30,13 @@ void Camera::apply(const GLuint shaderProgram) {
                        &compositeTransform[0][0]);
 }
 
-void Camera::getModelTransform(glm::mat4& modelMatrix) {
+void Camera::buildModelTransform() {
     // Convert the mesh vertices from object to world coordinates. 
     // Input mesh's coordinates are in global system, so use an identity matrix 
-    modelMatrix = glm::mat4(1.0);
+    m_modelTransform = glm::mat4(1.0);
 }
 
-void Camera::getViewTransform(glm::mat4& viewMatrix) {
+void Camera::buildViewTransform() {
     // Converts the mesh vertices from world coordinate system to 
     // camera coordinate system. Camera in OpenGL is fixed at global origin looking
     // down the -Z axis. Moving the model so it is within the frame of the camera
@@ -67,7 +64,7 @@ void Camera::getViewTransform(glm::mat4& viewMatrix) {
     }
     
     // Combine the translations and produce the view transform 
-    viewMatrix = moveBack * translateToOrigin;
+    m_viewTransform = moveBack * translateToOrigin;
 }
 
 }

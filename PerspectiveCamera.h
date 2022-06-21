@@ -10,7 +10,7 @@ class PerspectiveCamera : public Camera {
         PerspectiveCamera(const Mesh& m) : Camera(m) {
         }
         ~PerspectiveCamera() = default;
-        virtual void getProjectionTransform(glm::mat4&) override;
+        virtual void buildProjectionTransform() override;
         void zoomIn() override;
         void zoomOut() override;
 

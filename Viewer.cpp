@@ -202,10 +202,11 @@ void Viewer::displayMesh(const Mesh& mesh) {
     // Setup model, view and projection transformations
     setView(mesh, shaderProgram);
 
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh, CameraFactory::ProjectionType::Perspective);
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh, CameraFactory::ProjectionType::Orthographic);
+    camera.debugOn();
 
     // Rendering loop
-	do{
+	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT);
 

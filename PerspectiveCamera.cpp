@@ -3,7 +3,7 @@
 
 namespace meshviewer {
 
-void PerspectiveCamera::getProjectionTransform(glm::mat4& projectionMatrix) {
+void PerspectiveCamera::buildProjectionTransform() {
     // Compute the field of view
     
     // The view transform in getViewTransform() has placed the mesh at a distance of
@@ -38,7 +38,7 @@ void PerspectiveCamera::getProjectionTransform(glm::mat4& projectionMatrix) {
     auto AC = bounds.zlen() * 0.5f;
     auto BC = bounds.ylen() * 0.5f;
     m_fieldOfView = 2.f * glm::atan(BC/AC);
-    projectionMatrix = glm::perspective(m_fieldOfView, 640.f/480.f, AC, AC + bounds.zlen());
+    m_projectionTransform = glm::perspective(m_fieldOfView, 640.f/480.f, AC, AC + bounds.zlen());
 
     static bool printed = false;
     if (!printed && m_debugOn) {

@@ -10,7 +10,7 @@ class OrthographicCamera : public Camera {
         OrthographicCamera(const Mesh& m) : Camera(m) { 
         }
         ~OrthographicCamera() = default;
-        void getProjectionTransform(glm::mat4&) override;
+        void buildProjectionTransform() override;
         void zoomIn() override;
         void zoomOut() override;
 };
