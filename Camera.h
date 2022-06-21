@@ -31,14 +31,17 @@ class Camera : public MeshViewerObject {
         virtual void zoomOut() = 0;
 
     private:
-        void getModelTransform(glm::mat4&);
-        void getViewTransform(glm::mat4&);
-        virtual void getProjectionTransform(glm::mat4&) = 0;
+        void buildModelTransform();
+        void buildViewTransform();
+        virtual void buildProjectionTransform() = 0;
 
     protected:
         const Mesh& m_mesh;
         common::Axis m_orbitAxis;
         bool m_orbitOn;
+        glm::mat4 m_modelTransform;
+        glm::mat4 m_viewTransform;
+        glm::mat4 m_projectionTransform;
 };
 
 }
