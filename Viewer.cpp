@@ -4,6 +4,7 @@
 #include "ShaderLoader.h"
 #include "Util.h"
 #include "CameraFactory.h"
+#include "EventHandler.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -14,6 +15,7 @@ using namespace std;
 
 namespace meshviewer {
 using namespace common;
+using namespace events;
 
 Viewer& Viewer::getInstance() {
     static Viewer instance;
@@ -46,6 +48,9 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     if (glewInit() != GLEW_OK) {
         throw std::runtime_error("Unable to initialize GLEW");
     } 
+
+    // Start handling events
+    EventHandler::getInstance().start(m_window); 
 }
 
 // TODO: Designate a directory to load shaders from

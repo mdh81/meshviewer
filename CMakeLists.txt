@@ -12,6 +12,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+set(
+  glIncDirs
+  /opt/homebrew/include
+)
+
+set (
+  glLibDirs
+  /opt/homebrew/lib
+)
+
+add_subdirectory(events)
+
 add_library(
     meshviewer
     Mesh.cpp
@@ -25,20 +37,11 @@ add_library(
     MeshViewerObject.cpp
 )
 
-set(
-  glIncDirs
-  /opt/homebrew/include
-)
-
-set (
-  glLibDirs
-  /opt/homebrew/lib
-)
-
 target_include_directories(
     meshviewer
     PUBLIC
     ${glIncDirs}
+    events 
 )
 
 target_link_directories(
@@ -58,11 +61,7 @@ target_link_libraries(
     PUBLIC
     meshviewer 
     ${glLibs}
-)
-
-target_link_libraries(
-    meshviewerapp
-    PUBLIC
+    events
     "-framework OpenGL"
 )
 
@@ -80,34 +79,6 @@ add_custom_target(
 
 # Install shaders
 INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders/ DESTINATION ${INSTALL_PATH}/shaders)
-
-# This is the tester app
-add_executable(
-    gl101
-    3dShape.cpp
-)
-target_link_libraries(
-    gl101 
-    PUBLIC
-    meshviewer
-    ${glLibs}
-)
-target_link_libraries(
-    gl101 
-    PUBLIC
-    "-framework OpenGL"
-)
-target_include_directories(
-    gl101 
-    PUBLIC
-    ${glIncDirs}
-)
-
-target_link_directories(
-    gl101 
-    PUBLIC
-    ${glLibDirs}
-)
 
 enable_testing()
 add_subdirectory(tests)
