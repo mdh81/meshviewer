@@ -55,11 +55,8 @@ target_link_libraries(
     PUBLIC
     gtest_main
     meshviewer
+    events
     ${glLibs}
-)
-target_link_libraries(
-    viewer_test
-    PUBLIC
     "-framework OpenGL"
 )
 
