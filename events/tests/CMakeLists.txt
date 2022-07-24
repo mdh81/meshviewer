@@ -16,17 +16,24 @@ foreach(test ${allTests})
         ${test} 
         PUBLIC
         ../
+        ${glIncDirs}
     )
 endforeach(test)
 
 # All tests link against gtest, events, and gl libraries 
 foreach(test ${allTests})
+    target_link_directories(
+        ${test}
+        PUBLIC
+        ${glLibDirs}
+    )
     target_link_libraries(
         ${test}
-        gtest_main
-        events
+        PUBLIC
         ${glLibs}
         "-framework OpenGL"
+        gtest_main
+        events
     )  
 endforeach(test)
 

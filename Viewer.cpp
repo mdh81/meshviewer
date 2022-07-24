@@ -50,7 +50,7 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     } 
 
     // Start handling events
-    EventHandler::getInstance().start(m_window); 
+    EventHandler().start(m_window); 
 }
 
 // TODO: Designate a directory to load shaders from

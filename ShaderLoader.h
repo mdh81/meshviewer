@@ -3,9 +3,9 @@
 
 #include "MeshViewerObject.h"
 
-#include "GL/glew.h"
 #include <string>
 #include <tuple>
+#include "GL/glew.h"
 
 namespace meshviewer {
 

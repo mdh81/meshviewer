@@ -22,6 +22,8 @@ set (
   /opt/homebrew/lib
 )
 
+set(glLibs GLEW glfw)
+
 add_subdirectory(events)
 
 add_library(
@@ -56,7 +58,6 @@ add_executable(
     main.cpp
 )
 
-set(glLibs GLEW glfw)
 target_link_libraries(
     meshviewerapp
     PUBLIC

@@ -15,12 +15,12 @@ class NonMemberFunctionCallback : public Callback {
         };
 
     public:
-        void call() override {
+        void call() const override {
             callImpl(typename IndexGenerator<sizeof...(FunctionArgsT)>::type());
         } 
 
         template<unsigned... Indices>
-        void callImpl(IndexSequence<Indices...>) {
+        void callImpl(IndexSequence<Indices...>) const {
             m_functionPointer(std::get<Indices>(m_functionArgs) ...); 
         } 
         

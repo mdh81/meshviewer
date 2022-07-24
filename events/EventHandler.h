@@ -11,35 +11,40 @@ class GLFWwindow;
 
 namespace meshviewer { namespace events {
 
+// A monostate class that is responsible for handling events. Events are handled in the context
+// of a GLFW window.
+
 class EventHandler {
 
     public:
-        static EventHandler& getInstance() {
-            static EventHandler instance;
-            return instance;
-        }
-
-        // Start listening for events
-        void start(GLFWwindow* window);
-
-    private:
-        EventHandler() = default; 
+        EventHandler() = default;
         ~EventHandler() = default;
+
+        // Start listening for events in the specified window
+        void start(GLFWwindow* window);
         
-        // Enforce singleton
+        // Register a callback for the specified event 
+        void registerCallback(const Event&, const Callback& callback);
+        
+        // Disallow copies as copying is not a meaningful operation
+        // for monostate instances 
         EventHandler(EventHandler const&) = delete;
         EventHandler& operator=(EventHandler const&) = delete;
         EventHandler(EventHandler&&) = delete;
         EventHandler& operator==(EventHandler&&) = delete;
         
-    public:        
-        void registerCallback(const Event&, const Callback& callback);
+    private:
+        // This method is declared static so a regular function pointer can be created from this
+        // method and passed to glfw function. These old C APIs don't support member function pointers
+        static void handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     private:
         using CallbackRef = std::reference_wrapper<const Callback>;
-        using EventRef = std::reference_wrapper<const Event>;
-        using EventCallbackMap = std::unordered_map<EventRef, CallbackRef, Event::EventHash, Event::EventEquals>;
-        EventCallbackMap m_eventCallbackMap;
+        using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHash, Event::EventEquals>;
+        static EventCallbackMap m_eventCallbackMap;
+        static bool m_started;
+
+    friend class EventHandlerTest;
 };
 
 } }
