@@ -19,12 +19,12 @@ class MemberFunctionCallback : public Callback {
 
         };
 
-        void call() override {
+        void call() const override {
             memberFunctionCallImpl(typename IndexGenerator<sizeof...(FunctionArgsT)>::type());
         }
 
         template<unsigned... Indices>
-        void memberFunctionCallImpl(IndexSequence<Indices...>) {
+        void memberFunctionCallImpl(IndexSequence<Indices...>) const {
             std::mem_fn(m_functionPointer)(m_instance, std::get<Indices>(m_functionArgs) ...);
         }
 

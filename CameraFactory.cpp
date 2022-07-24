@@ -15,11 +15,11 @@ CameraFactory::CameraFactory() {
     m_mesh = nullptr;
     
     // Register event handlers for switching between perspective and orthographic 
-    EventHandler::getInstance().registerCallback(KeyEvent(GLFW_KEY_O, KeyEvent::Trigger::Press), 
+    EventHandler().registerCallback(Event(GLFW_KEY_O), 
         CallbackFactory::getInstance().registerCallback(
             *this, &CameraFactory::setProjectionType, ProjectionType::Orthographic));
 
-    EventHandler::getInstance().registerCallback(KeyEvent(GLFW_KEY_P, KeyEvent::Trigger::Press), 
+    EventHandler().registerCallback(Event(GLFW_KEY_P), 
         CallbackFactory::getInstance().registerCallback(
             *this, &CameraFactory::setProjectionType, ProjectionType::Perspective));
 }
@@ -39,7 +39,7 @@ Camera& CameraFactory::getCamera(const Mesh& mesh, const ProjectionType projType
 }
 
 void CameraFactory::setProjectionType(const ProjectionType projType) {
-    cout << __FUNCTION__ << ' ' << projType << endl; 
+    cerr << __FUNCTION__ << ' ' << projType << endl;
 }
 
 }
