@@ -12,6 +12,8 @@ class GLFWwindow;
 
 namespace meshviewer {
 
+// At the moment there is a 1-1 relationship between a Viewer and a mesh. In the
+// future, when we support multiple mesh objects the relationship will be 1-N 
 class Viewer : public MeshViewerObject {
     public:
         ~Viewer() = default;

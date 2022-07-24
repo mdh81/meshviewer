@@ -83,8 +83,8 @@ TEST(Mesh, TransformMesh) {
 
 TEST(Mesh, WriteSTL) {
     unique_ptr<Mesh> spMesh;
-    STLReader("./cube.stl").getOutput(spMesh);
-    spMesh->writeToSTL("./cubeOut.stl");
+    STLReader("./testfiles/cube.stl").getOutput(spMesh);
+    spMesh->writeToSTL("./testfiles/cubeOut.stl");
 
     // TODO: Do a stat call and assert
     // a) cubeOut.stl exists

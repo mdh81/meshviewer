@@ -22,3 +22,6 @@ target_include_directories(
     PUBLIC
     ${glIncDirs}
 )
+
+enable_testing()
+add_subdirectory(tests)

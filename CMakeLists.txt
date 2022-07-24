@@ -32,6 +32,7 @@ add_library(
     Viewer.cpp
     ShaderLoader.cpp
     Camera.cpp
+    CameraFactory.cpp
     OrthographicCamera.cpp
     PerspectiveCamera.cpp
     MeshViewerObject.cpp
@@ -72,6 +73,7 @@ file(
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.shader
 )
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders/)
 add_custom_target(
     shadercopy ALL
     ${CMAKE_COMMAND} -E copy ${shaders} ${CMAKE_CURRENT_BINARY_DIR}/shaders/

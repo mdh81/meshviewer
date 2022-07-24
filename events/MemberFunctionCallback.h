@@ -1,17 +1,22 @@
 #ifndef MESH_VIEWER_MFUNC_CALLBACK_H
 #define MESH_VIEWER_MFUNC_CALLBACK_H
 
-#include "CallbackBase.h"
+#include "Callback.h"
 #include <tuple>
+#include <memory>
 
 namespace meshviewer { namespace events {
 
 template<typename InstanceT, typename MemberFunctionPtrT, typename... FunctionArgsT>
-class MemberFunctionCallback : public CallbackBase {
+class MemberFunctionCallback : public Callback {
     public:
+        // TODO: MemberFunctionCallback has no control over life-cycle of instance. "m_instance" could become a
+        // dangling reference leading to a callback to reference invalid memory
         MemberFunctionCallback(InstanceT& instance, const MemberFunctionPtrT funcPtr, const FunctionArgsT&... args)
             : m_instance (instance)
-            , m_functionPointer (funcPtr) {
+            , m_functionPointer (funcPtr)
+            , m_functionArgs(args...) {
+
         };
 
         void call() override {

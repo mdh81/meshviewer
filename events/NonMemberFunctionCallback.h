@@ -1,16 +1,16 @@
 #ifndef MESH_VIEWER_NMFUNC_CALLBACK_H
 #define MESH_VIEWER_NMFUNC_CALLBACK_H
 
-#include "CallbackBase.h"
+#include "Callback.h"
 #include <tuple>
 
 namespace meshviewer { namespace events {
 
 template<typename FunctionPtrT, typename... FunctionArgsT>
-class NonMemberFunctionCallback : public CallbackBase {
+class NonMemberFunctionCallback : public Callback {
     public:
-        NonMemberFunctionCallback(FunctionPtrT* funcPtr, const FunctionArgsT&... args) {
-            m_functionPointer = funcPtr;
+        NonMemberFunctionCallback(FunctionPtrT* funcPtr, const FunctionArgsT&... args) 
+            : m_functionPointer(funcPtr) {
             m_functionArgs = std::make_tuple(args...);
         };
 
