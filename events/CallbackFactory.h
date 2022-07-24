@@ -17,19 +17,22 @@ class CallbackFactory {
             return cb;
         }
 
-        // TODO: Define a trigger that the callback call be associated with
-        
         template<typename FunctionPtrT, typename... CallbackArgsT>
-        void registerCallback(FunctionPtrT* functionPtr, const CallbackArgsT&... args) {
+        Callback& registerCallback(FunctionPtrT* functionPtr, const CallbackArgsT&... args) {
+
             m_callbackFunctions.push_back(
                     std::unique_ptr<Callback>(
                         new NonMemberFunctionCallback<FunctionPtrT, CallbackArgsT...>(functionPtr, args...))); 
+
+            return *m_callbackFunctions.back().get();
         }
         
         template<typename InstanceT, typename FunctionPtrT, typename... CallbackArgsT>
-        void registerCallback(InstanceT& instance, FunctionPtrT funcPtr, const CallbackArgsT&... args) {
+        Callback& registerCallback(InstanceT& instance, FunctionPtrT funcPtr, const CallbackArgsT&... args) {
+
             m_callbackFunctions.push_back(std::unique_ptr<Callback>(
                 new MemberFunctionCallback<InstanceT, FunctionPtrT, CallbackArgsT...>(instance, funcPtr, args...)));
+            return *m_callbackFunctions.back().get();
         }
 
     private:
@@ -43,6 +46,9 @@ class CallbackFactory {
     private:
         using CallbackPointerT = std::unique_ptr<Callback>; 
         std::vector<CallbackPointerT> m_callbackFunctions;
+
+    friend class CallbackFactoryTester;
+
 };
 
 } }

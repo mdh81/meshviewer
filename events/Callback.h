@@ -19,6 +19,7 @@ using intType = int; };
 
 class Callback {
     public:
+        // TODO: This function can be a const
         virtual void call() = 0;
         virtual ~Callback() = default;
 };
