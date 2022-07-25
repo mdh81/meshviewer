@@ -18,6 +18,8 @@ class Viewer : public MeshViewerObject {
     public:
         ~Viewer() = default;
         void displayMesh(const Mesh& mesh);
+        unsigned getWidth() const { return m_windowWidth; }
+        unsigned getHeight() const { return m_windowHeight; }
 
     // Creation Semantics 
     public:

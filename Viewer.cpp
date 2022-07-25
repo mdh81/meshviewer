@@ -156,32 +156,8 @@ void Viewer::setColors(const GLuint shaderProgram) {
 }
 
 void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh, CameraFactory::ProjectionType::Perspective); 
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh); 
     camera.setOrbitOn(common::Axis::Y);
-
-//
-//    // Set up transform matrices
-//    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
-//
-//    // Projection: Converts to homogenous coordinates
-//    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 640.f/480.f, 0.1f, 100.0f);
-//
-//    // View: Converts to camera coordinates
-//    glm::mat4 viewMatrix = glm::mat4(1.0f);
-//    viewMatrix[3] = glm::vec4(0,0,-20,1);
-//    
-//    // Model: Converts to world coordinates. 
-//    // This demo model is in the world coordinates, so we have an identity 
-//    glm::mat4 modelMatrix = glm::mat4(1.0f);
-//
-//    // Combined Transform
-//    glm::mat4 compositeTransform = projectionMatrix * viewMatrix * modelMatrix;
-//
-//    glUniformMatrix4fv(matrixId,
-//                       1 /*num matrices*/,
-//                       GL_FALSE /*transpose*/,
-//                       &compositeTransform[0][0]);
-
 }
 
 void Viewer::displayMesh(const Mesh& mesh) {
@@ -206,8 +182,9 @@ void Viewer::displayMesh(const Mesh& mesh) {
     
     // Setup model, view and projection transformations
     setView(mesh, shaderProgram);
-
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh, CameraFactory::ProjectionType::Orthographic);
+    
+    // Create camera for the mesh
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh);
     camera.debugOn();
 
     // Rendering loop

@@ -5,30 +5,20 @@
 #include "Mesh.h"
 
 #include <memory>
-#include <iostream>
 
 namespace meshviewer {
 
 class CameraFactory {
     public:
-        enum class ProjectionType {
-            Orthographic,
-            Perspective
-        }; 
-        
         static CameraFactory& getInstance() {
             static CameraFactory instance;
             return instance;
         }
-
-    public:
-        Camera& getCamera(const Mesh&, const ProjectionType); 
-        void setProjectionType(const ProjectionType);
+        Camera& getCamera(const Mesh&); 
 
     private:
        std::unique_ptr<Camera> m_camera; 
        const Mesh* m_mesh;
-       ProjectionType m_type;
 
     private:
         CameraFactory();
@@ -37,15 +27,6 @@ class CameraFactory {
         CameraFactory& operator=(const CameraFactory&) = delete;
         CameraFactory& operator=(CameraFactory&&) = delete;
 };
-
-inline std::ostream& operator<<(std::ostream& os, CameraFactory::ProjectionType p) {
-    if (p == CameraFactory::ProjectionType::Orthographic) {
-        os << "Orthographic";
-    } else {
-        os << "Perspective";
-    }
-    return os;
-}
 
 }
 

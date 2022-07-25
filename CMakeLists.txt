@@ -3,6 +3,8 @@ project(MeshViewer VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 # get gtest
 include(FetchContent)
 FetchContent_Declare(
@@ -35,8 +37,6 @@ add_library(
     ShaderLoader.cpp
     Camera.cpp
     CameraFactory.cpp
-    OrthographicCamera.cpp
-    PerspectiveCamera.cpp
     MeshViewerObject.cpp
 )
 
