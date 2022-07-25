@@ -1,7 +1,0 @@
-Complete Multi-threaded Octree and duplicate vertex merging implementation
-Write GL code for the viewer
-Submit to github
-Use GMock to mock a mesh
-Define Copy and Move operations for all objects
-Ask on Stack Overflow
-multiple definition problem for functions defined in headers. Why inline solves it and why doesn't the same problem arise for class definitions and member functions (are they automtically inlined because they are member functions?) 
