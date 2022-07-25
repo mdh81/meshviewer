@@ -7,16 +7,23 @@
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "MeshViewerObject.h"
+#include <iostream>
 
 namespace meshviewer {
 
 class Mesh;
     
 class Camera : public MeshViewerObject {
+
+    public:
+        enum class ProjectionType {
+            Orthographic,
+            Perspective
+        };
     
     public:
         // TODO: Define creation semantics
-        Camera(const Mesh& m) : m_mesh(m) {}
+        Camera(const Mesh& m, const ProjectionType type = ProjectionType::Perspective);
         virtual ~Camera() = default;
 
         // Applies the camera parameters and generates a view
@@ -27,22 +34,38 @@ class Camera : public MeshViewerObject {
         void setOrbitOff() { m_orbitOn = false; }
 
         // Zooms the camera in and out
-        virtual void zoomIn() = 0;
-        virtual void zoomOut() = 0;
+        void zoomIn();
+        void zoomOut();
+
+        // Sets projection type 
+        void setProjectionType(const ProjectionType type) { m_projectionType = type; }
 
     private:
         void buildModelTransform();
         void buildViewTransform();
-        virtual void buildProjectionTransform() = 0;
+        void buildProjectionTransform();
+        void buildPerspectiveProjectionTransform();
+        void buildOrthographicProjectionTransform();
 
-    protected:
+    private:
         const Mesh& m_mesh;
         common::Axis m_orbitAxis;
         bool m_orbitOn;
         glm::mat4 m_modelTransform;
         glm::mat4 m_viewTransform;
         glm::mat4 m_projectionTransform;
+        ProjectionType m_projectionType;
+        float m_fieldOfView;
 };
+
+inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {
+    if (p == Camera::ProjectionType::Orthographic) {
+        os << "Orthographic";
+    } else {
+        os << "Perspective";
+    }
+    return os;
+}
 
 }
 
