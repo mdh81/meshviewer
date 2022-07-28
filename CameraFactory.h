@@ -3,6 +3,7 @@
 
 #include "Camera.h"
 #include "Mesh.h"
+#include "Types.h"
 
 #include <memory>
 
@@ -14,7 +15,7 @@ class CameraFactory {
             static CameraFactory instance;
             return instance;
         }
-        Camera& getCamera(const Mesh&); 
+        Camera& getCamera(const Mesh&, const common::WindowDimensions& winDim); 
 
     private:
        std::unique_ptr<Camera> m_camera; 

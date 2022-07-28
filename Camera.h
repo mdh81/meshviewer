@@ -3,10 +3,10 @@
 
 #include <memory>
 #include "GL/glew.h"
+#include "MeshViewerObject.h"
 #include "Types.h"
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "MeshViewerObject.h"
 #include <iostream>
 
 namespace meshviewer {
@@ -22,13 +22,15 @@ class Camera : public MeshViewerObject {
         };
     
     public:
-        // TODO: Define creation semantics
-        Camera(const Mesh& m, const ProjectionType type = ProjectionType::Perspective);
-        virtual ~Camera() = default;
+        Camera(const Mesh& m, const common::WindowDimensions& winDim,
+               const ProjectionType type = ProjectionType::Perspective);
+        ~Camera() = default;
+
+        
 
         // Applies the camera parameters and generates a view
         void apply(GLuint shaderProgram);
-        
+
         // Makes the camera orbit around the specified axis 
         void setOrbitOn(const common::Axis& axis) { m_orbitAxis = axis; m_orbitOn = true; }
         void setOrbitOff() { m_orbitOn = false; }
@@ -56,6 +58,7 @@ class Camera : public MeshViewerObject {
         glm::mat4 m_projectionTransform;
         ProjectionType m_projectionType;
         float m_fieldOfView;
+        common::WindowDimensions m_windowDimensions;
 };
 
 inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {

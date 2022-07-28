@@ -10,8 +10,9 @@ namespace meshviewer {
 using namespace common;
 using namespace events;
 
-Camera::Camera(const Mesh& m, const ProjectionType type)
+Camera::Camera(const Mesh& m, const WindowDimensions& winDim, const ProjectionType type)
    : m_mesh(m)
+   , m_windowDimensions(winDim)
    , m_projectionType(type) {
 
     // Register event handlers for switching between perspective and orthographic 
@@ -102,17 +103,26 @@ void Camera::buildOrthographicProjectionTransform() {
     // Set near plane to zlen/2 and far plane to near + z-len 
     auto bounds = m_mesh.getBounds();
     auto boundsView = Util::transformBounds(bounds, m_viewTransform);
+    float aspectRatio = m_windowDimensions.width / m_windowDimensions.height;
+    float viewWidth = boundsView.xlen() * 1.5f;
+    float viewHeight = (boundsView.ylen() * m_windowDimensions.height/m_windowDimensions.width) * 1.5f;
 
-    m_projectionTransform = glm::ortho(1.5f*boundsView.xmin, 1.5f*boundsView.xmax,
-                                       1.5f*boundsView.ymin, 1.5f*boundsView.ymax,
+    float viewMinX = -1 * (viewWidth  * 0.5);
+    float viewMaxX = +1 * (viewWidth  * 0.5);
+    float viewMinY = -1 * (viewHeight * 0.5);
+    float viewMaxY = +1 * (viewHeight * 0.5);
+
+    m_projectionTransform = glm::ortho(viewMinX, viewMaxX,
+                                       viewMinY, viewMaxY,
                                        boundsView.zlen()*0.5f, boundsView.zlen()*0.5f + boundsView.zlen());
     
     static bool printed = false;
     if (!printed && m_debugOn) {
         std::cout << "Mesh Bounds: " << boundsView << std::endl;
-        std::cout << "Left: " << 1.5f*boundsView.xmin << " Right: " << 1.5f*boundsView.xmax
-                  << " Bottom: " << 1.5f*boundsView.ymin << " Top: " << 1.5f*boundsView.ymax
-                  << " Near: " << boundsView.zlen()*0.5f << " Far: " << boundsView.zlen() + boundsView.zlen() * 0.5f
+        std::cout << "Left: " << viewMinX << " Right: " << viewMaxX 
+                  << " Bottom: " << viewMinY << " Top: " << viewMaxY 
+                  << " Near: " << boundsView.zlen()*0.5f 
+                  << " Far: " << boundsView.zlen() + boundsView.zlen() * 0.5f
                   << std::endl;
         printed = true;
     }
@@ -153,7 +163,10 @@ void Camera::buildPerspectiveProjectionTransform() {
     auto AC = bounds.zlen() * 0.5f;
     auto BC = bounds.ylen() * 0.5f;
     m_fieldOfView = 2.f * glm::atan(BC/AC);
-    m_projectionTransform = glm::perspective(m_fieldOfView, 640.f/480.f, AC, AC + bounds.zlen());
+    m_projectionTransform = 
+        glm::perspective(m_fieldOfView, 
+                         static_cast<float>(m_windowDimensions.width)/m_windowDimensions.height,
+                         AC, AC + bounds.zlen());
 
     static bool printed = false;
     if (!printed && m_debugOn) {

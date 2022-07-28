@@ -156,7 +156,7 @@ void Viewer::setColors(const GLuint shaderProgram) {
 }
 
 void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh); 
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight}); 
     camera.setOrbitOn(common::Axis::Y);
 }
 
@@ -184,7 +184,7 @@ void Viewer::displayMesh(const Mesh& mesh) {
     setView(mesh, shaderProgram);
     
     // Create camera for the mesh
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh);
+    Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight});
     camera.debugOn();
 
     // Rendering loop

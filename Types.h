@@ -95,5 +95,11 @@ enum class Axis
     Arbitrary
 };
 
+struct WindowDimensions
+{
+    unsigned width;
+    unsigned height;
+};
+
 } }
 #endif
