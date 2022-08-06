@@ -8,6 +8,8 @@
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <iostream>
+#include <thread>
+#include <optional>
 
 namespace meshviewer {
 
@@ -24,15 +26,13 @@ class Camera : public MeshViewerObject {
     public:
         Camera(const Mesh& m, const common::WindowDimensions& winDim,
                const ProjectionType type = ProjectionType::Perspective);
-        ~Camera() = default;
-
-        
+        ~Camera();
 
         // Applies the camera parameters and generates a view
         void apply(GLuint shaderProgram);
 
         // Makes the camera orbit around the specified axis 
-        void setOrbitOn(const common::Axis& axis) { m_orbitAxis = axis; m_orbitOn = true; }
+        void setOrbitOn(const common::Axis& axis) { toggleOrbit(axis); }
         void setOrbitOff() { m_orbitOn = false; }
 
         // Zooms the camera in and out
@@ -48,10 +48,15 @@ class Camera : public MeshViewerObject {
         void buildProjectionTransform();
         void buildPerspectiveProjectionTransform();
         void buildOrthographicProjectionTransform();
+        void toggleOrbit(const common::Axis& axis);
+        void orbitLoop();
+        glm::mat4 rotateAboutX(float angleInDegrees);
+        glm::mat4 rotateAboutY(float angleInDegrees);
+        glm::mat4 rotateAboutZ(float angleInDegrees);
 
     private:
         const Mesh& m_mesh;
-        common::Axis m_orbitAxis;
+        std::optional<common::Axis> m_orbitAxis;
         bool m_orbitOn;
         glm::mat4 m_modelTransform;
         glm::mat4 m_viewTransform;
@@ -59,6 +64,10 @@ class Camera : public MeshViewerObject {
         ProjectionType m_projectionType;
         float m_fieldOfView;
         common::WindowDimensions m_windowDimensions;
+        float m_orbitAngle;
+        std::unique_ptr<std::thread> m_timerThread;
+        common::Bounds m_viewVolume;
+
 };
 
 inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {

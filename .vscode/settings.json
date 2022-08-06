@@ -39,6 +39,9 @@
         "chrono": "cpp",
         "bit": "cpp",
         "initializer_list": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "thread": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp"
     }
 }

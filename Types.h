@@ -4,6 +4,7 @@
 #include <limits>
 #include <type_traits>
 #include <iostream>
+#include <cmath>
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace meshviewer { namespace common {
@@ -35,6 +36,7 @@ struct Bounds {
     float xmin, xmax;
     float ymin, ymax;
     float zmin, zmax;
+    
     Bounds() { 
         xmin = std::numeric_limits<float>::max();
         ymin = std::numeric_limits<float>::max();
@@ -43,6 +45,18 @@ struct Bounds {
         ymax = -ymin;
         zmax = -zmin;
     }
+
+    // Builds a symmetric bounding box where each side is
+    // of the specified length 
+    Bounds(float sideLength) {
+        xmin = -0.5 * sideLength;
+        xmax = +0.5 * sideLength;
+        ymin = -0.5 * sideLength;
+        ymax = +0.5 * sideLength;
+        zmin = -0.5 * sideLength;
+        zmax = +0.5 * sideLength;
+    }
+
     Bounds(float xmi, float ymi, float zmi, float xmx, float ymx, float zmx) :
         xmin(xmi), ymin(ymi), zmin(zmi), xmax(xmx), ymax(ymx), zmax(zmx) { }
     float xlen() const { return xmax - xmin; }
@@ -51,6 +65,9 @@ struct Bounds {
     float xmid() const { return (xmin + xmax)*0.5; } 
     float ymid() const { return (ymin + ymax)*0.5; } 
     float zmid() const { return (zmin + zmax)*0.5; } 
+    float len() const  { return sqrt( ((xmax - xmin) * (xmax - xmin)) + 
+                                      ((ymax - ymin) * (ymax - ymin)) + 
+                                      ((zmax - zmin) * (zmax - zmin)) ); }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Bounds& b) {
