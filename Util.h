@@ -49,7 +49,7 @@ class Util {
             cout << setw(10) << matrix[0][2] << setw(10) << matrix[1][2] << setw(10) << matrix[2][2] << setw(10) << matrix[3][2]
                  << setw(10) << endl;
             cout << setw(10) << matrix[0][3] << setw(10) << matrix[1][3] << setw(10) << matrix[2][3] << setw(10) << matrix[3][3]
-                 << setw(10) << endl;
+                 << endl;
         }
 
         static void writeBounds(const std::string& fileName, const common::Bounds& bounds) {
