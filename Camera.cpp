@@ -122,9 +122,8 @@ void Camera::buildViewTransform() {
     // Compute the view volume. The volume should be large enough to prevent the mesh
     // from being clipped against its planes in all orientations of the mesh. To get this
     // we build a "super" bounding box, which is a symmetric bounding box whose side length
-    // is equal to the diagonal length of the mesh's original bounding box 
-    // TODO: Investigate the need for translateToOrigin here
-    m_viewVolume = Util::transformBounds(Bounds(m_mesh.getBounds().len()), moveBack * translateToOrigin); 
+    // is equal to the diagonal length of the mesh's original bounding box
+    m_viewVolume = Util::transformBounds(Bounds(m_mesh.getBounds().len()), moveBack); 
 
     static bool printed = false;
     if (!printed && m_debugOn) {
@@ -182,6 +181,7 @@ void Camera::buildOrthographicProjectionTransform() {
                   << " Near: " << nearDist 
                   << " Far: " << farDist
                   << std::endl;
+        Util::writeBounds("/Users/deye/viewer/build/objectBounds.stl", m_mesh.getBounds());
         Util::writeBounds("/Users/deye/viewer/build/viewBounds.stl", m_viewVolume);
         printed = true;
     }
