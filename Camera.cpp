@@ -262,13 +262,18 @@ void Camera::toggleOrbit(const common::Axis& axis) {
         m_orbitOn = !m_orbitOn;
     } else {
         // Start orbiting around a new axis
-        m_orbitOn = false;
-        if (!m_timerThread) throw std::runtime_error("Timer thread must have been running");
-        m_timerThread->join();
         m_orbitOn = true;
         m_orbitAxis = axis;
     }
+    // Start orbitting
     if (m_orbitOn) {
+        // If we were previously orbitting, then we need to wait for that thread to join 
+        // before creating a new thread
+        if (m_timerThread) { 
+            m_orbitOn = false;
+            m_timerThread->join();
+            m_orbitOn = true;
+        }
         m_timerThread.reset(new std::thread(&Camera::orbitLoop, this));
     }
 } 

@@ -5,6 +5,7 @@
 #include "Util.h"
 #include "CameraFactory.h"
 #include "EventHandler.h"
+#include "CallbackFactory.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -48,6 +49,17 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     if (glewInit() != GLEW_OK) {
         throw std::runtime_error("Unable to initialize GLEW");
     } 
+
+    // Register event handlers
+    EventHandler().registerCallback(
+        Event(GLFW_KEY_W), 
+        CallbackFactory::getInstance().registerCallback 
+        (*this, &Viewer::setRenderMode, RenderMode::Wireframe));
+
+    EventHandler().registerCallback(
+        Event(GLFW_KEY_S), 
+        CallbackFactory::getInstance().registerCallback 
+        (*this, &Viewer::setRenderMode, RenderMode::Shaded));
 
     // Start handling events
     EventHandler().start(m_window); 
@@ -158,6 +170,14 @@ void Viewer::setColors(const GLuint shaderProgram) {
 void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
     Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight}); 
     //camera.setOrbitOn(common::Axis::Y);
+}
+
+void Viewer::setRenderMode(const RenderMode rm) {
+    if (rm == RenderMode::Wireframe) {
+        cerr << "Rendering mesh in wireframe" << endl;
+    } else {
+        cerr << "Rendering mesh shaded" << endl;
+    }
 }
 
 void Viewer::displayMesh(const Mesh& mesh) {
