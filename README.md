@@ -19,6 +19,7 @@ In order of priority:
 
 * Add support for mouse and keyboard interaction to inspect the model. Arcball implementation is what is planned
 * Add support for various render modes: flat, smooth, wireframe
+* Add support for an interactive orientation marker that allows view to be oriented along any axis. Preferrably using a virtual sphere like manipulator
 * Add support for more releastic lighting models
 * A sketch plane...  á la blender
 * "Show me how" mode to deconstruct view and projection transformations
