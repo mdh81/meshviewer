@@ -42,6 +42,7 @@
         "utility": "cpp",
         "thread": "cpp",
         "iosfwd": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "stdexcept": "cpp"
     }
 }

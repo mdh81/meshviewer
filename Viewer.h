@@ -44,6 +44,16 @@ class Viewer : public MeshViewerObject {
         void setElementData(const Mesh&);
         void setColors(const GLuint shaderProgram);
         void setView(const Mesh&, const GLuint shaderProgram);
+
+    // Member function callbacks registered with the event handler
+    // and supporting types
+    private:
+        enum class RenderMode {
+            Wireframe,
+            Shaded,
+        };
+    private:
+        void setRenderMode(const RenderMode);
 };
 
 }
