@@ -6,13 +6,25 @@
 #include <vector>
 #include <numeric>
 #include <algorithm>
+#include <filesystem>
 using namespace std;
 using namespace meshviewer;
 using namespace meshviewer::common;
 
-TEST(Octree, TestRootOctant) {
+class OctreeFixture : public ::testing::Test {
+    protected:
+        void SetUp() override {
+            auto* pData = getenv("modelsDir");
+            if (!pData) throw std::runtime_error("modelsDir environment variable not set");        
+            m_modelsDir = pData; 
+        }
+    
+        filesystem::path m_modelsDir;
+};
+
+TEST_F(OctreeFixture, TestRootOctant) {
     std::unique_ptr<Mesh> spMesh;
-    STLReader reader("testfiles/cube.stl"); 
+    STLReader reader(OctreeFixture::m_modelsDir/"cube.stl"); 
     reader.getOutput(spMesh);
     Octree octree(*spMesh.get());
     // Assert the root octant's bounds match the mesh's bounds
@@ -37,9 +49,9 @@ TEST(Octree, TestRootOctant) {
     }
 }
 
-TEST(Octree, TestSubdivision) {
+TEST_F(OctreeFixture, TestSubdivision) {
     std::unique_ptr<Mesh> spMesh;
-    STLReader reader("testfiles/cube.stl"); 
+    STLReader reader(OctreeFixture::m_modelsDir/"cube.stl");
     reader.getOutput(spMesh);
     // Create octree with 100 vertices per octant
     Octree octree(*spMesh.get(), 100);

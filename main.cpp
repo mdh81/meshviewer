@@ -9,7 +9,7 @@ using namespace meshviewer::common;
 
 bool ValidateArguments(int argc, char** argv) {
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << "<mesh file name>" << endl;
+        cerr << "Usage: " << argv[0] << " <mesh file name>" << endl;
         return false;
     }
     // TODO: Replace this with a Reader factory that can read a few

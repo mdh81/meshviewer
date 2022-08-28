@@ -27,61 +27,60 @@ set (
 set(glLibs GLEW glfw)
 
 add_subdirectory(events)
-
-add_library(
-    meshviewer
-    Mesh.cpp
-    Octree.cpp
-    STLReader.cpp
-    Viewer.cpp
-    ShaderLoader.cpp
-    Camera.cpp
-    CameraFactory.cpp
-    MeshViewerObject.cpp
-)
-
-target_include_directories(
-    meshviewer
-    PUBLIC
-    ${glIncDirs}
-    events 
-)
-
-target_link_directories(
-    meshviewer
-    PUBLIC
-    ${glLibDirs}
-)
+add_subdirectory(mesh)
+add_subdirectory(common)
+add_subdirectory(readers)
+add_subdirectory(shaders)
+add_subdirectory(viewer)
+add_subdirectory(config)
 
 add_executable(
     meshviewerapp
     main.cpp
 )
 
+target_include_directories(
+    meshviewerapp
+    PUBLIC
+    ${glIncDirs}
+    common
+    events
+    mesh
+    readers
+    shaders 
+    viewer
+)
+
+target_link_directories(
+    meshviewerapp
+    PUBLIC
+    ${glLibDirs}
+)
+
 target_link_libraries(
     meshviewerapp
     PUBLIC
-    meshviewer 
     ${glLibs}
+    common
     events
+    mesh
+    readers
+    shaders 
+    events
+    viewer
     "-framework OpenGL"
 )
 
-# Copy shaders to build directory
+# Copy test files to binary directory
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testfiles/)
 file(
     GLOB 
-    shaders 
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.shader
+    models 
+    ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.stl
 )
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders/)
 add_custom_target(
-    shadercopy ALL
-    ${CMAKE_COMMAND} -E copy ${shaders} ${CMAKE_CURRENT_BINARY_DIR}/shaders/
+    testFiles ALL
+    ${CMAKE_COMMAND} -E copy ${models} ${CMAKE_BINARY_DIR}/testfiles/
 )
-
-# Install shaders
-INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders/ DESTINATION ${INSTALL_PATH}/shaders)
 
 enable_testing()
-add_subdirectory(tests)

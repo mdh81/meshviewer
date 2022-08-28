@@ -1,11 +1,13 @@
 add_library(
-    events 
-    EventHandler.cpp
+    readers 
+    STLReader.cpp
 )
 
 target_include_directories(
-    events 
+    readers 
     PUBLIC
+    ../mesh 
+    ../common
     ${glIncDirs}
 )
 
