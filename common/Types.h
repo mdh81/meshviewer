@@ -9,11 +9,13 @@
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace meshviewer { namespace common {
 
-struct Vertex {
+struct Point3D {
     float x;
     float y;
     float z;
 };
+using Vertex = Point3D;
+using Vector = Point3D;
 
 inline std::ostream& operator<<(std::ostream& os, const Vertex& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 

@@ -2,13 +2,17 @@
 #include "STLReader.h"
 #include "Mesh.h"
 #include <memory>
+#include <filesystem>
 using namespace std;
 using namespace meshviewer;
 using namespace meshviewer::common;
 
 TEST(STLReader, TestRead) {
+    auto* pData = getenv("modelsDir");
+    if (!pData) throw std::runtime_error("modelsDir environment variable not set");        
+    filesystem::path modelsDir = pData; 
     std::unique_ptr<Mesh> spMesh;
-    STLReader reader("testfiles/cube.stl"); 
+    STLReader reader(modelsDir/"cube.stl"); 
     reader.getOutput(spMesh);
     ASSERT_EQ(spMesh->getNumberOfVertices(), 36) << "Incorrect number of vertices" << std::endl;
     ASSERT_EQ(spMesh->getNumberOfFaces(), 12) << "Incorrect number of faces" << std::endl;

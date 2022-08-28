@@ -4,8 +4,23 @@
 #include "glm/glm.hpp"
 #include <vector>
 #include <initializer_list>
+#include <string>
+#include <filesystem>
+#include <cstdlib>
 using namespace std;
 using namespace meshviewer;
+
+class MeshFixture : public ::testing::Test {
+    protected:
+        void SetUp() override {
+            auto* pData = getenv("modelsDir");
+            if (!pData) throw std::runtime_error("modelsDir environment variable not set");        
+            m_modelsDir = pData; 
+        }
+    
+        filesystem::path m_modelsDir;
+};
+
 
 TEST(Mesh, TestAddVertex) {
     Mesh m;
@@ -15,9 +30,11 @@ TEST(Mesh, TestAddVertex) {
     m.addFace({1,2,3});
 }
 
-TEST(Mesh, RemoveDuplicateVertices) {
+//TODO: Finish implementation for removing duplicate vertices
+TEST_F(MeshFixture, RemoveDuplicateVertices) {
     unique_ptr<Mesh> spMesh;
-    STLReader("./cube.stl").getOutput(spMesh);
+    
+    STLReader(MeshFixture::m_modelsDir/"cube.stl").getOutput(spMesh);
     int numOrigVertices = spMesh->getNumberOfVertices();
     spMesh->removeDuplicateVertices();
     int numNewVertices = spMesh->getNumberOfVertices();
@@ -81,13 +98,15 @@ TEST(Mesh, TransformMesh) {
 
 }
 
-TEST(Mesh, WriteSTL) {
+TEST_F(MeshFixture, WriteSTL) {
     unique_ptr<Mesh> spMesh;
-    STLReader("./testfiles/cube.stl").getOutput(spMesh);
-    spMesh->writeToSTL("./testfiles/cubeOut.stl");
-
-    // TODO: Do a stat call and assert
-    // a) cubeOut.stl exists
-    // b) cubeOut.stl is same size as cube.stl
-    // c) cubeOut.stl was written at the time the test was run
+    auto inputPath = MeshFixture::m_modelsDir/"cube.stl";
+    auto inputFs = filesystem::file_size(inputPath);
+    ASSERT_TRUE(inputFs > 0) << "Input STL file is bad";
+    STLReader(inputPath).getOutput(spMesh);
+    auto outputPath = MeshFixture::m_modelsDir/"cubeOut.stl";
+    filesystem::remove(outputPath);
+    spMesh->writeToSTL(outputPath);
+    auto outputFs = filesystem::file_size(outputPath);
+    ASSERT_TRUE(inputFs == outputFs) << "Output STL was supposed to be identical to the input";
 }
