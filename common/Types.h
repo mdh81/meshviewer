@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <iostream>
 #include <cmath>
+#include <memory>
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace meshviewer { namespace common {
@@ -14,25 +15,45 @@ struct Point3D {
     float y;
     float z;
 };
-using Vertex = Point3D;
 using Vector = Point3D;
 
-inline std::ostream& operator<<(std::ostream& os, const Vertex& v) {
+inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 
     return os;
 }
 
-using Vertices = std::vector<Vertex>; 
-using Face = std::vector<unsigned>;
-using Faces = std::vector<Face>;
-
-inline std::ostream& operator<<(std::ostream& os, const Face& f) {
-    os << '[';
-    for (size_t i = 0; i < f.size(); ++i) { 
-        os << f.at(i) << (i == f.size() - 1 ? ']' : ','); 
-    }
-    return os;
-}
+// A 2D array whose data can be shared among instances of this type. The data
+// is stored as a 1D array to faciliate easy transfer to OpenGL APIs
+template<typename T, unsigned tupleSize=1>
+class Array {
+    private:
+        size_t m_size;
+        size_t m_offset;
+        std::shared_ptr<T[]> m_data;
+    public:
+        Array(size_t numElements) 
+            : m_size(numElements)
+            , m_offset(0)
+            , m_data(new T[m_size * tupleSize], std::default_delete<T[]>()) {
+        }
+        
+        size_t getSize() const { return m_size; }
+        
+        size_t getDataSize() const { return m_size * tupleSize * sizeof(T); }
+        
+        T const* getData() const { return m_data.get(); }
+        
+        void append(const std::initializer_list<T>& d) {
+            if (d.size() != tupleSize) {
+                throw std::invalid_argument("Tuple size is " + 
+                                            std::to_string(tupleSize) +
+                                            ". Input size is " + 
+                                            std::to_string(d.size()));
+            }
+            memcpy(m_data.get() + m_offset, data(d), sizeof(T) * tupleSize);
+            m_offset += tupleSize;
+        }
+};
 
 struct Bounds {
     float xmin, xmax;
@@ -118,6 +139,11 @@ struct WindowDimensions
 {
     unsigned width;
     unsigned height;
+};
+
+enum class NormalLocation {
+    Face,
+    Vertex
 };
 
 } }

@@ -122,13 +122,8 @@ void Viewer::setVertexData(const Mesh& mesh, const GLuint shaderProgram) {
     glBindBuffer(GL_ARRAY_BUFFER, vbObj);
 
     // Upload vertex data to the vertex buffer object
-    // Casting Vertex* to float* seems okay since the struct Vertex doesn't have
-    // any padding due to the fact that it's alignment being 4 bytes and it's total
-    // size being 12 (a multiple of 4).
-    size_t numBytes = 0;
-    common::Vertex* vertexData;
-    mesh.getVertexData(numBytes, vertexData);
-    glBufferData(GL_ARRAY_BUFFER, numBytes, reinterpret_cast<GLfloat*>(vertexData), GL_STATIC_DRAW);
+    auto const vertexData = mesh.getVertexData();
+    glBufferData(GL_ARRAY_BUFFER, vertexData.getDataSize(), vertexData.getData(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");

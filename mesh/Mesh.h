@@ -8,11 +8,19 @@
 #include "Types.h"
 #include "MeshViewerObject.h"
 #include "Octree.h"
+#include "Vertex.h"
+#include "Face.h"
 #include "glm/glm.hpp"
 
 namespace meshviewer {
 
 class Mesh : public MeshViewerObject {
+    public:
+        using Vertices = std::vector<Vertex>;
+        using Faces = std::vector<Face>;
+        using NormalData = common::Array<float, 3>;
+        using VertexData = common::Array<float, 3>;
+    
     public:
         Mesh() = default;
 
@@ -49,25 +57,25 @@ class Mesh : public MeshViewerObject {
         unsigned getNumberOfFaces() const { return m_numFaces; }
     
         // Gets all vertices in this mesh
-        const common::Vertices& getVertices() const { return m_vertices; }
+        const Vertices& getVertices() const { return m_vertices; }
         
         // Gets all faces in this mesh
-        const common::Faces& getConnectivity() const { return m_faces; }
+        const Faces& getConnectivity() const { return m_faces; }
         
         // Returns a vertex at the specified index
-        const common::Vertex& getVertex(unsigned vertexIndex) const;
+        const Vertex& getVertex(const unsigned vertexIndex) const;
 
         // Returns a face at the specified index 
-        const common::Face& getFace(unsigned faceIndex) const;
+        const Face& getFace(const unsigned faceIndex) const;
         
         // Gets the bounds of the mesh
         const common::Bounds& getBounds() const;
         
         // Gets the centroid of the mesh
-        common::Vertex getCentroid() const;
+        Vertex getCentroid() const;
         
-        // Gets vertex data in the form of a pointer to a contiguous memory
-        void getVertexData(size_t& numBytes, common::Vertex*& vertexData) const;
+        // Gets vertices 
+        VertexData getVertexData() const;
         
         // Gets connectivity data in the form a pointer to a contiguous memory 
         void getConnectivityData(size_t& numBytes, unsigned*& connData) const;
@@ -78,19 +86,29 @@ class Mesh : public MeshViewerObject {
         // Writes this mesh to a STL file
         void writeToSTL(const std::string& stlFile) const;
 
+        // Gets normals
+        NormalData getNormals(const common::NormalLocation) const;
+
     private:
         unsigned m_numVertices;
         unsigned m_numFaces;
-        common::Vertices m_vertices;
-        common::Faces m_faces;
+        Vertices m_vertices;
+        Faces m_faces;
         std::optional<common::Bounds> m_bounds;
         std::optional<Octree> m_octree;
         std::unique_ptr<unsigned> m_connectivity;
         size_t m_connectivityDataSize;
+        std::optional<NormalData> m_vertexNormals;
+        std::optional<NormalData> m_faceNormals;
+        std::optional<VertexData> m_vertexData;
 
     private:
         void buildConnectivityData();
         void buildBounds();
+        void generateVertexNormals();
+        void generateFaceNormals();
+        void buildVertexData();
+        
 };
 
 }

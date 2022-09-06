@@ -9,6 +9,7 @@ target_include_directories(
     ../mesh 
     ../common
     ${glIncDirs}
+    ${mathIncDir}
 )
 
 enable_testing()

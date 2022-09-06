@@ -22,14 +22,6 @@ class MeshFixture : public ::testing::Test {
 };
 
 
-TEST(Mesh, TestAddVertex) {
-    Mesh m;
-    m.initialize(10, 10);
-    m.addVertex(1,2,3);
-    m.addVertex(2,3,4);
-    m.addFace({1,2,3});
-}
-
 //TODO: Finish implementation for removing duplicate vertices
 TEST_F(MeshFixture, RemoveDuplicateVertices) {
     unique_ptr<Mesh> spMesh;
@@ -47,7 +39,7 @@ TEST(Mesh, TestCentroid) {
     m.initialize(2, 1);
     m.addVertex(-5, 0, 0);
     m.addVertex(+5, 0, 0);
-    common::Vertex centroid = m.getCentroid();
+    Vertex centroid = m.getCentroid();
     ASSERT_FLOAT_EQ(centroid.x, 0.0) << "Centroid X coordinate is incorrect" << endl;
     ASSERT_FLOAT_EQ(centroid.y, 0.0) << "Centroid Y coordinate is incorrect" << endl;
     ASSERT_FLOAT_EQ(centroid.z, 0.0) << "Centroid Z coordinate is incorrect" << endl;
@@ -109,4 +101,40 @@ TEST_F(MeshFixture, WriteSTL) {
     spMesh->writeToSTL(outputPath);
     auto outputFs = filesystem::file_size(outputPath);
     ASSERT_TRUE(inputFs == outputFs) << "Output STL was supposed to be identical to the input";
+}
+
+
+TEST(Mesh, Normals) {
+    Mesh m;
+    m.initialize(4, 2);
+    m.addVertex(5, 0, 0);
+    m.addVertex(5, 5, 0);
+    m.addVertex(-5, 5, 0);
+    m.addVertex(5, 5, -5);
+    m.addFace({0,1,2});
+    m.addFace({0,1,3});
+
+    auto vnormals = m.getNormals(common::NormalLocation::Vertex);
+    ASSERT_EQ(vnormals.getSize(), 4);
+    ASSERT_EQ(vnormals.getDataSize(), 4 * 12);
+    ASSERT_NE(vnormals.getData(), nullptr);
+    // Vertex 3 has a normal of +z
+    math3d::Vector<float, 3> v{vnormals.getData()[6], vnormals.getData()[7], vnormals.getData()[8]};
+    ASSERT_FLOAT_EQ(v.dot(math3d::Vector<float,3>{0,0,1}), 1);
+    // Vertex 3 has a normal of -x
+    math3d::Vector<float, 3> v1{vnormals.getData()[9], vnormals.getData()[10], vnormals.getData()[11]};
+    ASSERT_FLOAT_EQ(v1.dot(math3d::Vector<float,3>{-1,0,0}), 1);
+    
+    // Face 0 has a normal of +z and 1 has a normal of -x 
+    auto fnormals = m.getNormals(common::NormalLocation::Face);
+    ASSERT_EQ(fnormals.getSize(), 2);
+    ASSERT_EQ(fnormals.getDataSize(), 2 * 12);
+    ASSERT_NE(fnormals.getData(), nullptr);
+    ASSERT_FLOAT_EQ((
+                math3d::Vector<float,3>{fnormals.getData()[0], fnormals.getData()[1], fnormals.getData()[2]}.dot(
+                        math3d::Vector<float,3>{0,0,1})), 1);
+    ASSERT_FLOAT_EQ((
+                math3d::Vector<float,3>{fnormals.getData()[3], fnormals.getData()[4], fnormals.getData()[5]}.dot(
+                        math3d::Vector<float,3>{-1,0,0})), 1);
+
 }
