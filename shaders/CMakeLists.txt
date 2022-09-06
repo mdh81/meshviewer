@@ -17,10 +17,9 @@ file(
     ${CMAKE_CURRENT_SOURCE_DIR}/*.shader
 )
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders/)
 add_custom_target(
     shadercopy ALL
-    ${CMAKE_COMMAND} -E copy ${shaders} ${CMAKE_CURRENT_BINARY_DIR}/shaders/
+    ${CMAKE_COMMAND} -E copy ${shaders} ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
 # Install shaders

@@ -6,8 +6,17 @@ add_executable(
     octree_test
     octree_test.cpp)
 
+add_executable(
+    face_test
+    face_test.cpp)
+
+add_executable(
+    vertex_test
+    vertex_test.cpp)
+
+
 # Convenience variables
-set(allTests mesh_test octree_test)
+set(allTests mesh_test octree_test face_test vertex_test)
 
 # All tests include headers from the source directory
 # mesh_test depends on glm, so add glIncDirs

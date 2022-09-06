@@ -26,14 +26,17 @@ Mesh::Mesh(const Mesh& another) {
 }
 
 void Mesh::addVertex(const float x, const float y, const float z) {
-    m_vertices.push_back({x, y, z});
+    m_vertices.emplace_back(x, y, z);
 }
 
 void Mesh::addFace(const initializer_list<unsigned>& vertexIds) {
     m_faces.emplace_back(vertexIds);
+    for (auto vertexId : vertexIds) {
+        m_vertices.at(vertexId).addFace(m_faces.size()-1);
+    }
 }
 
-const Vertex& Mesh::getVertex(unsigned vertexIndex) const {
+const Vertex& Mesh::getVertex(const unsigned vertexIndex) const {
     if (vertexIndex >= m_numVertices)
         throw std::runtime_error("Vertex index invalid");
     return m_vertices.at(vertexIndex);
@@ -41,7 +44,7 @@ const Vertex& Mesh::getVertex(unsigned vertexIndex) const {
 
 const Face& Mesh::getFace(unsigned faceIndex) const {
     if (faceIndex >= m_numFaces)
-        throw std::runtime_error("Vertex index invalid");
+        throw std::runtime_error("Face index invalid");
     return m_faces.at(faceIndex);
 }
 
@@ -83,9 +86,16 @@ Vertex Mesh::getCentroid() const {
                     (this->m_bounds->zmax + this->m_bounds->zmin) * 0.5f };
 }
 
-void Mesh::getVertexData(size_t& numBytes, common::Vertex*& pVertexData) const {
-    numBytes = m_numVertices * sizeof(common::Vertex);
-    pVertexData = const_cast<common::Vertex*>(m_vertices.data());
+void Mesh::buildVertexData() {
+    m_vertexData = VertexData(m_numVertices);
+    for (auto& v : m_vertices) {
+        m_vertexData->append({v.x, v.y, v.z}); 
+    }
+}
+
+Mesh::VertexData Mesh::getVertexData() const {
+    if (!m_vertexData) const_cast<Mesh*>(this)->buildVertexData();
+    return m_vertexData.value();
 }
 
 void Mesh::buildConnectivityData() {
@@ -115,7 +125,7 @@ std::unique_ptr<Mesh> Mesh::transform(glm::mat4 const& transformMatrix) const {
     std::unique_ptr<Mesh> transformedMesh(new Mesh(*this));
     auto& vertices = transformedMesh->getVertices();
     for (auto& vertex : vertices) {
-        common::Vertex& v = const_cast<Vertex&>(vertex);
+        Vertex& v = const_cast<Vertex&>(vertex);
         glm::vec4 transformedVertex = transformMatrix * glm::vec4(vertex.x, vertex.y, vertex.z, 1.0f);
         v.x = transformedVertex.x;
         v.y = transformedVertex.y;
@@ -134,6 +144,7 @@ void Mesh::writeToSTL(std::string const& fileName) const {
     unsigned numTris = static_cast<unsigned>(m_faces.size());
     ofs.write(reinterpret_cast<char*>(&numTris), 4); 
     unsigned short dummy = 0;
+    // TODO: Replace with mathlib
     for (auto& face : m_faces) {
         if (face.size() != 3) throw "Cannot write to STL. Mesh is not triangulated";
         auto& A = m_vertices.at(face.at(0));
@@ -151,5 +162,35 @@ void Mesh::writeToSTL(std::string const& fileName) const {
     } 
     ofs.close();
 }
+
+void Mesh::generateVertexNormals() {
+    if (m_vertexNormals) return;
+    m_vertexNormals = NormalData(m_numVertices);
+    for (size_t i = 0; i < m_numVertices; ++i) {
+        auto normal = m_vertices.at(i).getNormal(*this);
+        m_vertexNormals->append({normal[0], normal[1], normal[2]}); 
+    }
+}
+
+void Mesh::generateFaceNormals() {
+    if (m_faceNormals) return;
+    m_faceNormals = NormalData(m_numFaces);
+    for (size_t i = 0; i < m_numFaces; ++i) {
+        auto normal = m_faces.at(i).getNormal(*this);
+        m_faceNormals->append({normal[0], normal[1], normal[2]}); 
+    }
+}
+
+Mesh::NormalData Mesh::getNormals(const NormalLocation location) const {
+    if (location == NormalLocation::Vertex) {
+        if (!m_vertexNormals)  
+            const_cast<Mesh*>(this)->generateVertexNormals();
+        return m_vertexNormals.value();
+    } else {
+        if (!m_faceNormals)
+            const_cast<Mesh*>(this)->generateFaceNormals();
+        return m_faceNormals.value();
+    }
+} 
 
 }

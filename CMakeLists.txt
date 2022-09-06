@@ -24,7 +24,15 @@ set (
   /opt/homebrew/lib
 )
 
+# TODO: Make this downloadable from github
+set (
+  mathIncDir
+  /usr/local/include
+)
+
 set(glLibs GLEW glfw)
+# TODO: Figure out how to disable warnings
+set(CXXFLAGS, "-Wno-deprecated-volatile")
 
 add_subdirectory(events)
 add_subdirectory(mesh)

@@ -88,7 +88,7 @@ void Camera::buildViewTransform() {
     // Get the centroid of the mesh 
     // Translate the mesh so it's at world origin
     auto translateToOrigin = glm::mat4(1.0f);
-    common::Vertex centroid = m_mesh.getCentroid();
+    Vertex centroid = m_mesh.getCentroid();
     translateToOrigin[3] = glm::vec4(-centroid.x, -centroid.y, -centroid.z, 1.f);
 
     // Rotate about orbit axis by the negative of the orbit angle 

@@ -9,6 +9,7 @@ target_include_directories(
     viewer 
     PUBLIC
     ${glIncDirs}
+    ${mathIncDir}
     ../common
     ../mesh
     ../events
