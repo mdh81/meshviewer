@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/meshviewerapp",
-            "args": ["${workspaceFolder}/build/tests/testfiles/suzanne_subdivided.stl"],
+            "args": ["${workspaceFolder}/build/testfiles/suzanne_subdivided.stl"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/",
             "environment": [],
