@@ -244,7 +244,7 @@ void Viewer::displayMesh(const Mesh& mesh) {
         camera.apply(shaderProgram);
         
 		// Draw
-        glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
+        glPolygonMode(GL_FRONT, GL_TRIANGLES);
 		glDrawElements(GL_TRIANGLES,
                        mesh.getNumberOfVertices(), // Number of elements
                        GL_UNSIGNED_INT,            // Type of element buffer data

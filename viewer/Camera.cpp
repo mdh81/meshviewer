@@ -112,7 +112,7 @@ void Camera::buildViewTransform() {
     // Use negative angle because we want to simulate a positive rotation of the camera,
     // which means the object has to rotate in the opposite direction
     auto orbit = glm::mat4(1.0f);
-    if (m_orbitOn) {
+    if (m_orbitAxis) {
         switch (m_orbitAxis.value()) {
             case Axis::X:
                 orbit[1] = glm::vec4(0, glm::cos(glm::radians(-m_orbitAngle)), glm::sin(glm::radians(-m_orbitAngle)), 0); 
