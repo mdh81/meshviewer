@@ -27,7 +27,6 @@ class Vertex : public common::Point3D {
         }
 
         void addFace(const unsigned faceId) {
-            std::cout << "Adding face " << faceId << std::endl;
             m_faces.push_back(faceId);
         }
 

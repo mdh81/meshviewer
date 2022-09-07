@@ -72,14 +72,14 @@ GLuint Viewer::createShaderProgram() {
     string compilerOut;
     auto status = meshviewer::ShaderLoader().loadVertexShader("./shaders/vertex.shader", compilerOut);
     if (!get<0>(status)) {
-        throw compilerOut;
+        throw std::runtime_error(compilerOut.data());
     }
     GLuint vertexShaderId = get<1>(status);
 
     // Fragment Shader
     status = meshviewer::ShaderLoader().loadFragmentShader("./shaders/fragment.shader", compilerOut);
     if (!get<0>(status)) {
-        throw compilerOut;
+        throw std::runtime_error(compilerOut.data());
     }
     GLuint fragmentShaderId = get<1>(status);
 
@@ -87,7 +87,7 @@ GLuint Viewer::createShaderProgram() {
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShaderId);
     glAttachShader(shaderProgram, fragmentShaderId); 
-    glBindFragDataLocation(shaderProgram, 0, "colorFS");
+    glBindFragDataLocation(shaderProgram, 0, "fragmentColor");
 
     // Link program
     glLinkProgram(shaderProgram);
@@ -115,24 +115,46 @@ void Viewer::setVertexData(const Mesh& mesh, const GLuint shaderProgram) {
     glGenVertexArrays(1, &vaObj);
     glBindVertexArray(vaObj);
 
-    // Create vertex buffer object
-    GLuint vbObj;
-    glGenBuffers(1, &vbObj);
+    // Create vertex buffer object for storing vertex data
+    GLuint vbObjVerts;
+    glGenBuffers(1, &vbObjVerts);
     // Make the vertex buffer object the current buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vbObj);
+    glBindBuffer(GL_ARRAY_BUFFER, vbObjVerts);
 
     // Upload vertex data to the vertex buffer object
     auto const vertexData = mesh.getVertexData();
     glBufferData(GL_ARRAY_BUFFER, vertexData.getDataSize(), vertexData.getData(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexPosition");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
                           GL_FLOAT,             //data type 
                           GL_FALSE,             //data normalization status
                           3*sizeof(float),      //stride--each vertex has 3 float entries 
+                          0                     //offset into the array
+                         );
+    
+    // Create VBO for normals
+    GLuint vbObjNormals;
+    glGenBuffers(1, &vbObjNormals);
+    
+    // Make the normals vertex buffer object the current buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vbObjNormals);
+    
+    // Upload normals to the vertex buffer object
+    auto const normalData = mesh.getNormals(common::NormalLocation::Vertex); 
+    glBufferData(GL_ARRAY_BUFFER, normalData.getDataSize(), normalData.getData(), GL_STATIC_DRAW);
+
+    // Define layout of normal data
+    GLint normalAttrib = glGetAttribLocation(shaderProgram, "vertexNormal");
+    glEnableVertexAttribArray(normalAttrib);
+    glVertexAttribPointer(normalAttrib,         //attrib identifier
+                          3,                    //number of values for this attribute
+                          GL_FLOAT,             //data type 
+                          GL_FALSE,             //data normalization status
+                          3*sizeof(float),      //stride--each normal has 3 float entries 
                           0                     //offset into the array
                          );
 }
@@ -157,14 +179,23 @@ void Viewer::setColors(const GLuint shaderProgram) {
 	// Dark grey background
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     
-    // Set wireframe color for the mesh 
-    GLint colorId = glGetUniformLocation(shaderProgram, "wireframeColor");
+    // Set color for the mesh 
+    GLint colorId = glGetUniformLocation(shaderProgram, "reflectionCoefficient");
     glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.76f, 0.61f, 0.2f)));
+
+    // Set light position in view coordinates
+    // The default light is a simple headlight that's positioned at the
+    // camera's location. Camera in GL is considered to be global origin 
+    GLint lightPosId = glGetUniformLocation(shaderProgram, "lightPosition");
+    glUniform3fv(lightPosId, 1, glm::value_ptr(glm::vec3(0.f, 0.f, 0.f)));
+
+    // Set light intensity
+    GLint lightIntensityId = glGetUniformLocation(shaderProgram, "lightIntensity");
+    glUniform3fv(lightIntensityId, 1, glm::value_ptr(glm::vec3(1.f, 1.f, 1.f)));
 }
 
 void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
     Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight}); 
-    //camera.setOrbitOn(common::Axis::Y);
 }
 
 void Viewer::setRenderMode(const RenderMode rm) {
@@ -202,16 +233,18 @@ void Viewer::displayMesh(const Mesh& mesh) {
     Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight});
     camera.debugOn();
 
+    glEnable(GL_DEPTH_TEST);
+
     // Rendering loop
 	do {
 		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update camera
         camera.apply(shaderProgram);
-
+        
 		// Draw
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
 		glDrawElements(GL_TRIANGLES,
                        mesh.getNumberOfVertices(), // Number of elements
                        GL_UNSIGNED_INT,            // Type of element buffer data
