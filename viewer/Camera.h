@@ -68,6 +68,10 @@ class Camera : public MeshViewerObject {
         std::unique_ptr<std::thread> m_timerThread;
         common::Bounds m_viewVolume;
 
+    public:
+        glm::mat3 dbg_normalMatrix;
+        glm::mat4 dbg_modelViewMatrix;
+
 };
 
 inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {

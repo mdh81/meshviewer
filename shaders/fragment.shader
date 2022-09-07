@@ -1,7 +1,6 @@
 #version 410 core
-in vec3 colorVS;
-out vec4 colorFS;
-void main()
-{
-    colorFS = vec4(colorVS.r, colorVS.g, colorVS.b, 1.0);
+in vec3 vertexColor;
+out vec4 fragmentColor;
+void main() {
+    fragmentColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0);
 }

@@ -44,9 +44,7 @@ Camera::Camera(const Mesh& m, const WindowDimensions& winDim, const ProjectionTy
 }
 
 void Camera::apply(const GLuint shaderProgram) {
-    // Get the composite transform matrix in the shader
-    GLuint matrixId = glGetUniformLocation(shaderProgram, "transformMatrix");
-
+    
     // Assemble model, view and projection matrices
     buildModelTransform();
 
@@ -54,16 +52,35 @@ void Camera::apply(const GLuint shaderProgram) {
 
     buildProjectionTransform(); 
 
-    // Combined Transform
+    // Compute the combined transform that will transform a vertex from
+    // world coordinates to normalized view coordinates
     // The matrix multiplication order is the reverse order of actual transformations
     // Object -> Global, Global -> Camera, Camera -> Homogenous Coordinates 
     // TODO: Setup an octave session and observe the conversion to homogenous coordinates
     glm::mat4 compositeTransform = m_projectionTransform * m_viewTransform * m_modelTransform;
+    
+    // Get the composite transform matrix id in the shader
+    GLuint mvpId = glGetUniformLocation(shaderProgram, "modelViewProjectionTransform");
 
-    glUniformMatrix4fv(matrixId,
-                       1 /*num matrices*/,
-                       GL_FALSE /*transpose*/,
+    // Set model view projection projection
+    glUniformMatrix4fv(mvpId,
+                       1,        // num matrices,
+                       GL_FALSE, // transpose
                        &compositeTransform[0][0]);
+
+    // Set model view
+    GLuint mvId = glGetUniformLocation(shaderProgram, "modelViewTransform");
+    glm::mat4 modelViewTransform = m_viewTransform * m_modelTransform;
+    glUniformMatrix4fv(mvId, 
+                       1, 
+                       GL_FALSE, 
+                       &modelViewTransform[0][0]);
+
+    glm::mat3 normalMatrix = glm::mat3(modelViewTransform[0], modelViewTransform[1], modelViewTransform[2]);
+    
+    dbg_normalMatrix = normalMatrix;
+    dbg_modelViewMatrix = modelViewTransform;
+
 }
 
 Camera::~Camera() {
