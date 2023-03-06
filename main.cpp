@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     } 
     unique_ptr<Mesh> mesh;
-    STLReader(argv[1]).getOutput(mesh); 
+    STLReader(argv[1], false).getOutput(mesh);
     Viewer::getInstance().displayMesh(*mesh.get());
     return 0;
 }

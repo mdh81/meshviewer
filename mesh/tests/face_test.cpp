@@ -39,3 +39,16 @@ TEST(Face, Normals) {
     ASSERT_FLOAT_EQ(normal2[2],  0); 
     
 }
+
+TEST(Face, Centroid) {
+    Mesh m;
+    m.initialize(2, 1);
+    m.addVertex(0, 0, 0);
+    m.addVertex(5, 0, 0);
+    m.addFace({0,1});
+    auto c = m.getFace(0).getCentroid(m);
+    ASSERT_FLOAT_EQ(2.5f, c.x);
+    ASSERT_FLOAT_EQ(0.f, c.y);
+    ASSERT_FLOAT_EQ(0.f, c.z);
+}
+

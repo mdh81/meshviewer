@@ -8,7 +8,6 @@ target_include_directories(
     PUBLIC
     ../mesh 
     ../common
-    ${glIncDirs}
     ${mathIncDir}
 )
 

@@ -32,6 +32,34 @@ Octree::Octree(Mesh& mesh, const unsigned maxVerticesInOctant) :
     m_root.subdivide();
 }
 
+void Octree::getNeighboringVertices(const unsigned vertexIndex, common::VertexIndices& neighbors) {
+    
+    // Find the leaf octant containing the vertex and copy all
+    // vertices in that leaf octant into the result
+    Octree::Octant::LeafOctants leafOctants;
+    getLeafOctants(m_root, leafOctants); 
+    neighbors.clear();
+    neighbors.reserve(leafOctants.size() * m_maxVerticesInOctant);
+    for (auto leafOctant : leafOctants) {
+        if (leafOctant.get().hasVertex(vertexIndex)) {
+            copy(leafOctant.get().m_vertices.begin(), leafOctant.get().m_vertices.end(), std::back_inserter(neighbors));
+            break;
+        }
+    }
+}
+
+
+bool Octree::Octant::hasVertex(const unsigned vertexIndex) const {
+    const Vertex& vertex = getMesh().getVertex(vertexIndex); 
+    return 
+        Util::isGreaterOrEqual(vertex.x, m_bounds.xmin) && 
+        Util::isLessOrEqual(vertex.x, m_bounds.xmax) &&
+        Util::isGreaterOrEqual(vertex.y, m_bounds.ymin) && 
+        Util::isLessOrEqual(vertex.y, m_bounds.ymax) &&
+        Util::isGreaterOrEqual(vertex.z, m_bounds.zmin) && 
+        Util::isLessOrEqual(vertex.z, m_bounds.zmax);
+}
+
 Octree::Octant::LeafOctants Octree::getLeafOctants() {
     Octree::Octant::LeafOctants leaves;
     getLeafOctants(m_root, leaves);
@@ -77,6 +105,7 @@ Octree::Octant::Octant(Octant* parent, const Bounds& bounds, unsigned level) :
 }
 
 void Octree::Octant::populate(const VertexIndices& parentVertices) {
+    
     // Allocate enough memory for maximum possible vertex list
     m_vertices.reserve(parentVertices.size());
 
@@ -84,26 +113,21 @@ void Octree::Octant::populate(const VertexIndices& parentVertices) {
     // NOTE: uses back_inserter to be able to push_back into m_vertices
     copy_if(parentVertices.begin(), parentVertices.end(), 
             std::back_inserter(m_vertices), [&parentVertices, this](auto vertIndex) {
-                auto& vertex = getMesh().getVertex(parentVertices.at(vertIndex));
-
+                
                 // Skip vertices that were previously added to other octants
                 if (sm_octree->m_levelToVerticesMap[m_level].find(vertIndex) != 
                     sm_octree->m_levelToVerticesMap[m_level].end()) {
-                        if (sm_octree->isDebugOn()) cerr << "Skipping vertex " << vertIndex << " that was added to level " << m_level << " already" << endl;
+                        if (sm_octree->isDebugOn()) 
+                            cerr << "Skipping vertex " << vertIndex << " that was added to level " << m_level << " already" << endl;
                         return false;
                 }
                 
                 // Check vertex against octant bounds
-                bool vertexInOctant = 
-                    Util::isGreaterOrEqual(vertex.x, m_bounds.xmin) && 
-                    Util::isLessOrEqual(vertex.x, m_bounds.xmax) &&
-                    Util::isGreaterOrEqual(vertex.y, m_bounds.ymin) && 
-                    Util::isLessOrEqual(vertex.y, m_bounds.ymax) &&
-                    Util::isGreaterOrEqual(vertex.z, m_bounds.zmin) && 
-                    Util::isLessOrEqual(vertex.z, m_bounds.zmax);
+                bool vertexInOctant = hasVertex(vertIndex); 
                 
                 // Flag vertices that are within any octant in the current tree level 
                 if (vertexInOctant) {
+
                     sm_octree->m_levelToVerticesMap[m_level].insert(vertIndex);
                     
                     if (sm_octree->isDebugOn())

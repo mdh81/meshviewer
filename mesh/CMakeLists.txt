@@ -9,9 +9,9 @@ add_library(
 target_include_directories(
     mesh 
     PUBLIC
-    ${glIncDirs}
     ${mathIncDir}
     ../common
+    ../objects
 )
 
 enable_testing()

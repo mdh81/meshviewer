@@ -1,19 +1,17 @@
 add_library(
     viewer 
-    Camera.cpp
-    CameraFactory.cpp
     Viewer.cpp
 )
 
 target_include_directories(
     viewer 
     PUBLIC
-    ${glIncDirs}
     ${mathIncDir}
     ../common
     ../mesh
     ../events
     ../shaders
+    ../objects
 )
 
 enable_testing()

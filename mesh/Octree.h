@@ -17,6 +17,7 @@ class Octree : public MeshViewerObject {
         Octree(Mesh& mesh, const unsigned maxVerticesInOctant = 100); 
         Mesh& getMesh() const { return m_mesh; }
         unsigned char getDepth() const { return m_depth; }
+        void getNeighboringVertices(const unsigned vertexIndex, common::VertexIndices& neighbors); 
 
     private:
         class Octant {
@@ -73,12 +74,18 @@ class Octree : public MeshViewerObject {
                 return sm_octree->getMesh();
             }
 
+            bool hasVertex(const unsigned vertexIndex) const;
+
             // Make the outer class a friend so, it can access data members of the inner class
             // The inner class members will be inaccessible to anyone using the outer class to
             // ensure the inner class' implementation details will not be relied upon by any
             // external code
             friend Octree;
+
+            friend std::ostream& operator << (std::ostream& os, Octree::Octant& octant);
         };
+
+        friend std::ostream& operator << (std::ostream& os, Octree::Octant& octant);
 
     public:
         // Access to inner class data members. This is mostly for regression tests. 
@@ -100,6 +107,15 @@ class Octree : public MeshViewerObject {
         LevelToVerticesMap m_levelToVerticesMap; 
         unsigned char m_depth;
 };
+
+
+inline std::ostream& operator << (std::ostream& os, Octree::Octant& octant) {
+    os << std::endl;
+    os << "Level: " << octant.m_level << std::endl;
+    os << "Num Vertices: " << octant.m_vertices.size() << std::endl; 
+    os << "Bounds " << octant.m_bounds << std::endl << std::endl;
+    return os;
+}
 
 }
 

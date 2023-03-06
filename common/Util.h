@@ -22,7 +22,7 @@ class Util {
             return (a > b || fabs(a-b) < sm_tolerance);
         }
         static constexpr float sm_tolerance = 1e-6;
-        
+
         template<typename T>
         static void printMemory(const T* pData, const size_t numBytes, std::ostream& os) {
             os << "Printing " << numBytes << " bytes of memory " << (size_t) pData << std::endl; 
@@ -50,16 +50,6 @@ class Util {
                  << setw(10) << endl;
             cout << setw(10) << matrix[0][3] << setw(10) << matrix[1][3] << setw(10) << matrix[2][3] << setw(10) << matrix[3][3]
                  << endl;
-        }
-
-        static void printMatrix(glm::mat3& matrix) {
-            using namespace std;
-            cout << setw(10) << matrix[0][0] << setw(10) << matrix[1][0] << setw(10) << matrix[2][0] 
-                 << setw(10) << endl;
-            cout << setw(10) << matrix[0][1] << setw(10) << matrix[1][1] << setw(10) << matrix[2][1] 
-                 << setw(10) << endl;
-            cout << setw(10) << matrix[0][2] << setw(10) << matrix[1][2] << setw(10) << matrix[2][2] 
-                 << setw(10) << endl;
         }
 
         static void writeBounds(const std::string& fileName, const common::Bounds& bounds) {

@@ -26,7 +26,6 @@ foreach(test ${allTests})
         PUBLIC
         ../
         ../../readers
-        ${glIncDirs}
     )
 endforeach(test)
 

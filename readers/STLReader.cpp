@@ -1,4 +1,4 @@
-#include "STLReader.h"
+#include "STLReader.h"    
 #include <fstream>
 using namespace std;
 
@@ -25,7 +25,7 @@ void STLReader::getOutput(std::unique_ptr<Mesh>& mesh) {
 void STLReader::readBinary(ifstream& ifs, std::unique_ptr<Mesh>& mesh) {
     if (ifs.gcount() != 80) {
         throw std::runtime_error("File stream in unexpected state");
-    } 
+    }
     // Read 4 bytes following the 80 byte header (read in the caller)
     unsigned numTris;
     ifs.read(reinterpret_cast<char*>(&numTris), 4);
@@ -55,6 +55,9 @@ void STLReader::readBinary(ifstream& ifs, std::unique_ptr<Mesh>& mesh) {
         vId += 3;
     }
     ifs.close();
+
+    if (m_clean)
+        mesh->removeDuplicateVertices();
 }
 
 }

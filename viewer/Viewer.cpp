@@ -6,6 +6,7 @@
 #include "CameraFactory.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
+#include "Glyph.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -26,13 +27,13 @@ Viewer& Viewer::getInstance() {
 Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     : m_windowWidth(windowWidth)
     , m_windowHeight(windowHeight) {
-    
+
     // Initialize GLFW
     if (!glfwInit())
         throw std::runtime_error("Failed to initialize GLFW");
-    
+
     // Create GLFW window
-    glfwWindowHint(GLFW_SAMPLES, 4); 
+    glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -44,40 +45,40 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     }
     glfwMakeContextCurrent(m_window);
 
-    // Initialize GLEW 
+    // Initialize GLEW
     glewExperimental = true;
     if (glewInit() != GLEW_OK) {
         throw std::runtime_error("Unable to initialize GLEW");
-    } 
+    }
 
     // Register event handlers
     EventHandler().registerCallback(
-        Event(GLFW_KEY_W), 
-        CallbackFactory::getInstance().registerCallback 
+        Event(GLFW_KEY_W),
+        CallbackFactory::getInstance().registerCallback
         (*this, &Viewer::setRenderMode, RenderMode::Wireframe));
 
     EventHandler().registerCallback(
-        Event(GLFW_KEY_S), 
-        CallbackFactory::getInstance().registerCallback 
+        Event(GLFW_KEY_S),
+        CallbackFactory::getInstance().registerCallback
         (*this, &Viewer::setRenderMode, RenderMode::Shaded));
 
     // Start handling events
-    EventHandler().start(m_window); 
+    EventHandler().start(m_window);
 }
 
 // TODO: Designate a directory to load shaders from
 GLuint Viewer::createShaderProgram() {
-    
+
     // Vertex Shader
     string compilerOut;
-    auto status = meshviewer::ShaderLoader().loadVertexShader("./shaders/vertex.shader", compilerOut);
+    auto status = meshviewer::ShaderLoader().loadVertexShader("./shaders/MeshVertex.shader", compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }
     GLuint vertexShaderId = get<1>(status);
 
     // Fragment Shader
-    status = meshviewer::ShaderLoader().loadFragmentShader("./shaders/fragment.shader", compilerOut);
+    status = meshviewer::ShaderLoader().loadFragmentShader("./shaders/Fragment.shader", compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }
@@ -86,7 +87,7 @@ GLuint Viewer::createShaderProgram() {
     // Create shader program
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShaderId);
-    glAttachShader(shaderProgram, fragmentShaderId); 
+    glAttachShader(shaderProgram, fragmentShaderId);
     glBindFragDataLocation(shaderProgram, 0, "fragmentColor");
 
     // Link program
@@ -101,7 +102,7 @@ GLuint Viewer::createShaderProgram() {
 	if ( infoLogLength > 0 ){
 		std::unique_ptr<char> pProgramErrorMessage {new char[infoLogLength+1]};
 		glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, pProgramErrorMessage.get());
-		cerr << pProgramErrorMessage.get();
+		m_outputStream << pProgramErrorMessage.get();
         throw std::runtime_error("Failed to load shaders" + std::string(pProgramErrorMessage.get()));
 	}
 
@@ -130,21 +131,21 @@ void Viewer::setVertexData(const Mesh& mesh, const GLuint shaderProgram) {
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
-                          GL_FLOAT,             //data type 
+                          GL_FLOAT,             //data type
                           GL_FALSE,             //data normalization status
-                          3*sizeof(float),      //stride--each vertex has 3 float entries 
+                          3*sizeof(float),      //stride--each vertex has 3 float entries
                           0                     //offset into the array
                          );
-    
+
     // Create VBO for normals
     GLuint vbObjNormals;
     glGenBuffers(1, &vbObjNormals);
-    
+
     // Make the normals vertex buffer object the current buffer
     glBindBuffer(GL_ARRAY_BUFFER, vbObjNormals);
-    
+
     // Upload normals to the vertex buffer object
-    auto const normalData = mesh.getNormals(common::NormalLocation::Vertex); 
+    auto const normalData = mesh.getNormals(common::NormalLocation::Vertex);
     glBufferData(GL_ARRAY_BUFFER, normalData.getDataSize(), normalData.getData(), GL_STATIC_DRAW);
 
     // Define layout of normal data
@@ -152,86 +153,64 @@ void Viewer::setVertexData(const Mesh& mesh, const GLuint shaderProgram) {
     glEnableVertexAttribArray(normalAttrib);
     glVertexAttribPointer(normalAttrib,         //attrib identifier
                           3,                    //number of values for this attribute
-                          GL_FLOAT,             //data type 
+                          GL_FLOAT,             //data type
                           GL_FALSE,             //data normalization status
-                          3*sizeof(float),      //stride--each normal has 3 float entries 
+                          3*sizeof(float),      //stride--each normal has 3 float entries
                           0                     //offset into the array
                          );
 }
 
 void Viewer::setElementData(const Mesh& mesh) {
-    
+
     // Create element buffer object
     GLuint ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    
+
     // Upload connectivity data to element buffer object
     size_t numBytes;
     GLuint* faceData;
     mesh.getConnectivityData(numBytes, faceData);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numBytes, faceData, GL_STATIC_DRAW);
-    
+
 }
 
-void Viewer::setColors(const GLuint shaderProgram) {
-
+void Viewer::setColors() {
 	// Dark grey background
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    
-    // Set color for the mesh 
-    GLint colorId = glGetUniformLocation(shaderProgram, "reflectionCoefficient");
-    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.76f, 0.61f, 0.2f)));
 
-    // Set light position in view coordinates
-    // The default light is a simple headlight that's positioned at the
-    // camera's location. Camera in GL is considered to be global origin 
-    GLint lightPosId = glGetUniformLocation(shaderProgram, "lightPosition");
-    glUniform3fv(lightPosId, 1, glm::value_ptr(glm::vec3(0.f, 0.f, 0.f)));
-
-    // Set light intensity
-    GLint lightIntensityId = glGetUniformLocation(shaderProgram, "lightIntensity");
-    glUniform3fv(lightIntensityId, 1, glm::value_ptr(glm::vec3(1.f, 1.f, 1.f)));
-}
-
-void Viewer::setView(const Mesh& mesh, const GLuint shaderProgram) {
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight}); 
 }
 
 void Viewer::setRenderMode(const RenderMode rm) {
     if (rm == RenderMode::Wireframe) {
-        cerr << "Rendering mesh in wireframe" << endl;
+        m_outputStream << "Rendering mesh in wireframe" << endl;
     } else {
-        cerr << "Rendering mesh shaded" << endl;
+        m_outputStream << "Rendering mesh shaded" << endl;
     }
 }
 
-void Viewer::displayMesh(const Mesh& mesh) {
+void Viewer::displayMesh(Mesh& mesh) {
     // Window must have been created by the time display is called
-    if (!m_window) 
+    if (!m_window)
         throw std::runtime_error("Unexpected program state");
 
     // Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    // Load shaders
-    GLuint shaderProgram = createShaderProgram(); 
-
-    // Define vertices
-    setVertexData(mesh, shaderProgram);
-
-   // Define elements
-   setElementData(mesh); 
-
     // Define colors
-    setColors(shaderProgram);
-    
-    // Setup model, view and projection transformations
-    setView(mesh, shaderProgram);
-    
+    setColors();
+
     // Create camera for the mesh
     Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight});
     camera.debugOn();
+
+    GLint shaderProg;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProg);
+    cout << "Viewer shader program = " << shaderProg << endl;
+
+    // Define normal glyphs
+    //Glyph gl = Glyph(mesh, common::GlyphAssociation::FaceNormal);
+    //gl.build();
 
     glEnable(GL_DEPTH_TEST);
 
@@ -241,16 +220,18 @@ void Viewer::displayMesh(const Mesh& mesh) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update camera
-        camera.apply(shaderProgram);
-        
-		// Draw
-        glPolygonMode(GL_FRONT, GL_TRIANGLES);
-		glDrawElements(GL_TRIANGLES,
-                       mesh.getNumberOfVertices(), // Number of elements
-                       GL_UNSIGNED_INT,            // Type of element buffer data
-                       0                           // Offset into element buffer data       
-                      );
-		
+        camera.apply();
+
+        // TODO: Replace with Scene::render()
+
+        // Draw mesh
+        mesh.render(camera);
+
+        // Draw glyph
+        //gl.render(camera);
+
+        // END TODO
+
         // Swap buffers
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();

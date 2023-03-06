@@ -21,8 +21,6 @@ class MeshFixture : public ::testing::Test {
         filesystem::path m_modelsDir;
 };
 
-
-//TODO: Finish implementation for removing duplicate vertices
 TEST_F(MeshFixture, RemoveDuplicateVertices) {
     unique_ptr<Mesh> spMesh;
     
@@ -31,7 +29,7 @@ TEST_F(MeshFixture, RemoveDuplicateVertices) {
     spMesh->removeDuplicateVertices();
     int numNewVertices = spMesh->getNumberOfVertices();
     ASSERT_NE(numOrigVertices, numNewVertices);
-    ASSERT_EQ(numNewVertices, 12);
+    ASSERT_EQ(numNewVertices, 8);
 }
 
 TEST(Mesh, TestCentroid) {

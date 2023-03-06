@@ -2,6 +2,7 @@
 #define MESH_VIEWER_FACE_H
 
 #include "Vertex.h"
+#include "Types.h"
 #include "3dmath/Vector.h"
 #include "initializer_list"
 
@@ -45,6 +46,10 @@ class Face {
         const unsigned* data() const { 
             return std::data(m_vertexIds);
         } 
+
+        void replaceVertex(unsigned const oldIndex, unsigned const newIndex);
+
+        common::Point3D getCentroid(Mesh const&) const; 
 
     private:
         std::vector<unsigned> m_vertexIds;            
