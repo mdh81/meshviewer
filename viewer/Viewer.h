@@ -13,15 +13,15 @@ class GLFWwindow;
 namespace meshviewer {
 
 // At the moment there is a 1-1 relationship between a Viewer and a mesh. In the
-// future, when we support multiple mesh objects the relationship will be 1-N 
+// future, when we support multiple mesh objects the relationship will be 1-N
 class Viewer : public MeshViewerObject {
     public:
         ~Viewer() = default;
-        void displayMesh(const Mesh& mesh);
+        void displayMesh(Mesh& mesh);
         unsigned getWidth() const { return m_windowWidth; }
         unsigned getHeight() const { return m_windowHeight; }
 
-    // Creation Semantics 
+    // Creation Semantics
     public:
         static Viewer& getInstance();
     private:
@@ -30,7 +30,7 @@ class Viewer : public MeshViewerObject {
         Viewer(Viewer&&) = delete;
         Viewer& operator=(const Viewer&) = delete;
         Viewer& operator=(Viewer&&) = delete;
-    
+
     // Member data
     private:
         unsigned m_windowWidth;
@@ -42,8 +42,7 @@ class Viewer : public MeshViewerObject {
         GLuint createShaderProgram();
         void setVertexData(const Mesh&, const GLuint shaderProgram);
         void setElementData(const Mesh&);
-        void setColors(const GLuint shaderProgram);
-        void setView(const Mesh&, const GLuint shaderProgram);
+        void setColors();
 
     // Member function callbacks registered with the event handler
     // and supporting types

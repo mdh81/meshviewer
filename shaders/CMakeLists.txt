@@ -6,8 +6,12 @@ add_library(
 target_include_directories(
     shaders
     PUBLIC
-    ${glIncDirs}
     ../common
+)
+
+target_link_libraries(
+    shaders
+    GLEW::GLEW
 )
 
 # Copy shaders to build directory

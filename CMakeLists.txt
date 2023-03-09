@@ -3,7 +3,8 @@ project(MeshViewer VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CMAKE_BUILD_TYPE Debug)
+find_package(GLEW REQUIRED)
+find_package(GLFW3 REQUIRED)
 
 # get gtest
 include(FetchContent)
@@ -14,28 +15,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-set(
-  glIncDirs
-  /opt/homebrew/include
-)
+set(CMAKE_BUILD_TYPE Debug)
 
-set (
-  glLibDirs
-  /opt/homebrew/lib
-)
-
-# TODO: Make this downloadable from github
+# TODO: Make this downloadable from github or create a cmake config for it like other packages
 set (
   mathIncDir
   /usr/local/include
 )
 
-set(glLibs GLEW glfw)
-# TODO: Figure out how to disable warnings
-set(CXXFLAGS, "-Wno-deprecated-volatile")
+set(glLibs GLEW::GLEW glfw)
 
 add_subdirectory(events)
 add_subdirectory(mesh)
+add_subdirectory(objects)
 add_subdirectory(common)
 add_subdirectory(readers)
 add_subdirectory(shaders)
@@ -50,40 +42,36 @@ add_executable(
 target_include_directories(
     meshviewerapp
     PUBLIC
-    ${glIncDirs}
     common
     events
     mesh
     readers
-    shaders 
+    shaders
     viewer
-)
-
-target_link_directories(
-    meshviewerapp
-    PUBLIC
-    ${glLibDirs}
 )
 
 target_link_libraries(
     meshviewerapp
     PUBLIC
     ${glLibs}
+    GLEW::GLEW
+    glfw
     common
     events
     mesh
     readers
-    shaders 
+    shaders
     events
     viewer
+    objects
     "-framework OpenGL"
 )
 
 # Copy test files to binary directory
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testfiles/)
 file(
-    GLOB 
-    models 
+    GLOB
+    models
     ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.stl
 )
 add_custom_target(

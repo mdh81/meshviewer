@@ -43,6 +43,7 @@
         "thread": "cpp",
         "iosfwd": "cpp",
         "iostream": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "tuple": "cpp"
     }
 }

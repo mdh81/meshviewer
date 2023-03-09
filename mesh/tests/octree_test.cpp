@@ -22,7 +22,7 @@ class OctreeFixture : public ::testing::Test {
         filesystem::path m_modelsDir;
 };
 
-TEST_F(OctreeFixture, TestRootOctant) {
+TEST_F(OctreeFixture, RootOctant) {
     std::unique_ptr<Mesh> spMesh;
     STLReader reader(OctreeFixture::m_modelsDir/"cube.stl"); 
     reader.getOutput(spMesh);
@@ -49,7 +49,7 @@ TEST_F(OctreeFixture, TestRootOctant) {
     }
 }
 
-TEST_F(OctreeFixture, TestSubdivision) {
+TEST_F(OctreeFixture, Subdivision) {
     std::unique_ptr<Mesh> spMesh;
     STLReader reader(OctreeFixture::m_modelsDir/"cube.stl");
     reader.getOutput(spMesh);
@@ -113,4 +113,29 @@ TEST_F(OctreeFixture, TestSubdivision) {
     // In this case, the tree depth is 2, so ensure that the first
     // level's vertex list is empty
     ASSERT_TRUE(octree1.getVertices(octree1.getRoot()).empty());
+}
+
+
+TEST_F(OctreeFixture, NeighboringVertices) {
+    std::unique_ptr<Mesh> spMesh;
+    STLReader reader(OctreeFixture::m_modelsDir/"cube.stl");
+    reader.getOutput(spMesh);
+    
+    // Create octree with 5 vertices per octant
+    Octree octree(*spMesh.get(), 5);
+
+    // Get all the neighboring vertices to the first vertex
+    VertexIndices neighbors; 
+    octree.getNeighboringVertices(0, neighbors); 
+    
+    // There should be 5 vertices in the octant neighborhood    
+    ASSERT_EQ(neighbors.size(), 5);
+
+    // Create octree with 100 vertices per octant
+    Octree octree1(*spMesh.get(), 100);
+    octree1.getNeighboringVertices(0, neighbors); 
+    // There should be 36 vertices (original number of vertices in the mesh)
+    // in the octant neighborhood since all vertices
+    ASSERT_EQ(neighbors.size(), 36);
+
 }

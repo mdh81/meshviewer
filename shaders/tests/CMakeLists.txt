@@ -17,11 +17,6 @@ endforeach(test)
 
 # All tests link against shaders, common, GL, mesh, events, and gtest
 foreach(test ${allTests})
-    target_link_directories(
-        ${test}
-        PUBLIC
-        ${glLibDirs}
-    )
     target_link_libraries(
         ${test} 
         PUBLIC

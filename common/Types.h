@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cmath>
 #include <memory>
+#include <optional>
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace meshviewer { namespace common {
@@ -13,12 +14,21 @@ namespace meshviewer { namespace common {
 struct Point3D {
     float x;
     float y;
-    float z;
+    float z; 
 };
+// TODO: replace by mathlib's Vector
 using Vector = Point3D;
+using Color = Point3D;
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 
+    return os;
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+    for (auto& item : vec)
+        os << item << ' ';
     return os;
 }
 
@@ -127,16 +137,14 @@ class EnumIterator {
 
 using byte = char;
 
-enum class Axis
-{
+enum class Axis {
     X,
     Y,
     Z,
     Arbitrary
 };
 
-struct WindowDimensions
-{
+struct WindowDimensions {
     unsigned width;
     unsigned height;
 };
@@ -144,6 +152,24 @@ struct WindowDimensions
 enum class NormalLocation {
     Face,
     Vertex
+};
+
+struct GlyphDecorator {
+    enum class Style {
+        Line,
+        Arrow
+    };
+    Style style;
+    Color color;
+    float length;
+    std::optional<float> arrowRadius;
+    std::optional<float> arrowLength;
+};
+
+enum class GlyphAssociation {
+    Undefined,
+    FaceNormal,
+    VertexNormal
 };
 
 } }

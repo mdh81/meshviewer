@@ -2,6 +2,7 @@
 #define MESH_VIEWER_VERTEX_H
 
 #include "Types.h"
+#include "Util.h"
 #include "3dmath/Vector.h"
 #include <vector>
 
@@ -20,6 +21,12 @@ class Vertex : public common::Point3D {
             this->x = x;
             this->y = y;
             this->z = z;
+        }
+
+        bool operator==(const Vertex& another) const {
+            return Util::areFloatsEqual(this->x, another.x) &&
+                   Util::areFloatsEqual(this->y, another.y) &&
+                   Util::areFloatsEqual(this->z, another.z);    
         }
 
         math3d::Vector<float, 3> operator-(const Vertex& another) const {

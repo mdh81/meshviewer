@@ -14,7 +14,7 @@
 namespace meshviewer {
 
 class Mesh;
-    
+
 class Camera : public MeshViewerObject {
 
     public:
@@ -22,16 +22,16 @@ class Camera : public MeshViewerObject {
             Orthographic,
             Perspective
         };
-    
+
     public:
         Camera(const Mesh& m, const common::WindowDimensions& winDim,
                const ProjectionType type = ProjectionType::Perspective);
         ~Camera();
 
         // Applies the camera parameters and generates a view
-        void apply(GLuint shaderProgram);
+        void apply();
 
-        // Makes the camera orbit around the specified axis 
+        // Makes the camera orbit around the specified axis
         void setOrbitOn(const common::Axis& axis) { toggleOrbit(axis); }
         void setOrbitOff() { m_orbitOn = false; }
 
@@ -39,11 +39,14 @@ class Camera : public MeshViewerObject {
         void zoomIn();
         void zoomOut();
 
-        // Sets projection type 
+        // Sets projection type
         void setProjectionType(const ProjectionType type) { m_projectionType = type; }
 
+        glm::mat4 getViewTransform() const { return m_viewTransform; }
+
+        glm::mat4 getProjectionTransform() const { return m_projectionTransform; }
+
     private:
-        void buildModelTransform();
         void buildViewTransform();
         void buildProjectionTransform();
         void buildPerspectiveProjectionTransform();
@@ -67,11 +70,6 @@ class Camera : public MeshViewerObject {
         float m_orbitAngle;
         std::unique_ptr<std::thread> m_timerThread;
         common::Bounds m_viewVolume;
-
-    public:
-        glm::mat3 dbg_normalMatrix;
-        glm::mat4 dbg_modelViewMatrix;
-
 };
 
 inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {
