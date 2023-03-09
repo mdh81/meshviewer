@@ -11,5 +11,12 @@ target_include_directories(
     ${mathIncDir}
 )
 
+target_link_libraries(
+    readers
+    PUBLIC
+    GLEW::GLEW
+    glm::glm
+)
+
 enable_testing()
 add_subdirectory(tests)

@@ -14,5 +14,12 @@ target_include_directories(
     ../events
 )
 
+target_link_libraries(
+    objects
+    PUBLIC
+    glm::glm
+    GLEW::GLEW
+)
+
 enable_testing()
 add_subdirectory(tests)
