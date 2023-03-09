@@ -14,5 +14,12 @@ target_include_directories(
     ../objects
 )
 
+target_link_libraries(
+    mesh
+    PUBLIC
+    glm::glm
+    GLEW::GLEW
+)
+
 enable_testing()
 add_subdirectory(tests)

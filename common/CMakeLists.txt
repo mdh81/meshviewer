@@ -14,6 +14,8 @@ target_include_directories(
 target_link_libraries(
     common
     shaders
+    glm::glm
+    GLEW::GLEW
 )
 
 enable_testing()
