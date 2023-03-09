@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(GLEW REQUIRED)
 find_package(GLFW3 REQUIRED)
+find_package(OpenGL REQUIRED)
 
 # get gtest
 include(FetchContent)
@@ -23,7 +24,7 @@ set (
   /usr/local/include
 )
 
-set(glLibs GLEW::GLEW glfw)
+set(glLibs GLEW::GLEW glfw ${OPENGL_LIBRARIES})
 
 add_subdirectory(events)
 add_subdirectory(mesh)
@@ -54,8 +55,6 @@ target_link_libraries(
     meshviewerapp
     PUBLIC
     ${glLibs}
-    GLEW::GLEW
-    glfw
     common
     events
     mesh
@@ -64,7 +63,6 @@ target_link_libraries(
     events
     viewer
     objects
-    "-framework OpenGL"
 )
 
 # Copy test files to binary directory
