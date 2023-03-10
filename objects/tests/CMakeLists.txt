@@ -26,6 +26,9 @@ foreach(test ${allTests})
         PUBLIC
         gtest_main
         objects
+        common
+        mesh
+        events
     )  
 endforeach(test)
 

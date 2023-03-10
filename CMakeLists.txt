@@ -17,13 +17,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-set(CMAKE_BUILD_TYPE Debug)
-
-# TODO: Make this downloadable from github or create a cmake config for it like other packages
-set (
-  mathIncDir
-  /usr/local/include
+# get 3dmath
+FetchContent_Declare(
+    3dmath
+    GIT_REPOSITORY https://github.com/mdh81/3dmath.git
 )
+FetchContent_MakeAvailable(3dmath)
+set(mathIncDir ${3dmath_SOURCE_DIR}/include)
+
+set(CMAKE_BUILD_TYPE Debug)
 
 set(glLibs GLEW::GLEW glfw ${OPENGL_LIBRARIES})
 
