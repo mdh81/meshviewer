@@ -3,7 +3,7 @@
 #include <fstream>
 using namespace std;
 
-namespace meshviewer { namespace config {
+namespace mv { namespace config {
 
 ConfigReader::ConfigReader(const std::string& fileName) : m_fileName(fileName) {
     

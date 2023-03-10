@@ -8,7 +8,7 @@
 #include <exception>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 using namespace common;
 using namespace events;

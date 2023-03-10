@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace meshviewer { namespace config {
+namespace mv { namespace config {
 
 class ConfigReader { 
     public:

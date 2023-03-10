@@ -4,7 +4,7 @@
 #include <exception>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 void ShaderLoader::loadShader(const std::string& fileName, std::string& fileContents) {
     // Open file and seek to the end

@@ -2,7 +2,7 @@
 #include <fstream>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 void STLReader::getOutput(std::unique_ptr<Mesh>& mesh) {
     ifstream ifs(m_fileName, ios::binary);

@@ -3,7 +3,7 @@
 #include "glm/gtc/type_ptr.hpp"
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 using namespace common;
 

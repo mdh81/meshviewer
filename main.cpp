@@ -4,8 +4,8 @@
 #include <iostream>
 #include <string>
 using namespace std;
-using namespace meshviewer;
-using namespace meshviewer::common;
+using namespace mv;
+using namespace mv::common;
 
 bool ValidateArguments(int argc, char** argv) {
     if (argc != 2) {

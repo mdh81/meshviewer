@@ -1,7 +1,7 @@
 #include "Vertex.h"
 #include "Mesh.h"
 
-namespace meshviewer {
+namespace mv {
 
 // Compute vertex normal as the average of normals of all faces that
 // share that vertex

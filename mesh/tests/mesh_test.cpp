@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <cstdlib>
 using namespace std;
-using namespace meshviewer;
+using namespace mv;
 
 class MeshFixture : public ::testing::Test {
     protected:

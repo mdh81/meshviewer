@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 
 // init static variables
 bool EventHandler::m_started = false;

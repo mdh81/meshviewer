@@ -4,7 +4,7 @@
 #include <memory>
 #include "Mesh.h"
 
-namespace meshviewer {
+namespace mv {
 
 class STLReader : public MeshViewerObject {
     public:

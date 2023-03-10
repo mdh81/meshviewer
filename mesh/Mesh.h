@@ -12,7 +12,7 @@
 #include "Face.h"
 #include "glm/glm.hpp"
 
-namespace meshviewer {
+namespace mv {
 
 class Camera;
 
@@ -42,7 +42,7 @@ class Mesh : public Renderable {
         // TODO: Allow creation of meshes without this call. Make addVertex
         // and addFace allocate memory as needed. Come up with resonable
         // default initial allocation
-        void initialize(const unsigned numVerts, const unsigned numFaces);
+        void initialize(const unsigned numVertices, const unsigned numFaces);
 
         // Adds a new vertex to this mesh
         void addVertex(const float x, const float y, const float z);

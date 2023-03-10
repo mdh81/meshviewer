@@ -7,7 +7,7 @@
 #include <fstream>
 #include <iomanip>
 
-namespace meshviewer {
+namespace mv {
 
 // TODO: Move to MathLib
 class Util {

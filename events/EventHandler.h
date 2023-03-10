@@ -9,7 +9,7 @@
 
 class GLFWwindow;
 
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 
 // A monostate class that is responsible for handling events. Events are handled in the context
 // of a GLFW window.

@@ -11,7 +11,7 @@
 #include <thread>
 #include <optional>
 
-namespace meshviewer {
+namespace mv {
 
 class Mesh;
 

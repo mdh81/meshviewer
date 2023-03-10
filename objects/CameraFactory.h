@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace meshviewer {
+namespace mv {
 
 class CameraFactory {
     public:

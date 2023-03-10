@@ -4,8 +4,8 @@
 #include <memory>
 #include <filesystem>
 using namespace std;
-using namespace meshviewer;
-using namespace meshviewer::common;
+using namespace mv;
+using namespace mv::common;
 
 class STLReaderFixture : public ::testing::Test {
     protected:

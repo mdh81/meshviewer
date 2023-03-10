@@ -3,7 +3,7 @@
 #include "Face.h"
 #include "3dmath/Vector.h"
 using namespace std;
-using namespace meshviewer;
+using namespace mv;
 
 TEST(Vertex, FaceAssociation) {
     Mesh m;

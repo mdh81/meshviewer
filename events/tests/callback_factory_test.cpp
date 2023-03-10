@@ -1,12 +1,12 @@
 #include "gtest/gtest.h"
 #include "CallbackFactory.h"
 #include <memory>
-using namespace meshviewer::events;
+using namespace mv::events;
 using namespace std;
 
 // Friend class implementation. This class is used to test the internal state of
 // the CallbackFactory object as callback functions are registered
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 class CallbackFactoryTester {
     public:
         CallbackFactoryTester(CallbackFactory& cbf) : m_cbf(cbf) { }

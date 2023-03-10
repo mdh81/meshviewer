@@ -3,8 +3,8 @@
 #include "Mesh.h"
 #include <memory>
 using namespace std;
-using namespace meshviewer;
-using namespace meshviewer::common;
+using namespace mv;
+using namespace mv::common;
 
 TEST(Viewer, Singleton) {
     Viewer& v = Viewer::getInstance();
