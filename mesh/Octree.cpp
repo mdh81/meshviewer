@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 using namespace common;
 

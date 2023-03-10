@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <filesystem>
 using namespace std;
-using namespace meshviewer;
-using namespace meshviewer::common;
+using namespace mv;
+using namespace mv::common;
 
 class OctreeFixture : public ::testing::Test {
     protected:
@@ -96,7 +96,7 @@ TEST_F(OctreeFixture, Subdivision) {
     // Assert that all vertices in the mesh are present in the leaf octant
     unordered_map<unsigned, bool> vertIndexMap;
     for (auto& leaf : leaves) {
-        meshviewer::common::VertexIndices vi = octree1.getVertices(leaf.get());
+        mv::common::VertexIndices vi = octree1.getVertices(leaf.get());
         for (auto v : vi) {
             // Assert no duplicates are present either within a leaf octant
             // or across a leaf octants

@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "CameraFactory.h"
-using namespace meshviewer;
+using namespace mv;
 
 TEST(CameraFactory, Singleton) {
     CameraFactory& cf1 = CameraFactory::getInstance(); 

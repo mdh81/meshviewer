@@ -7,7 +7,7 @@
 #include <tuple>
 #include "GL/glew.h"
 
-namespace meshviewer {
+namespace mv {
 
     class ShaderLoader : public MeshViewerObject {
         public:

@@ -9,7 +9,7 @@
 #include <optional>
 
 // Definitions of types that are common among various pieces of the meshviewer application
-namespace meshviewer { namespace common {
+namespace mv { namespace common {
 
 struct Point3D {
     float x;

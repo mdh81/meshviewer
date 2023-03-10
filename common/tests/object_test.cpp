@@ -3,7 +3,7 @@
 #include "Mesh.h"
 #include "Octree.h"
 using namespace std;
-using namespace meshviewer;
+using namespace mv;
 
 TEST(Object, TestIdentifier) {
     Mesh m;

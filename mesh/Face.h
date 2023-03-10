@@ -6,7 +6,7 @@
 #include "3dmath/Vector.h"
 #include "initializer_list"
 
-namespace meshviewer {
+namespace mv {
 
 class Mesh;
 

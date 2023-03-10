@@ -3,7 +3,7 @@
 #include "Types.h"
 using namespace math3d;
 
-namespace meshviewer {
+namespace mv {
 using namespace common;
 
 math3d::Vector<float, 3> Face::getNormal(const Mesh& mesh) const {

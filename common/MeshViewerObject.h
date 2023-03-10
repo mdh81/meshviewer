@@ -4,7 +4,7 @@
 #include <cstddef> // for size_t
 #include <iostream>
 
-namespace meshviewer {
+namespace mv {
 
 // An object in this application that is uniquely identified
 // by its identifier 

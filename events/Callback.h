@@ -4,7 +4,7 @@
 #include <tuple>
 #include <functional>
 
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 
 // An object of this type holds a sequence of indices that are used to index
 // into a tuple

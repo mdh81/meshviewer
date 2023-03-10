@@ -5,7 +5,7 @@
 #include <filesystem>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 Renderable::Renderable(const std::string& vertexShaderFileName,
                        const std::string& fragmentShaderFileName)
@@ -21,14 +21,14 @@ void Renderable::createShaderProgram() {
 
     // Vertex Shader
     string compilerOut;
-    auto status = meshviewer::ShaderLoader().loadVertexShader(shaderDir/m_vertexShaderFileName, compilerOut);
+    auto status = mv::ShaderLoader().loadVertexShader(shaderDir / m_vertexShaderFileName, compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }
     GLuint vertexShaderId = get<1>(status);
 
     // Fragment Shader
-    status = meshviewer::ShaderLoader().loadFragmentShader(shaderDir/m_fragmentShaderFileName, compilerOut);
+    status = mv::ShaderLoader().loadFragmentShader(shaderDir / m_fragmentShaderFileName, compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }

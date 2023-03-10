@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace meshviewer {
+namespace mv {
 
 class Mesh;
 

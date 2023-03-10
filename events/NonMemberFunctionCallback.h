@@ -4,7 +4,7 @@
 #include "Callback.h"
 #include <tuple>
 
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 
 template<typename FunctionPtrT, typename... FunctionArgsT>
 class NonMemberFunctionCallback : public Callback {

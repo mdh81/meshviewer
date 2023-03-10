@@ -15,7 +15,7 @@
 #include <string>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 using namespace common;
 using namespace events;
 
@@ -71,14 +71,14 @@ GLuint Viewer::createShaderProgram() {
 
     // Vertex Shader
     string compilerOut;
-    auto status = meshviewer::ShaderLoader().loadVertexShader("./shaders/MeshVertex.shader", compilerOut);
+    auto status = mv::ShaderLoader().loadVertexShader("./shaders/MeshVertex.shader", compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }
     GLuint vertexShaderId = get<1>(status);
 
     // Fragment Shader
-    status = meshviewer::ShaderLoader().loadFragmentShader("./shaders/Fragment.shader", compilerOut);
+    status = mv::ShaderLoader().loadFragmentShader("./shaders/Fragment.shader", compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }

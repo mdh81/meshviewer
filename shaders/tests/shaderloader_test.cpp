@@ -6,7 +6,7 @@
 #include "GLFW/glfw3.h"
 
 using namespace std;
-using namespace meshviewer;
+using namespace mv;
 
 class ShaderFixture : public testing::Test {
 

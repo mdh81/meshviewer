@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-namespace meshviewer {
+namespace mv {
 
 size_t MeshViewerObject::sm_instanceCount = 0;
     

@@ -3,7 +3,7 @@
 #include <memory>
 #include <fstream>
 using namespace std;
-using namespace meshviewer::config;
+using namespace mv::config;
 
 class ConfigReaderFixture : public ::testing::Test {
     void SetUp() override {

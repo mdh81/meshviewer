@@ -6,7 +6,7 @@
 #include <optional>
 #include <memory>
 
-namespace meshviewer {
+namespace mv {
 
 class Mesh;
 class Camera;

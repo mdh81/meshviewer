@@ -5,7 +5,7 @@
 #include <tuple>
 #include <memory>
 
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 
 template<typename InstanceT, typename MemberFunctionPtrT, typename... FunctionArgsT>
 class MemberFunctionCallback : public Callback {

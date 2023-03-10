@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace meshviewer { namespace events {
+namespace mv { namespace events {
 
 class Event { 
     public:

@@ -1,6 +1,6 @@
 #include "CameraFactory.h"
 
-namespace meshviewer {
+namespace mv {
 
 using namespace common;
 
