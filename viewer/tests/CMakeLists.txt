@@ -27,5 +27,6 @@ foreach(test ${allTests})
         shaders
         events
         mesh
+        objects
     )
 endforeach(test)
