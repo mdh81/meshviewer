@@ -7,6 +7,8 @@ using namespace std;
 
 namespace mv {
 
+using namespace common;
+
 Renderable::Renderable(const std::string& vertexShaderFileName,
                        const std::string& fragmentShaderFileName)
     : m_vertexShaderFileName(vertexShaderFileName)

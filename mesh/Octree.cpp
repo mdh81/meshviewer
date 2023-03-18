@@ -32,7 +32,7 @@ Octree::Octree(Mesh& mesh, const unsigned maxVerticesInOctant) :
     m_root.subdivide();
 }
 
-void Octree::getNeighboringVertices(const unsigned vertexIndex, common::VertexIndices& neighbors) {
+void Octree::getNeighboringVertices(const VertexIndex vertexIndex, common::VertexIndices& neighbors) {
     
     // Find the leaf octant containing the vertex and copy all
     // vertices in that leaf octant into the result

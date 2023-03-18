@@ -190,7 +190,7 @@ void Viewer::setRenderMode(const RenderMode rm) {
 }
 
 void Viewer::displayMesh(Mesh& mesh) {
-    // Window must have been created by the time display is called
+
     if (!m_window)
         throw std::runtime_error("Unexpected program state");
 
@@ -209,8 +209,7 @@ void Viewer::displayMesh(Mesh& mesh) {
     cout << "Viewer shader program = " << shaderProg << endl;
 
     // Define normal glyphs
-    //Glyph gl = Glyph(mesh, common::GlyphAssociation::FaceNormal);
-    //gl.build();
+    Glyph gl = Glyph(mesh, common::GlyphAssociation::FaceNormal);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -228,7 +227,7 @@ void Viewer::displayMesh(Mesh& mesh) {
         mesh.render(camera);
 
         // Draw glyph
-        //gl.render(camera);
+        gl.render(camera);
 
         // END TODO
 

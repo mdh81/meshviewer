@@ -88,29 +88,43 @@ unsigned Mesh::removeDuplicateVertices() {
 
     // Compare each vertex against its neighbours and see
     // if there is a duplicate in the neighborhood
-    unordered_set<unsigned> duplicateVertices;
+    unordered_set<VertexIndex> duplicateVertices;
+    unordered_map<VertexIndex, VertexIndex> remapEntries;
     size_t numDuplicates = 0;
-    for (size_t i = 0; i < m_vertices.size(); ++i) {
+    for (VertexIndex i = 0; i < m_vertices.size(); ++i) {
         VertexIndices neighbors;
         m_octree->getNeighboringVertices(i, neighbors);
         for (size_t ni = 0; ni < neighbors.size(); ++ni) {
             if (duplicateVertices.find(neighbors.at(ni)) == duplicateVertices.end() &&
                 neighbors.at(ni) != i &&
                 getVertex(neighbors.at(ni)) == getVertex(i)) {
-                //cout << "Vertex " << i << endl;
-                //cout << "Neighbors " << neighbors << endl;
                 m_outputStream << "Vertex at " << i << ' ' << getVertex(i)
                                << " has a duplicate vertex at index " << neighbors.at(ni) << endl;
                 duplicateVertices.insert(i);
                 duplicateVertices.insert(neighbors.at(ni));
-                vector<unsigned> sharedFaceIds;
-                m_vertices[neighbors.at(ni)].getFaces(sharedFaceIds);
-                for (auto sharedFaceId : sharedFaceIds) {
-                    numDuplicates++;
-                    m_faces.at(sharedFaceId).replaceVertex(neighbors.at(ni), i);
-                }
+                remapEntries.emplace(neighbors.at(ni), i);
+                ++numDuplicates;
             }
         }
+    }
+
+    // Find new indices for vertices to account for duplication
+    for (auto& remapEntry : remapEntries) {
+        // If vertex N were to removed as a duplicate, all vertices in the range
+        // [N+1, Number of vertices-1] should be shifted to the left
+        for (VertexIndex i = remapEntry.first; i < m_numVertices; ++i) {
+            if (remapEntries.find(i) == remapEntries.end())
+                remapEntries.emplace(i, remapEntries.find(i-1) == remapEntries.end() ? i-1 : remapEntries[i-1]-1);
+        }
+        if (remapEntries.find(remapEntry.second) != remapEntries.end()) {
+            remapEntry.second = remapEntries[remapEntry.second];
+        }
+        cout << "Vertex " << remapEntry.first << ":" << remapEntry.second << endl;
+    }
+
+    // Execute remapping
+    for (auto& remapEntry : remapEntries) {
+
     }
     if (m_debugOn)
         m_outputStream << "Removed " << numDuplicates << " duplicate vertices" << endl;
@@ -338,7 +352,7 @@ void Mesh::render(Camera const& camera) {
     glBindVertexArray(m_vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
 
-    glPolygonMode(GL_FRONT, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES,
                    static_cast<GLsizei>(getNumberOfVertices()), // Number of elements
                     GL_UNSIGNED_INT,                             // Type of element buffer data
