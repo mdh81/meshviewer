@@ -1,7 +1,9 @@
 #include "Face.h"
 #include "Mesh.h"
 #include "Types.h"
+#include <iostream>
 using namespace math3d;
+using namespace std;
 
 namespace mv {
 using namespace common;
@@ -42,9 +44,10 @@ Point3D Face::getCentroid(const Mesh& mesh) const {
     // Value initialize the output 
     Point3D centroid = {}; 
     for (size_t i = 0; i < m_vertexIds.size(); ++i) {
-        centroid.x += mesh.getVertex(i).x; 
-        centroid.y += mesh.getVertex(i).y;
-        centroid.z += mesh.getVertex(i).z; 
+        auto& v = mesh.getVertex(m_vertexIds.at(i));
+        centroid.x += v.x;
+        centroid.y += v.y;
+        centroid.z += v.z;
     }
     centroid.x /= m_vertexIds.size();
     centroid.y /= m_vertexIds.size();

@@ -7,7 +7,7 @@ namespace mv {
 
 using namespace common;
 
-    [[maybe_unused]] Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
+    Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
     : Renderable("GlyphVertex.shader", "Fragment.shader")
     , m_mesh(mesh)
     , m_association(assoc)
@@ -16,58 +16,63 @@ using namespace common;
 
 void Glyph::generateRenderData() {
 
+    if (m_readyToRender) return;
+
     if (m_association == GlyphAssociation::Undefined)
         throw std::runtime_error("Mesh association is undefined for glyph");
-
-    // compile and link shaders
-    createShaderProgram();
-
-    // Switch to glyph shader program
-    glUseProgram(m_shaderProgram);
-
-    // Set shader inputs
-    GLint colorId = glGetUniformLocation(m_shaderProgram, "lineColor");
-    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f)));
-
-    // Create VBO
-    GLuint vbObj;
-    glGenBuffers(1, &vbObj);
-
-    // Make the glyph vertex buffer object the current buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vbObj);
 
     if (m_association != GlyphAssociation::VertexNormal &&
         m_association != GlyphAssociation::FaceNormal)
         throw std::runtime_error("Mesh association for glyph is not supported");
 
+    // Compile and link shaders
+    createShaderProgram();
+
+    glUseProgram(m_shaderProgram);
+    checkGLError;
+
+    // Create VAO
+    glGenVertexArrays(1, &m_vertexArrayObject);
+    checkGLError;
+    glBindVertexArray(m_vertexArrayObject);
+    checkGLError;
+
+    // Create VBO
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    checkGLError;
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    checkGLError;
+
+    // Generate vertices
     size_t dataSize = 0;
     if (m_association == GlyphAssociation::VertexNormal)
         dataSize = buildVertexNormalData();
     else
         dataSize = buildFaceNormalData();
 
-    // Push data to the buffer
+    // Push vertices to the GPU
     glBufferData(GL_ARRAY_BUFFER, dataSize, m_vertexData.get(), GL_STATIC_DRAW);
+    checkGLError;
 
-    // Create vertex array object for glyph
-    glGenVertexArrays(1, &m_vertexArrayObject);
-    glBindVertexArray(m_vertexArrayObject);
-
-    // Define layout of glyph data
+    // Define layout of vertex data
     GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexPosition");
     glEnableVertexAttribArray(posAttrib);
+    checkGLError;
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
                           GL_FLOAT,             //data type
                           GL_FALSE,             //data normalization status
                           3*sizeof(float),      //stride--each glyph end point has 3 float entries
                           0                     //offset into the array
-                         );
+    );
+    checkGLError;
 
     // Create EBO
-    GLuint ebo;
     glGenBuffers(1, &m_elementBufferObject);
+    checkGLError;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    checkGLError;
 
     // Upload connectivity data to element buffer object
     // Each glyph has two end points and the data type is unsigned int
@@ -77,10 +82,11 @@ void Glyph::generateRenderData() {
         m_elementData[2*i] = 2*i;
         m_elementData[2*i+1] = 2*i+1;
     }
-
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, m_elementData.get(), GL_STATIC_DRAW);
+    checkGLError;
 
     generateColors();
+    m_readyToRender = true;
 }
 
 size_t Glyph::buildVertexNormalData() {
@@ -145,7 +151,7 @@ size_t Glyph::buildFaceNormalData() {
 void Glyph::render(Camera const& camera) {
 
     if (!m_readyToRender) {
-        const_cast<Glyph&>(*this).generateRenderData();
+        generateRenderData();
     }
 
     // Switch to glyph shader program
@@ -161,15 +167,19 @@ void Glyph::render(Camera const& camera) {
     // Render lines
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
     glDrawElements(GL_LINES,
-                   m_numGlyphs,                // Number of elements
-                   GL_UNSIGNED_INT,             // Type of element buffer data
-                   0                          // Offset into element buffer data
+                   m_numGlyphs * 2,                // Number of elements
+                   GL_UNSIGNED_INT,                 // Type of element buffer data
+                   0                              // Offset into element buffer data
                   );
 
 }
 
 void Glyph::generateColors() {
     if (m_readyToRender) return;
+
+    // Set line color
+    GLint colorId = glGetUniformLocation(m_shaderProgram, "lineColor");
+    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f)));
 }
 
 }

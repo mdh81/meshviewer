@@ -7,7 +7,7 @@ namespace mv {
 void STLReader::getOutput(std::unique_ptr<Mesh>& mesh) {
     ifstream ifs(m_fileName, ios::binary);
     if (!ifs) {
-        throw std::runtime_error("Unable to open file" + m_fileName + '!');
+        throw std::runtime_error("Unable to open file " + m_fileName + '!');
     }
     string header;
     header.resize(80);

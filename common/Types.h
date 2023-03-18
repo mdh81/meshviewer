@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include "GL/GLEW.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv { namespace common {
@@ -110,6 +111,7 @@ inline std::ostream& operator<<(std::ostream& os, const Bounds& b) {
 }
 
 using VertexIndices = std::vector<unsigned>;
+using VertexIndex = unsigned;
 
 template <typename T, T beginVal, T endVal>
 class EnumIterator {
@@ -171,6 +173,36 @@ enum class GlyphAssociation {
     FaceNormal,
     VertexNormal
 };
+
+static std::string getGLErrorString(GLint glError) {
+    std::string errStr;
+    switch (glError) {
+        case GL_INVALID_ENUM:
+            errStr = "Invalid enum";
+            break;
+        case GL_INVALID_VALUE:
+            errStr = "Invalid value";
+            break;
+        case GL_INVALID_OPERATION:
+            errStr = "Invalid operation";
+            break;
+        default:
+            errStr = std::to_string(glError);
+    }
+    return errStr;
+}
+
+static GLuint glError = 0;
+#define checkGLError                                        \
+    glError = glGetError();                                 \
+    if (glError) {                                          \
+        cout << "GL Error: " << getGLErrorString(glError)   \
+             << " at line " << __LINE__ - 1 << " of "       \
+             << __FILE__ << endl;                           \
+        std::terminate();                                   \
+    }
+
+
 
 } }
 #endif
