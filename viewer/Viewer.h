@@ -39,9 +39,6 @@ class Viewer : public MeshViewerObject {
 
     // Member functions
     private:
-        GLuint createShaderProgram();
-        void setVertexData(const Mesh&, const GLuint shaderProgram);
-        void setElementData(const Mesh&);
         void setColors();
 
     // Member function callbacks registered with the event handler
