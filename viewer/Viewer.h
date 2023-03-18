@@ -36,6 +36,7 @@ class Viewer : public MeshViewerObject {
         unsigned m_windowWidth;
         unsigned m_windowHeight;
         GLFWwindow* m_window;
+        bool m_showNormals;
 
     // Member functions
     private:
@@ -50,6 +51,9 @@ class Viewer : public MeshViewerObject {
         };
     private:
         void setRenderMode(const RenderMode);
+        void toggleNormalsDisplay() {
+            m_showNormals = !m_showNormals;
+        }
 };
 
 }

@@ -62,6 +62,11 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
         CallbackFactory::getInstance().registerCallback
         (*this, &Viewer::setRenderMode, RenderMode::Shaded));
 
+    EventHandler().registerCallback(
+            Event(GLFW_KEY_N),
+            CallbackFactory::getInstance().registerCallback
+            (*this, &Viewer::toggleNormalsDisplay));
+
     // Start handling events
     EventHandler().start(m_window);
 }
@@ -118,7 +123,8 @@ void Viewer::displayMesh(Mesh& mesh) {
         mesh.render(camera);
 
         // Draw glyph
-        gl.render(camera);
+        if (m_showNormals)
+            gl.render(camera);
 
         // END TODO
 
