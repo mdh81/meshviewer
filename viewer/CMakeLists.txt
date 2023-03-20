@@ -1,7 +1,6 @@
 add_library(
     viewer 
-    Viewer.cpp
-)
+    Viewer.cpp)
 
 target_include_directories(
     viewer 
@@ -12,6 +11,7 @@ target_include_directories(
     ../events
     ../shaders
     ../objects
+    ../config
 )
 
 target_link_libraries(
