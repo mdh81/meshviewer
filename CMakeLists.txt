@@ -3,6 +3,10 @@ project(MeshViewer VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if (APPLE)
+    add_compile_options(-D OSX)
+endif()
+
 find_package(GLEW REQUIRED)
 find_package(GLFW3 REQUIRED)
 find_package(OpenGL REQUIRED)
