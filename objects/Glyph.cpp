@@ -29,20 +29,15 @@ void Glyph::generateRenderData() {
     createShaderProgram();
 
     glUseProgram(m_shaderProgram);
-    checkGLError;
 
     // Create VAO
     glGenVertexArrays(1, &m_vertexArrayObject);
-    checkGLError;
     glBindVertexArray(m_vertexArrayObject);
-    checkGLError;
 
     // Create VBO
     GLuint vbo;
     glGenBuffers(1, &vbo);
-    checkGLError;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    checkGLError;
 
     // Generate vertices
     size_t dataSize = 0;
@@ -53,12 +48,10 @@ void Glyph::generateRenderData() {
 
     // Push vertices to the GPU
     glBufferData(GL_ARRAY_BUFFER, dataSize, m_vertexData.get(), GL_STATIC_DRAW);
-    checkGLError;
 
     // Define layout of vertex data
     GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexPosition");
     glEnableVertexAttribArray(posAttrib);
-    checkGLError;
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
                           GL_FLOAT,             //data type
@@ -66,13 +59,10 @@ void Glyph::generateRenderData() {
                           3*sizeof(float),      //stride--each glyph end point has 3 float entries
                           0                     //offset into the array
     );
-    checkGLError;
 
     // Create EBO
     glGenBuffers(1, &m_elementBufferObject);
-    checkGLError;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
-    checkGLError;
 
     // Upload connectivity data to element buffer object
     // Each glyph has two end points and the data type is unsigned int
@@ -83,7 +73,6 @@ void Glyph::generateRenderData() {
         m_elementData[2*i+1] = 2*i+1;
     }
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, m_elementData.get(), GL_STATIC_DRAW);
-    checkGLError;
 
     generateColors();
     m_readyToRender = true;
