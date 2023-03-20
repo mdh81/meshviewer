@@ -18,7 +18,6 @@ class MeshViewerObject {
         void debugOn() { std::cout<<"Turning debug on" << std::endl; m_debugOn = true; }
         void debugOff() { m_debugOn = false; }
         bool isDebugOn() { return m_debugOn; }
-        void setOutput(std::ostream& os);
         size_t getId() { return m_id; }
     private:
         size_t m_id;
