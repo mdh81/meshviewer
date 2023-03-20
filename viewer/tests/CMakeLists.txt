@@ -28,5 +28,6 @@ foreach(test ${allTests})
         events
         mesh
         objects
+        config
     )
 endforeach(test)
