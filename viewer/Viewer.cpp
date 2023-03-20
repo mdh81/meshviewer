@@ -115,7 +115,6 @@ void Viewer::displayMesh(Mesh& mesh) {
 
     // Create camera for the mesh
     Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight});
-    camera.debugOn();
 
     // Define normal glyphs
     Glyph gl = Glyph(mesh, common::GlyphAssociation::FaceNormal);
