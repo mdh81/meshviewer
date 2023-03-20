@@ -25,15 +25,22 @@ ConfigReader::ConfigReader(const std::string& fileName) : m_fileName(fileName) {
 }
 
 std::string ConfigReader::getValue(const std::string& name) {
-    for (auto& entry : m_data) {
-        cerr << entry.first << "==>" << entry.second << endl; 
-    }
     auto itr = m_data.find(name);
     if (itr != m_data.end()) {
         return itr->second;
     } else {
         throw runtime_error("No configuration found for " + name); 
     }
+}
+
+bool ConfigReader::getBoolean(std::string const& name) {
+    std::string val = getValue(name);
+    if (val == "true" || val == "True")
+        return true;
+    else if (val == "false" || val == "False")
+        return false;
+    else
+        throw runtime_error(name + " is not a boolean property");
 }
 
 

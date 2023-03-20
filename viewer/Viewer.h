@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "MeshViewerObject.h"
+#include "Renderable.h"
 
 #include "GL/glew.h"
 #include <memory>
@@ -20,10 +21,15 @@ class Viewer : public MeshViewerObject {
         void displayMesh(Mesh& mesh);
         unsigned getWidth() const { return m_windowWidth; }
         unsigned getHeight() const { return m_windowHeight; }
-
-    // Creation Semantics
-    public:
+        bool isDisplayingNormals() const { return m_showNormals; }
+        enum class RenderMode {
+            Wireframe,
+            Shaded,
+        };
+        RenderMode getRenderMode() const { return m_renderMode; }
+        // Creation Semantics
         static Viewer& getInstance();
+
     private:
         Viewer(unsigned winWidth=1024, unsigned winHeight=768);
         Viewer(const Viewer&) = delete;
@@ -37,23 +43,16 @@ class Viewer : public MeshViewerObject {
         unsigned m_windowHeight;
         GLFWwindow* m_window;
         bool m_showNormals;
+        RenderMode m_renderMode;
 
     // Member functions
     private:
         void setColors();
-
-    // Member function callbacks registered with the event handler
-    // and supporting types
-    private:
-        enum class RenderMode {
-            Wireframe,
-            Shaded,
-        };
-    private:
         void setRenderMode(const RenderMode);
         void toggleNormalsDisplay() {
             m_showNormals = !m_showNormals;
         }
+        void generateImage();
 };
 
 }

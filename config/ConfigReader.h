@@ -7,11 +7,20 @@
 
 namespace mv { namespace config {
 
-class ConfigReader { 
+class ConfigReader {
     public:
-       ConfigReader(const std::string& configFileName);
+        static ConfigReader& getInstance() {
+            static ConfigReader cfgReader("config/defaults.cfg");
+            return cfgReader;
+        }
+
+    private:
+       explicit ConfigReader(const std::string& configFileName);
+
+    public:
        ~ConfigReader() = default;
        std::string getValue(const std::string& name);
+       bool getBoolean(std::string const& name);
 
     private:
        ConfigReader(const ConfigReader&) = delete;
@@ -22,6 +31,7 @@ class ConfigReader {
     private:
        std::unordered_map<std::string, std::string> m_data;
        std::string m_fileName;
+       friend class ConfigReaderTest;
 };
 
 } }
