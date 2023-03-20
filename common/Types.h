@@ -193,16 +193,17 @@ static std::string getGLErrorString(GLint glError) {
 }
 
 static GLuint glError = 0;
-#define checkGLError                                        \
-    glError = glGetError();                                 \
-    if (glError) {                                          \
-        cout << "GL Error: " << getGLErrorString(glError)   \
-             << " at line " << __LINE__ - 1 << " of "       \
-             << __FILE__ << endl;                           \
-        std::terminate();                                   \
+#define checkGLError(glFunc)                                         \
+    glError = glGetError();                                          \
+    if (glError) {                                                   \
+        cout << #glFunc << " returned " << getGLErrorString(glError) \
+             << " at line " << __LINE__ << " of "                    \
+             << __FILE__ << endl;                                    \
+        std::terminate();                                            \
     }
 
-
-
+#define glCallWithErrorCheck(glFunc, glArgs...) \
+    glFunc(glArgs);                             \
+    checkGLError(glFunc)
 } }
 #endif
