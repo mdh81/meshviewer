@@ -10,7 +10,7 @@
 #include "GL/GLEW.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
-namespace mv { namespace common {
+namespace mv::common {
 
 struct Point3D {
     float x;
@@ -34,7 +34,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 }
 
 // A 2D array whose data can be shared among instances of this type. The data
-// is stored as a 1D array to faciliate easy transfer to OpenGL APIs
+// is stored as a 1D array to facilitate easy transfer to OpenGL APIs
 template<typename T, unsigned tupleSize=1>
 class Array {
     private:
@@ -42,7 +42,7 @@ class Array {
         size_t m_offset;
         std::shared_ptr<T[]> m_data;
     public:
-        Array(size_t numElements) 
+    [[maybe_unused]] explicit Array(size_t numElements)
             : m_size(numElements)
             , m_offset(0)
             , m_data(new T[m_size * tupleSize], std::default_delete<T[]>()) {
@@ -82,13 +82,13 @@ struct Bounds {
 
     // Builds a symmetric bounding box where each side is
     // of the specified length 
-    Bounds(float sideLength) {
-        xmin = -0.5 * sideLength;
-        xmax = +0.5 * sideLength;
-        ymin = -0.5 * sideLength;
-        ymax = +0.5 * sideLength;
-        zmin = -0.5 * sideLength;
-        zmax = +0.5 * sideLength;
+    explicit Bounds(float sideLength) {
+        xmin = -0.5f * sideLength;
+        xmax = +0.5f * sideLength;
+        ymin = -0.5f * sideLength;
+        ymax = +0.5f * sideLength;
+        zmin = -0.5f * sideLength;
+        zmax = +0.5f * sideLength;
     }
 
     Bounds(float xmi, float ymi, float zmi, float xmx, float ymx, float zmx) :
@@ -121,7 +121,7 @@ class EnumIterator {
     ULType m_val;
     public:
         // Conversion constructor to convert enumerator to iterator type
-        EnumIterator(const T& f) : m_val(static_cast<ULType>(f)) {}
+        explicit EnumIterator(const T& f) : m_val(static_cast<ULType>(f)) {}
         // Default constructor that initilizes the iterator to point to the first enumerator
         EnumIterator() : m_val(static_cast<ULType>(beginVal)) {}
         // Postfix increment operator
@@ -205,5 +205,5 @@ static GLuint glError = 0;
 #define glCallWithErrorCheck(glFunc, glArgs...) \
     glFunc(glArgs);                             \
     checkGLError(glFunc)
-} }
+}
 #endif
