@@ -13,16 +13,15 @@ EventHandler::EventCallbackMap EventHandler::m_eventCallbackMap;
 
 void EventHandler::handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action != GLFW_PRESS) return;
-    auto lookupRes = m_eventCallbackMap.find(Event(key));
+    auto lookupRes = m_eventCallbackMap.find(Event(key, mods));
     if (lookupRes != m_eventCallbackMap.end()) {
         lookupRes->second.get().call();
     } else {
-       cerr << "No callback associated with " << key << ' ' << action << endl; 
+       cerr << "No callback associated with " << key << " and modifier " << mods << endl;
     }
 }
 
 void EventHandler::registerCallback(const Event& event, const Callback& callback) {
-    cerr << "registering " << event.getId() << endl;
     m_eventCallbackMap.emplace(event, std::ref(callback));
 }
 

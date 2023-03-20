@@ -9,6 +9,7 @@
 
 class GLFWwindow;
 
+//TODO: Unify namespace name. mv and meshviewer are used interchangeably in a few places
 namespace mv {
 
     namespace viewer {
@@ -19,7 +20,7 @@ namespace mv {
 
     // A monostate class that is responsible for handling events. Events are handled in the context
     // of a GLFW window.
-
+    // TODO: Make it inherit from MeshViewerObject so it can turn on debug output similar to other objects
     class EventHandler {
 
         public:
