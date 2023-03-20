@@ -44,6 +44,9 @@ class Viewer : public MeshViewerObject {
         GLFWwindow* m_window;
         bool m_showNormals;
         RenderMode m_renderMode;
+        bool m_renderToImage;
+        GLuint m_frameBufferId;
+        GLuint m_imageTextureId;
 
     // Member functions
     private:
@@ -52,7 +55,11 @@ class Viewer : public MeshViewerObject {
         void toggleNormalsDisplay() {
             m_showNormals = !m_showNormals;
         }
-        void generateImage();
+        void saveSnapshot() {
+            m_renderToImage = true;
+        }
+        void prepareOffscreenRender();
+        void saveAsImage();
 };
 
 }
