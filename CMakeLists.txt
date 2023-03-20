@@ -37,6 +37,7 @@ add_subdirectory(readers)
 add_subdirectory(shaders)
 add_subdirectory(viewer)
 add_subdirectory(config)
+add_subdirectory(scene)
 
 add_executable(
     meshviewerapp
@@ -52,6 +53,7 @@ target_include_directories(
     readers
     shaders
     viewer
+    config
 )
 
 target_link_libraries(
@@ -66,6 +68,7 @@ target_link_libraries(
     events
     viewer
     objects
+    config
 )
 
 # Copy test files to binary directory

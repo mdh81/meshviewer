@@ -83,6 +83,7 @@ void Viewer::setRenderMode(const RenderMode rm) {
     } else {
         m_outputStream << "Rendering mesh shaded" << endl;
     }
+    m_renderMode = rm;
 }
 
 void Viewer::displayMesh(Mesh& mesh) {

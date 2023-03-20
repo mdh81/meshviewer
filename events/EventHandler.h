@@ -9,43 +9,50 @@
 
 class GLFWwindow;
 
-namespace mv { namespace events {
+namespace mv {
 
-// A monostate class that is responsible for handling events. Events are handled in the context
-// of a GLFW window.
+    namespace viewer {
+        class ViewerTest;
+    }
 
-class EventHandler {
+    namespace events {
 
-    public:
-        EventHandler() = default;
-        ~EventHandler() = default;
+    // A monostate class that is responsible for handling events. Events are handled in the context
+    // of a GLFW window.
 
-        // Start listening for events in the specified window
-        void start(GLFWwindow* window);
-        
-        // Register a callback for the specified event 
-        void registerCallback(const Event&, const Callback& callback);
-        
-        // Disallow copies as copying is not a meaningful operation
-        // for monostate instances 
-        EventHandler(EventHandler const&) = delete;
-        EventHandler& operator=(EventHandler const&) = delete;
-        EventHandler(EventHandler&&) = delete;
-        EventHandler& operator==(EventHandler&&) = delete;
-        
-    private:
-        // This method is declared static so a regular function pointer can be created from this
-        // method and passed to glfw function. These old C APIs don't support member function pointers
-        static void handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
+    class EventHandler {
 
-    private:
-        using CallbackRef = std::reference_wrapper<const Callback>;
-        using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHash, Event::EventEquals>;
-        static EventCallbackMap m_eventCallbackMap;
-        static bool m_started;
+        public:
+            EventHandler() = default;
+            ~EventHandler() = default;
 
-    friend class EventHandlerTest;
-};
+            // Start listening for events in the specified window
+            void start(GLFWwindow* window);
+
+            // Register a callback for the specified event
+            void registerCallback(const Event&, const Callback& callback);
+
+            // Disallow copies as copying is not a meaningful operation
+            // for monostate instances
+            EventHandler(EventHandler const&) = delete;
+            EventHandler& operator=(EventHandler const&) = delete;
+            EventHandler(EventHandler&&) = delete;
+            EventHandler& operator==(EventHandler&&) = delete;
+
+        private:
+            // This method is declared static so a regular function pointer can be created from this
+            // method and passed to glfw function. These old C APIs don't support member function pointers
+            static void handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+        private:
+            using CallbackRef = std::reference_wrapper<const Callback>;
+            using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHash, Event::EventEquals>;
+            static EventCallbackMap m_eventCallbackMap;
+            static bool m_started;
+
+        friend class EventHandlerTest;
+        friend class mv::viewer::ViewerTest;
+    };
 
 } }
 

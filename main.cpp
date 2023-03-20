@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include "Viewer.h"
 #include "STLReader.h"
+#include "ConfigReader.h"
 #include <iostream>
 #include <string>
 using namespace std;
@@ -26,9 +27,9 @@ bool ValidateArguments(int argc, char** argv) {
 int main(int argc, char** argv) {
     if (!ValidateArguments(argc, argv)) {
         return EXIT_FAILURE;
-    } 
+    }
     unique_ptr<Mesh> mesh;
-    STLReader(argv[1], false).getOutput(mesh);
+    STLReader(argv[1], config::ConfigReader::getInstance().getBoolean("cleanupOnImport")).getOutput(mesh);
     Viewer::getInstance().displayMesh(*mesh.get());
     return 0;
 }
