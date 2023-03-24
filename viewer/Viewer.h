@@ -47,6 +47,7 @@ class Viewer : public MeshViewerObject {
         bool m_renderToImage;
         GLuint m_frameBufferId;
         GLuint m_imageTextureId;
+        bool m_showGradientBackground;
 
     // Member functions
     private:
@@ -57,6 +58,9 @@ class Viewer : public MeshViewerObject {
         }
         void saveSnapshot() {
             m_renderToImage = true;
+        }
+        void toggleGradientBackgroundDisplay() {
+            m_showGradientBackground = !m_showGradientBackground;
         }
         void prepareOffscreenRender();
         void saveAsImage();

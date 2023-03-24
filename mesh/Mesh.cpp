@@ -13,7 +13,7 @@ namespace mv {
 using namespace common;
 
 Mesh::Mesh()
-    : Renderable("MeshVertex.shader", "Fragment.shader")
+    : Renderable("MeshVertex.glsl", "Fragment.glsl")
     , m_numVertices(0)
     , m_numFaces(0)
     , m_connectivityDataSize(0) {
@@ -323,7 +323,7 @@ void Mesh::generateColors() {
 
     // Set color for the mesh
     GLint colorId = glGetUniformLocation(m_shaderProgram, "reflectionCoefficient");
-    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.76f, 0.61f, 0.2f)));
+    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.56f, 0.51f, 0.5f)));
 
     // Set light position in view coordinates
     // The default light is a simple headlight that's positioned at the

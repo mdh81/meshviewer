@@ -7,6 +7,7 @@
 #include "EventHandler.h"
 #include "CallbackFactory.h"
 #include "Glyph.h"
+#include "GradientBackground.h"
 #include "ConfigReader.h"
 
 #ifdef OSX
@@ -26,6 +27,7 @@ using namespace std;
 namespace mv {
 using namespace common;
 using namespace events;
+using namespace objects;
 
 Viewer& Viewer::getInstance() {
     static Viewer instance;
@@ -37,7 +39,8 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , m_windowHeight(windowHeight)
     , m_renderToImage(false)
     , m_frameBufferId(0)
-    , m_imageTextureId(0) {
+    , m_imageTextureId(0)
+    , m_showGradientBackground(true) {
 
     // Initialize GLFW
     if (!glfwInit())
@@ -83,6 +86,11 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
             CallbackFactory::getInstance().registerCallback
                     (*this, &Viewer::saveSnapshot));
 
+    EventHandler().registerCallback(
+            Event(GLFW_KEY_G),
+            CallbackFactory::getInstance().registerCallback
+                    (*this, &Viewer::toggleGradientBackgroundDisplay));
+
     // Start handling events
     EventHandler().start(m_window);
 }
@@ -119,6 +127,9 @@ void Viewer::displayMesh(Mesh& mesh) {
     // Define normal glyphs
     Glyph gl = Glyph(mesh, common::GlyphAssociation::FaceNormal);
 
+    // Create background geometry
+    GradientBackground bg = GradientBackground();
+
     glEnable(GL_DEPTH_TEST);
 
     // Rendering loop
@@ -136,6 +147,11 @@ void Viewer::displayMesh(Mesh& mesh) {
         camera.apply();
 
         // TODO: Replace with Scene::render()
+
+        // Draw background
+        if (m_showGradientBackground) {
+            bg.render(camera);
+        }
 
         // Draw mesh
         mesh.render(camera);

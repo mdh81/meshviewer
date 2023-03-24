@@ -8,6 +8,8 @@
 
 namespace mv {
 
+// TODO: Nest inside namespace objects
+
 class Mesh;
 class Camera;
 
