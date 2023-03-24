@@ -254,7 +254,7 @@ void Mesh::generateRenderData() {
     // Compile and link shaders
     createShaderProgram();
 
-    // Switch to glyph shader program
+    // Switch to mesh shader program
     glUseProgram(m_shaderProgram);
 
     // Create mesh vertex array object
