@@ -8,7 +8,7 @@ namespace mv {
 using namespace common;
 
     Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
-    : Renderable("GlyphVertex.shader", "Fragment.shader")
+    : Renderable("GlyphVertex.glsl", "Fragment.glsl")
     , m_mesh(mesh)
     , m_association(assoc)
     , m_numGlyphs(0) {

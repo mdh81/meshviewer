@@ -3,7 +3,7 @@ add_library(
     Camera.cpp
     CameraFactory.cpp
     Glyph.cpp
-)
+    GradientBackground.cpp)
 
 target_include_directories(
     objects
@@ -12,6 +12,7 @@ target_include_directories(
     ../common
     ../mesh
     ../events
+    ../config
 )
 
 target_link_libraries(
