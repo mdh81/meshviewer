@@ -3,6 +3,7 @@
 #include "CallbackFactory.h"
 #include "EventHandler.h"
 #include <vector>
+#include <limits>
 using namespace std;
 using namespace mv::common;
 using namespace mv::events;
@@ -81,8 +82,7 @@ void GradientBackground::generateRenderData() {
             // vertex coordinates
             vertexData[dataIndex++] = x;
             vertexData[dataIndex++] = y;
-            // TODO: Fix the depth buffer issues
-            vertexData[dataIndex++] = 9e-6;
+            vertexData[dataIndex++] = 1 - 1e-6;
             // color components
             vertexData[dataIndex++] = gradientColors[j].x;
             vertexData[dataIndex++] = gradientColors[j].y;
