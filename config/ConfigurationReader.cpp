@@ -1,11 +1,13 @@
-#include "ConfigReader.h"
+#include "ConfigurationReader.h"
 #include <exception>
 #include <fstream>
+#include <sstream>
 using namespace std;
+using namespace mv::common;
 
 namespace mv { namespace config {
 
-ConfigReader::ConfigReader(const std::string& fileName) : m_fileName(fileName) {
+ConfigurationReader::ConfigurationReader(const std::string& fileName) : m_fileName(fileName) {
     
     ifstream ifs(m_fileName);
     if (!ifs)
@@ -24,7 +26,7 @@ ConfigReader::ConfigReader(const std::string& fileName) : m_fileName(fileName) {
     ifs.close();
 }
 
-std::string ConfigReader::getValue(const std::string& name) {
+std::string ConfigurationReader::getValue(const std::string& name) {
     auto itr = m_data.find(name);
     if (itr != m_data.end()) {
         return itr->second;
@@ -33,7 +35,7 @@ std::string ConfigReader::getValue(const std::string& name) {
     }
 }
 
-bool ConfigReader::getBoolean(std::string const& name) {
+bool ConfigurationReader::getBoolean(std::string const& name) {
     std::string val = getValue(name);
     if (val == "true" || val == "True")
         return true;
@@ -41,6 +43,25 @@ bool ConfigReader::getBoolean(std::string const& name) {
         return false;
     else
         throw runtime_error(name + " is not a boolean property");
+}
+
+Color ConfigurationReader::getColor(const std::string &name, const bool normalize) {
+    std::string val = getValue(name);
+    Color color;
+    istringstream ss(val);
+    string colorComponent;
+    auto formattedCorrectly = true;
+    auto* colorData = reinterpret_cast<float*>(&color);
+    for (common::byte i = 0; i < 3 && formattedCorrectly; ++i) {
+        if ((formattedCorrectly = (getline(ss, colorComponent, ',').operator bool() && !colorComponent.empty()))) {
+            colorData[i] = stof(colorComponent);
+            colorData[i] /= normalize ? 255 : 1;
+        }
+    }
+    if (!formattedCorrectly) {
+        throw std::runtime_error(name + "is not property formatted. Use format \"<r,g,b>\"");
+    }
+    return color;
 }
 
 

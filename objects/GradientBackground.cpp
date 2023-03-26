@@ -1,5 +1,5 @@
 #include "GradientBackground.h"
-#include "ConfigReader.h"
+#include "ConfigurationReader.h"
 #include "CallbackFactory.h"
 #include "EventHandler.h"
 #include <vector>
@@ -7,17 +7,16 @@
 using namespace std;
 using namespace mv::common;
 using namespace mv::events;
+using namespace mv::config;
 
 namespace mv::objects {
 
 using byte = mv::common::byte;
 
-GradientBackground::GradientBackground(const GradientType type, const GradientDirection direction, byte const numStops)
+GradientBackground::GradientBackground(const GradientType type, const GradientDirection direction)
 : Renderable("BackgroundVertex.glsl", "Fragment.glsl")
 , m_direction(direction)
-, m_type(type)
-, m_numberOfStops(numStops) {
-
+, m_type(type) {
     EventHandler().registerCallback(
             Event(GLFW_KEY_H),
             CallbackFactory::getInstance().registerCallback
@@ -47,6 +46,8 @@ void GradientBackground::generateRenderData() {
         return;
     }
 
+    constexpr byte numberOfStops = 3;
+
     // Create shader program
     createShaderProgram();
     glCallWithErrorCheck(glUseProgram, m_shaderProgram);
@@ -58,27 +59,27 @@ void GradientBackground::generateRenderData() {
     glCallWithErrorCheck(glGenBuffers, 1, &gradientVbo);
     glCallWithErrorCheck(glBindBuffer, GL_ARRAY_BUFFER, gradientVbo);
 
-    // TODO: Read this from config
-    vector<Color> gradientColors(m_numberOfStops);
-    gradientColors[0].x = 1.0; gradientColors[0].y = 0.9098; gradientColors[0].z = 0.8078;
-    gradientColors[1].x = 0.9843; gradientColors[1].y = 0.8824; gradientColors[1].z = 0.5137;
-    gradientColors[2].x = 1.0; gradientColors[2].y = 0.9098; gradientColors[2].z = 0.8078;
+    // The linear gradient pattern used is color1->color2->color1
+    vector<Color> gradientColors(numberOfStops);
+    gradientColors[0] = ConfigurationReader::getInstance().getColor("GradientColor1");
+    gradientColors[1] = ConfigurationReader::getInstance().getColor("GradientColor2");
+    gradientColors[2] = ConfigurationReader::getInstance().getColor("GradientColor1");
 
     // Vertices are defined in normalized device coordinates, which is a left-handed system.
     // Therefore, the right location for background is the XY plane z = 1
     // The vertex and color data are interleaved in the buffer whose stride is 6 with
     // the vertex coordinates taking the first three values and the color components taking
     // the next three
-    auto bufferSize = 6 * m_numberOfStops * 2;
+    auto bufferSize = 6 * numberOfStops * 2;
     vector<GLfloat> vertexData(bufferSize);
     byte dataIndex = 0;
     // NDC runs from -1 to +1 in all directions
     GLfloat x = -1.f, y = -1.f;
     // NDC is a cube of length 2. We will divide the vertical or horizontal length
     // by the number of gradient stops
-    GLfloat increment = 2.f / (m_numberOfStops-1);
+    GLfloat increment = 2.f / (numberOfStops-1);
     for (byte i = 0; i < 2; ++i) { // Loop over end points
-        for (byte j = 0; j < m_numberOfStops; ++j) { // Loop over gradient stops
+        for (byte j = 0; j < numberOfStops; ++j) { // Loop over gradient stops
             // vertex coordinates
             vertexData[dataIndex++] = x;
             vertexData[dataIndex++] = y;
@@ -130,7 +131,7 @@ void GradientBackground::generateRenderData() {
     glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
     // m_numberOfStops - 1 is the number of quads we will draw on the far plane
     // Each quad will be split into two triangles, each of which will have three indices
-    vector<GLuint> faces((m_numberOfStops - 1) * 2 * 3);
+    vector<GLuint> faces((numberOfStops - 1) * 2 * 3);
     faces[0] = 0; faces[1] = 4;  faces[2] = 3;
     faces[3] = 0; faces[4] = 4;  faces[5] = 1;
     faces[6] = 1; faces[7] = 4;  faces[8] = 5;

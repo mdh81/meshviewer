@@ -1,6 +1,6 @@
 add_library(
-    config 
-    ConfigReader.cpp
+    configuration
+    ConfigurationReader.cpp
 )
 
 add_custom_target(
@@ -8,8 +8,20 @@ add_custom_target(
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/defaults.cfg ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
+target_include_directories(
+    configuration
+    PUBLIC
+    ../common
+)
+
+target_link_libraries(
+    configuration
+    PUBLIC
+    GLEW::glew
+)
+
 add_dependencies(
-    config
+    configuration
     cfgFileCopy
 )
 

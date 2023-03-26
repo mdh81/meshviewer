@@ -72,7 +72,7 @@ target_link_libraries(
     events
     viewer
     objects
-    config
+    configuration
 )
 
 # Copy test files to binary directory
