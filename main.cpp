@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include "Viewer.h"
 #include "STLReader.h"
-#include "ConfigReader.h"
+#include "ConfigurationReader.h"
 #include <iostream>
 #include <string>
 using namespace std;
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     unique_ptr<Mesh> mesh;
-    STLReader(argv[1], config::ConfigReader::getInstance().getBoolean("cleanupOnImport")).getOutput(mesh);
+    STLReader(argv[1], config::ConfigurationReader::getInstance().getBoolean("cleanupOnImport")).getOutput(mesh);
     Viewer::getInstance().displayMesh(*mesh.get());
     return 0;
 }

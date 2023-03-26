@@ -17,8 +17,7 @@ public:
         Vertical
     };
     explicit GradientBackground(GradientType const type = GradientType::Linear,
-                                GradientDirection const direction = GradientDirection::Vertical,
-                                common::byte numberOfColorStops = 3);
+                                GradientDirection const direction = GradientDirection::Vertical);
     void setGradientDirection(GradientDirection const direction) {
         m_direction = direction;
         m_readyToRender = false;
@@ -34,7 +33,6 @@ protected:
 private:
     GradientType m_type;
     GradientDirection m_direction;
-    common::byte m_numberOfStops;
 };
 
 }

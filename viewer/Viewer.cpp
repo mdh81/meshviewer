@@ -8,7 +8,7 @@
 #include "CallbackFactory.h"
 #include "Glyph.h"
 #include "GradientBackground.h"
-#include "ConfigReader.h"
+#include "ConfigurationReader.h"
 
 #ifdef OSX
 #pragma clang diagnostic push
@@ -216,14 +216,14 @@ void Viewer::prepareOffscreenRender() {
 
 void Viewer::saveAsImage() {
     // Create directory if it doesn't exist
-    string outputDir = config::ConfigReader::getInstance().getValue("snapshotsDirectory");
+    string outputDir = config::ConfigurationReader::getInstance().getValue("snapshotsDirectory");
     if (!filesystem::exists(outputDir)) {
         cerr << "Creating directory: " << outputDir << endl;
         filesystem::create_directory(outputDir);
     }
     // Find the image file name with the largest suffix and append 1 to it to arrive at
     // the name for the new snapshot
-    auto snapshotPrefix = config::ConfigReader::getInstance().getValue("snapshotPrefix");
+    auto snapshotPrefix = config::ConfigurationReader::getInstance().getValue("snapshotPrefix");
     unsigned long numericSuffix = 1;
     for (auto& dirEntry : filesystem::directory_iterator(outputDir)) {
         if (dirEntry.path().extension() == ".jpg") {
