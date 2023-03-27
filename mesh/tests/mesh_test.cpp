@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "Mesh.h"
-#include "STLReader.h"
+#include "ReaderFactory.h"
 #include "glm/glm.hpp"
 #include <vector>
 #include <initializer_list>
@@ -9,6 +9,7 @@
 #include <cstdlib>
 using namespace std;
 using namespace mv;
+using namespace mv::readers;
 
 class MeshFixture : public ::testing::Test {
     protected:
@@ -22,9 +23,7 @@ class MeshFixture : public ::testing::Test {
 };
 
 TEST_F(MeshFixture, RemoveDuplicateVertices) {
-    unique_ptr<Mesh> spMesh;
-    
-    STLReader(MeshFixture::m_modelsDir/"cube.stl").getOutput(spMesh);
+    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput(true);
     int numOrigVertices = spMesh->getNumberOfVertices();
     spMesh->removeDuplicateVertices();
     int numNewVertices = spMesh->getNumberOfVertices();
@@ -89,11 +88,10 @@ TEST(Mesh, TransformMesh) {
 }
 
 TEST_F(MeshFixture, WriteSTL) {
-    unique_ptr<Mesh> spMesh;
     auto inputPath = MeshFixture::m_modelsDir/"cube.stl";
+    auto spMesh = ReaderFactory::getReader(inputPath)->getOutput();
     auto inputFs = filesystem::file_size(inputPath);
     ASSERT_TRUE(inputFs > 0) << "Input STL file is bad";
-    STLReader(inputPath).getOutput(spMesh);
     auto outputPath = MeshFixture::m_modelsDir/"cubeOut.stl";
     filesystem::remove(outputPath);
     spMesh->writeToSTL(outputPath);

@@ -1,25 +1,22 @@
 #ifndef STL_READER_H
 #define STL_READER_H
 #include <string>
-#include <memory>
 #include "Mesh.h"
+#include "Reader.h"
 
-namespace mv {
+namespace mv::readers {
 
-class STLReader : public MeshViewerObject {
+class STLReader : public MeshViewerObject, Reader {
     public:
-        STLReader(const std::string& fn, const bool clean = true) : m_fileName(fn),
-                                                                    m_clean(clean) {}    
-        STLReader(const STLReader&) = delete;
-        STLReader(STLReader&&) = delete;
-        STLReader& operator=(const STLReader&) = delete;
-        STLReader& operator=(STLReader&&) = delete;
-        void getOutput(std::unique_ptr<Mesh>& mesh);
+        MeshPointer getOutput(bool const clean) override;
     private:
-        void readBinary(std::ifstream& ifs, std::unique_ptr<Mesh>& mesh); 
+        STLReader(const std::string& fn)
+            : m_fileName(fn) {}
+        MeshPointer readBinary(std::ifstream& ifs, bool const clean);
     private:
         std::string m_fileName;
-        bool m_clean;
+
+    friend class ReaderFactory;
 };
 
 }

@@ -1,9 +1,13 @@
 add_executable(
-    stlreader_test 
-    stlreader_test.cpp)
+    reader_factory_test
+    reader_factory_test.cpp)
+
+add_executable(
+    stl_reader_test
+    stl_reader_test.cpp)
 
 # Convenience variables
-set(allTests stlreader_test)
+set(allTests reader_factory_test stl_reader_test)
 
 # All tests include headers from the source directory
 foreach(test ${allTests})
