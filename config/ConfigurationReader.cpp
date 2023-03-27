@@ -17,7 +17,7 @@ ConfigurationReader::ConfigurationReader(const std::string& fileName) : m_fileNa
     while (ifs) {
         string config; 
         ifs >> config;
-        if (config.empty()) continue;
+        if (config.empty() || config.at(0) == '#') continue;
         auto tokEnd = config.find('=');
         if (tokEnd == string::npos) 
             throw runtime_error("Invalid config entry: " + config); 
