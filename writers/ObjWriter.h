@@ -1,14 +1,22 @@
 #pragma once
 
-#ifndef MESHVIEWER_OBJWRITER_H
-#define MESHVIEWER_OBJWRITER_H
+#include <string>
+#include <utility>
+#include <vector>
+#include "Types.h"
 
-
+namespace mv::writers {
 
 class ObjWriter {
+public:
+    ObjWriter(std::string const& fileName) : m_fileName(fileName) { }
 
+    void writeLines(common::Lines const& points);
+    void writeTriangles(common::Points const& points, common::Triangles const& faces);
+    void writeAsTriangles(common::Points const& points, common::VertexIndices const& faces, common::byte const vertexStride);
+
+private:
+    std::string m_fileName;
 };
 
-
-
-#endif //MESHVIEWER_OBJWRITER_H
+}

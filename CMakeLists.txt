@@ -42,11 +42,12 @@ add_subdirectory(shaders)
 add_subdirectory(viewer)
 add_subdirectory(config)
 add_subdirectory(scene)
+add_subdirectory(writers)
 
 add_executable(
     meshviewerapp
     main.cpp
-)
+    writers/ObjWriter.cpp writers/ObjWriter.h)
 
 target_include_directories(
     meshviewerapp
@@ -60,6 +61,7 @@ target_include_directories(
     config
 )
 
+#TODO: Is it necessary to link all of these? Won't they be implicitly linked via target_link_libraries in the respective libraries
 target_link_libraries(
     meshviewerapp
     PUBLIC
@@ -73,6 +75,7 @@ target_link_libraries(
     viewer
     objects
     configuration
+    writers
 )
 
 # Copy test files to binary directory

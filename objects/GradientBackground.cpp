@@ -3,7 +3,7 @@
 #include "CallbackFactory.h"
 #include "EventHandler.h"
 #include <vector>
-#include <limits>
+#include <cmath>
 using namespace std;
 using namespace mv::common;
 using namespace mv::events;
@@ -13,19 +13,27 @@ namespace mv::objects {
 
 using byte = mv::common::byte;
 
-GradientBackground::GradientBackground(const GradientType type, const GradientDirection direction)
+GradientBackground::GradientBackground(GradientType const type, GradientDirection const direction)
 : Renderable("BackgroundVertex.glsl", "Fragment.glsl")
 , m_direction(direction)
-, m_type(type) {
+, m_type(type)
+, m_numberOfStops (3)
+, m_numberOfConnectivityEntries (0) {
     EventHandler().registerCallback(
             Event(GLFW_KEY_H),
-            CallbackFactory::getInstance().registerCallback
-                    (*this, &GradientBackground::setGradientDirection, GradientDirection::Horizontal));
+    CallbackFactory::getInstance().registerCallback
+                (*this, &GradientBackground::setGradientDirection, GradientDirection::Horizontal));
 
     EventHandler().registerCallback(
             Event(GLFW_KEY_V),
-            CallbackFactory::getInstance().registerCallback
-                    (*this, &GradientBackground::setGradientDirection, GradientDirection::Vertical));
+    CallbackFactory::getInstance().registerCallback
+                (*this, &GradientBackground::setGradientDirection, GradientDirection::Vertical));
+
+    EventHandler().registerCallback(
+            Event(GLFW_KEY_G, GLFW_MOD_ALT),
+    CallbackFactory::getInstance().registerCallback
+                (*this, &GradientBackground::toggleGradientType));
+
 }
 
 void GradientBackground::render(const mv::Camera &camera) {
@@ -34,10 +42,18 @@ void GradientBackground::render(const mv::Camera &camera) {
         generateRenderData();
     }
 
+    // Vertices are defined in normalized device coordinates, which is a left-handed system
+    // that spans from -1 to +1 in all directions. One way to draw the background is to render
+    // it at z = 1, but due to floating point precision problems results can be non-deterministic.
+    // A better approach is to make sure the background's rendering doesn't write to the depth
+    // buffer so everything that's drawn after the background automatically appears on top of
+    // the background
+    glCallWithErrorCheck(glDisable, GL_DEPTH_TEST);
     glCallWithErrorCheck(glUseProgram, m_shaderProgram);
     glCallWithErrorCheck(glBindVertexArray, m_vertexArrayObject);
     glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
-    glCallWithErrorCheck(glDrawElements, GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+    glCallWithErrorCheck(glDrawElements, GL_TRIANGLES, m_numberOfConnectivityEntries, GL_UNSIGNED_INT, 0);
+    glCallWithErrorCheck(glEnable, GL_DEPTH_TEST);
 }
 
 void GradientBackground::generateRenderData() {
@@ -46,12 +62,12 @@ void GradientBackground::generateRenderData() {
         return;
     }
 
-    constexpr byte numberOfStops = 3;
-
+    // TODO: Add dirty flag so shaders won't be recreated on geometry update
     // Create shader program
     createShaderProgram();
     glCallWithErrorCheck(glUseProgram, m_shaderProgram);
 
+    // TODO: Delete existing buffers
     // Create vertex data
     glCallWithErrorCheck(glGenVertexArrays, 1, &m_vertexArrayObject);
     glCallWithErrorCheck(glBindVertexArray, m_vertexArrayObject);
@@ -59,31 +75,61 @@ void GradientBackground::generateRenderData() {
     glCallWithErrorCheck(glGenBuffers, 1, &gradientVbo);
     glCallWithErrorCheck(glBindBuffer, GL_ARRAY_BUFFER, gradientVbo);
 
-    // The linear gradient pattern used is color1->color2->color1
-    vector<Color> gradientColors(numberOfStops);
-    gradientColors[0] = ConfigurationReader::getInstance().getColor("GradientColor1");
-    gradientColors[1] = ConfigurationReader::getInstance().getColor("GradientColor2");
-    gradientColors[2] = ConfigurationReader::getInstance().getColor("GradientColor1");
+    if (m_type == GradientType::Linear) {
+        generateLinearGradient();
+    } else {
+        generateSphericalGradient();
+    }
 
-    // Vertices are defined in normalized device coordinates, which is a left-handed system.
-    // Therefore, the right location for background is the XY plane z = 1
+    // Specify layout of vertex data
     // The vertex and color data are interleaved in the buffer whose stride is 6 with
     // the vertex coordinates taking the first three values and the color components taking
     // the next three
-    auto bufferSize = 6 * numberOfStops * 2;
+    // Coordinates
+    auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexPosition");
+    glCallWithErrorCheck(glEnableVertexAttribArray, positionAttrib);
+    glCallWithErrorCheck(glVertexAttribPointer, positionAttrib,
+                         3,                 // Entries per vertex
+                         GL_FLOAT,          // Format
+                         GL_FALSE,          // Normalized
+                         6*sizeof(GLfloat), // Stride
+                         nullptr);          // Offset
+    // Color
+    auto colorAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexColorIn");
+    glCallWithErrorCheck(glEnableVertexAttribArray, colorAttrib);
+    glCallWithErrorCheck(glVertexAttribPointer, colorAttrib,
+                         3,                             // Entries per vertex
+                         GL_FLOAT,                      // Format
+                         GL_FALSE,                      // Normalized
+                         6*sizeof(GLfloat),             // Stride
+                         (void*)(3*sizeof(GLfloat)));   // Offset
+
+    m_readyToRender = true;
+}
+
+void GradientBackground::generateLinearGradient() {
+
+    // The linear gradient pattern used is edge color->center color->edge color
+    vector<Color> gradientColors(m_numberOfStops);
+    gradientColors[0] = ConfigurationReader::getInstance().getColor("LinearGradientEdgeColor");
+    gradientColors[1] = ConfigurationReader::getInstance().getColor("LinearGradientCenterColor");
+    gradientColors[2] = ConfigurationReader::getInstance().getColor("LinearGradientEdgeColor");
+
+    // Each stop has two end points, and each point has 6 values: 3 vertex and 3 color components
+    auto bufferSize = m_numberOfStops * 2 * 6;
     vector<GLfloat> vertexData(bufferSize);
     byte dataIndex = 0;
     // NDC runs from -1 to +1 in all directions
     GLfloat x = -1.f, y = -1.f;
     // NDC is a cube of length 2. We will divide the vertical or horizontal length
     // by the number of gradient stops
-    GLfloat increment = 2.f / (numberOfStops-1);
+    GLfloat increment = 2.f / (m_numberOfStops-1);
     for (byte i = 0; i < 2; ++i) { // Loop over end points
-        for (byte j = 0; j < numberOfStops; ++j) { // Loop over gradient stops
+        for (byte j = 0; j < m_numberOfStops; ++j) { // Loop over gradient stops
             // vertex coordinates
             vertexData[dataIndex++] = x;
             vertexData[dataIndex++] = y;
-            vertexData[dataIndex++] = 1 - 1e-6;
+            vertexData[dataIndex++] = 0;
             // color components
             vertexData[dataIndex++] = gradientColors[j].x;
             vertexData[dataIndex++] = gradientColors[j].y;
@@ -104,41 +150,113 @@ void GradientBackground::generateRenderData() {
     }
 
     // Upload data to the gpu
-    glCallWithErrorCheck(glBufferData, GL_ARRAY_BUFFER, sizeof(GLfloat) * bufferSize, vertexData.data(), GL_STATIC_DRAW);
-
-    // Specify layout of vertex data
-    // Coordinates
-    auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexPosition");
-    glCallWithErrorCheck(glEnableVertexAttribArray, positionAttrib);
-    glCallWithErrorCheck(glVertexAttribPointer, positionAttrib,
-                         3,                 // Entries per vertex
-                         GL_FLOAT,          // Format
-                         GL_FALSE,          // Normalized
-                         6*sizeof(GLfloat), // Stride
-                         nullptr);          // Offset
-    // Color
-    auto colorAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexColorIn");
-    glCallWithErrorCheck(glEnableVertexAttribArray, colorAttrib);
-    glCallWithErrorCheck(glVertexAttribPointer, colorAttrib,
-                         3,                             // Entries per vertex
-                         GL_FLOAT,                      // Format
-                         GL_FALSE,                      // Normalized
-                         6*sizeof(GLfloat),             // Stride
-                         (void*)(3*sizeof(GLfloat)));   // Offset
+    glCallWithErrorCheck(glBufferData,
+                         GL_ARRAY_BUFFER,
+                         sizeof(GLfloat) * bufferSize,
+                         vertexData.data(), GL_STATIC_DRAW);
 
     // Specify connectivity
     glCallWithErrorCheck(glGenBuffers, 1, &m_elementBufferObject);
     glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
-    // m_numberOfStops - 1 is the number of quads we will draw on the far plane
-    // Each quad will be split into two triangles, each of which will have three indices
-    vector<GLuint> faces((numberOfStops - 1) * 2 * 3);
+    // m_numberOfStops - 1 is the number of quads we will draw and
+    // each quad will be split into two triangles, each of which will have three indices
+    vector<GLuint> faces((m_numberOfStops - 1) * 2 * 3);
     faces[0] = 0; faces[1] = 4;  faces[2] = 3;
     faces[3] = 0; faces[4] = 4;  faces[5] = 1;
     faces[6] = 1; faces[7] = 4;  faces[8] = 5;
     faces[9] = 1; faces[10] = 5; faces[11] = 2;
-    glCallWithErrorCheck(glBufferData, GL_ELEMENT_ARRAY_BUFFER, faces.size() * sizeof(GLuint), faces.data(), GL_STATIC_DRAW);
+    glCallWithErrorCheck(glBufferData,
+                         GL_ELEMENT_ARRAY_BUFFER,
+                         faces.size() * sizeof(GLuint),
+                         faces.data(),
+                         GL_STATIC_DRAW);
+    m_numberOfConnectivityEntries = faces.size();
+}
 
-    m_readyToRender = true;
+void GradientBackground::generateSphericalGradient() {
+
+    // TODO: The geometry doesn't consider the aspect ratio of the window, it gets scaled unnaturally
+
+    // Geometry for spherical gradient is composed of an inner disk and an outer annulus
+    // The outer circle circumscribes a unit square, so it's radius R is sqrt(2)
+    // The radius of the inner disk is R/3 and the thickness of the annulus is 2R/3
+    constexpr byte numberOfSubdivisions = 16;
+    float const diskRadius = std::sqrt(2.f)/3.f;
+    float const annulusThickness = 2*diskRadius;
+    vector<Point3D> vertices;
+    auto numVertices = 2 *                          // Two circles
+                     numberOfSubdivisions +         // Number of vertices per circle
+                     1;                             // Vertex at center for the disk
+
+    vertices.reserve(2 * numVertices);           // Position + color
+
+    vector<unsigned> faces;
+    auto numFaces = numberOfSubdivisions +          // Inner disk has number of subdivision triangles
+                    numberOfSubdivisions * 2;       // Annulus has number of subdivision quads each of which is split into
+                                                    // two triangles
+    faces.reserve(3 * numFaces);                 // Each triangle has three index entries
+
+
+    Color centerColor = ConfigurationReader::getInstance().getColor("RadialGradientCenterColor");
+    Color innerColor = ConfigurationReader::getInstance().getColor("RadialGradientInnerColor");
+    Color outerColor = ConfigurationReader::getInstance().getColor("RadialGradientOuterColor");
+
+    // Create a circle centered at origin for the given radius
+    auto generateCircle = [&centerColor](
+        float const radius,
+        vector<Point3D>& vertices,
+        bool const asDisk,
+        Color const& color){
+
+        if (asDisk) {
+            vertices.emplace_back(0, 0, 0);
+            vertices.emplace_back(centerColor.x, centerColor.y, centerColor.z);
+        }
+        constexpr float thetaIncrement = (2 * M_PI)/numberOfSubdivisions;
+        float theta = 0.f;
+        for (byte i = 0; i < numberOfSubdivisions; ++i, theta+=thetaIncrement) {
+            vertices.emplace_back(radius * cos(theta),
+                                  radius * sin(theta),
+                                  0);
+            vertices.emplace_back(color.x, color.y, color.z);
+        }
+    };
+
+    // Generate inner disk
+    generateCircle(diskRadius, vertices, true, innerColor);
+    for (unsigned i = 1; i <= numberOfSubdivisions; ++i) {
+        faces.push_back(0);
+        faces.push_back(i);
+        faces.push_back(i == numberOfSubdivisions ? 1 : i+1);
+    }
+
+    // Generate annulus
+    generateCircle(diskRadius + annulusThickness, vertices, false, outerColor);
+    for (unsigned i = 1; i <= numberOfSubdivisions; ++i) {
+        faces.push_back(i);
+        faces.push_back(i + numberOfSubdivisions);
+        faces.push_back(i == numberOfSubdivisions ? i + 1 : i + numberOfSubdivisions + 1);
+        faces.push_back(i);
+        faces.push_back(i == numberOfSubdivisions ? i + 1 : i + numberOfSubdivisions + 1);
+        faces.push_back(i == numberOfSubdivisions ? 1 : i + 1);
+    }
+
+    // Upload vertex data to the gpu
+    glCallWithErrorCheck(glBufferData,
+                         GL_ARRAY_BUFFER,
+                         sizeof(Point3D) * numVertices * 2,
+                         vertices.data(),
+                         GL_STATIC_DRAW);
+
+    // Upload connectivity data to the gpu
+    glCallWithErrorCheck(glGenBuffers, 1, &m_elementBufferObject);
+    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glCallWithErrorCheck(glBufferData,
+                         GL_ELEMENT_ARRAY_BUFFER,
+                         sizeof(GLuint) * faces.size(),
+                         faces.data(),
+                         GL_STATIC_DRAW);
+    m_numberOfConnectivityEntries = faces.size();
 }
 
 }

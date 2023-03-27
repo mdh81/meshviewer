@@ -12,14 +12,21 @@
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
 
+// TODO: replace by mathlib's Vector
 struct Point3D {
     float x;
     float y;
-    float z; 
+    float z;
+    Point3D() = default;
+    // Emplace support constructor
+    Point3D(float const x, float const y, float const z) : x(x), y(y), z(z) {
+    }
 };
-// TODO: replace by mathlib's Vector
 using Vector = Point3D;
 using Color = Point3D;
+using Line = std::vector<Point3D>;
+using Lines = std::vector<Line>;
+using Points = std::vector<Point3D>;
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 
@@ -42,29 +49,39 @@ class Array {
         size_t m_offset;
         std::shared_ptr<T[]> m_data;
     public:
-    [[maybe_unused]] explicit Array(size_t numElements)
+        explicit Array(size_t numElements)
             : m_size(numElements)
             , m_offset(0)
             , m_data(new T[m_size * tupleSize], std::default_delete<T[]>()) {
         }
-        
+
         size_t getSize() const { return m_size; }
-        
+
         size_t getDataSize() const { return m_size * tupleSize * sizeof(T); }
-        
+
         T const* getData() const { return m_data.get(); }
-        
+
         void append(const std::initializer_list<T>& d) {
             if (d.size() != tupleSize) {
-                throw std::invalid_argument("Tuple size is " + 
+                throw std::invalid_argument("Tuple size is " +
                                             std::to_string(tupleSize) +
-                                            ". Input size is " + 
+                                            ". Input size is " +
                                             std::to_string(d.size()));
             }
             memcpy(m_data.get() + m_offset, data(d), sizeof(T) * tupleSize);
             m_offset += tupleSize;
         }
+
+        T operator[](unsigned const index) const {
+            if (index < m_size * tupleSize) {
+                return m_data[index];
+            } else {
+                throw std::runtime_error(std::to_string(index) + " is out of bounds");
+            }
+        }
 };
+
+using Triangles = std::vector<Array<unsigned, 3>>;
 
 struct Bounds {
     float xmin, xmax;

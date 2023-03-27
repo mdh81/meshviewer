@@ -22,6 +22,10 @@ public:
         m_direction = direction;
         m_readyToRender = false;
     }
+    void setGradientType(GradientType const type) {
+        m_type = type;
+        m_readyToRender = false;
+    }
 
 public:
     void render(const Camera &camera) override;
@@ -31,8 +35,17 @@ protected:
     void generateColors() override { /* Empty because color data is packaged into vertex buffer data*/ };
 
 private:
+    void generateLinearGradient();
+    void generateSphericalGradient();
+    void toggleGradientType() {
+        setGradientType(m_type == GradientType::Linear ? GradientType::Radial : GradientType::Linear);
+    }
+
+private:
     GradientType m_type;
     GradientDirection m_direction;
+    const common::byte m_numberOfStops;
+    unsigned short m_numberOfConnectivityEntries;
 };
 
 }

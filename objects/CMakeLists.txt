@@ -13,6 +13,7 @@ target_include_directories(
     ../mesh
     ../events
     ../config
+    ../writers
 )
 
 target_link_libraries(
@@ -20,6 +21,7 @@ target_link_libraries(
     PUBLIC
     glm::glm
     GLEW::GLEW
+    writers
 )
 
 enable_testing()
