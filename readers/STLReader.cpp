@@ -1,10 +1,11 @@
 #include "STLReader.h"    
 #include <fstream>
 using namespace std;
+using namespace mv;
 
-namespace mv {
+namespace mv::readers {
 
-void STLReader::getOutput(std::unique_ptr<Mesh>& mesh) {
+MeshPointer STLReader::getOutput(bool clean) {
     ifstream ifs(m_fileName, ios::binary);
     if (!ifs) {
         throw std::runtime_error("Unable to open file " + m_fileName + '!');
@@ -16,13 +17,13 @@ void STLReader::getOutput(std::unique_ptr<Mesh>& mesh) {
         throw std::runtime_error("Unable to read file" + m_fileName + '!');
     }
     if(header.find("solid") == string::npos) {
-        readBinary(ifs, mesh);
+        return readBinary(ifs, clean);
     } else {
         throw std::runtime_error("ASCII STLs not supported!");
     }
 }
 
-void STLReader::readBinary(ifstream& ifs, std::unique_ptr<Mesh>& mesh) {
+MeshPointer STLReader::readBinary(ifstream& ifs, bool const clean) {
     if (ifs.gcount() != 80) {
         throw std::runtime_error("File stream in unexpected state");
     }
@@ -31,7 +32,7 @@ void STLReader::readBinary(ifstream& ifs, std::unique_ptr<Mesh>& mesh) {
     ifs.read(reinterpret_cast<char*>(&numTris), 4);
 
     // Initialize Mesh
-    mesh.reset(new Mesh());
+    MeshPointer mesh(new Mesh());
     mesh->initialize(numTris*3, numTris);
 
     // Read triangles
@@ -56,8 +57,10 @@ void STLReader::readBinary(ifstream& ifs, std::unique_ptr<Mesh>& mesh) {
     }
     ifs.close();
 
-    if (m_clean)
+    if (clean)
         mesh->removeDuplicateVertices();
+
+    return mesh;
 }
 
 }

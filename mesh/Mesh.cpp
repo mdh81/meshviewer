@@ -124,7 +124,7 @@ unsigned Mesh::removeDuplicateVertices() {
 
     // Execute remapping
     for (auto& remapEntry : remapEntries) {
-
+        // TODO: Complete implementation of remap
     }
     if (m_debugOn)
         m_outputStream << "Removed " << numDuplicates << " duplicate vertices" << endl;

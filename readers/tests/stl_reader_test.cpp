@@ -1,11 +1,12 @@
 #include "gtest/gtest.h"
-#include "STLReader.h"
+#include "ReaderFactory.h"
 #include "Mesh.h"
 #include <memory>
 #include <filesystem>
 using namespace std;
 using namespace mv;
 using namespace mv::common;
+using namespace mv::readers;
 
 class STLReaderFixture : public ::testing::Test {
     protected:
@@ -18,9 +19,8 @@ class STLReaderFixture : public ::testing::Test {
 };
 
 TEST_F(STLReaderFixture, Read) {
-    std::unique_ptr<Mesh> spMesh;
-    STLReader reader(m_modelsDir/"cube.stl", false); 
-    reader.getOutput(spMesh);
+    ReaderPointer stlReader = ReaderFactory::getReader(m_modelsDir/"cube.stl");
+    auto spMesh = stlReader->getOutput();
     ASSERT_EQ(spMesh->getNumberOfVertices(), 36) << "Incorrect number of vertices" << std::endl;
     ASSERT_EQ(spMesh->getNumberOfFaces(), 12) << "Incorrect number of faces" << std::endl;
     auto& v = spMesh->getVertex(0);
@@ -36,8 +36,7 @@ TEST_F(STLReaderFixture, Read) {
 }
 
 TEST_F(STLReaderFixture, Cleanup) {
-    std::unique_ptr<Mesh> spMesh;
-    STLReader reader(m_modelsDir/"cube.stl", true); 
-    reader.getOutput(spMesh);
+    ReaderPointer stlReader = ReaderFactory::getReader(m_modelsDir/"cube.stl");
+    auto spMesh = stlReader->getOutput(true);
     ASSERT_EQ(spMesh->getNumberOfVertices(), 8) << "Incorrect number of vertices" << std::endl;
 }
