@@ -17,7 +17,7 @@ class ConfigurationReaderFixture : public ::testing::Test {
         ofs << "colorVar=255,10,25" << endl;
         ofs << "invalidColorVar1=255,10" << endl;
         ofs << "invalidColorVar2=255,,100" << endl;
-//ofs << "invalidColorVar2=" << endl;
+        ofs << "#comment" << endl;
         ofs.close();
     }
 };
@@ -28,6 +28,13 @@ namespace mv { namespace config {
         static ConfigurationReader &getReader() {
             static ConfigurationReader cfgReader("./test.cfg");
             return cfgReader;
+        }
+        static unsigned getNumberOfKeysStartingWith(char c, ConfigurationReader& cfgReader) {
+            unsigned result = 0;
+            for (auto& key : cfgReader.m_data) {
+                result += key.first.starts_with(c);
+            }
+            return result;
         }
     };
 } }
@@ -87,4 +94,10 @@ TEST_F(ConfigurationReaderFixture, InvalidConfigEntry) {
             throw;
         }
     }, std::runtime_error) << "Expected an exception for invalid keys!" << endl;
+}
+
+TEST_F(ConfigurationReaderFixture, Comments) {
+    ConfigurationReader& cr = ConfigurationReaderTest::getReader();
+    ASSERT_EQ(ConfigurationReaderTest::getNumberOfKeysStartingWith('#', cr), 0) << "Comments not ignored";
+
 }
