@@ -46,8 +46,7 @@ add_subdirectory(writers)
 
 add_executable(
     meshviewerapp
-    main.cpp
-    writers/ObjWriter.cpp writers/ObjWriter.h)
+    main.cpp)
 
 target_include_directories(
     meshviewerapp
