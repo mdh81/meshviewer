@@ -74,7 +74,7 @@ void Renderable::setModelViewProjection(Camera const& camera) {
     // Get the composite transform matrix id in the shader
     GLuint mvpId = glGetUniformLocation(m_shaderProgram, "modelViewProjectionTransform");
 
-    // Set model view projection projection
+    // Set model view projection
     glUniformMatrix4fv(mvpId,
                        1,        // num matrices,
                        GL_FALSE, // transpose
