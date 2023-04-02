@@ -183,12 +183,11 @@ void GradientBackground::generateSphericalGradient() {
     constexpr byte numberOfSubdivisions = 16;
     float const diskRadius = std::sqrt(2.f)/3.f;
     float const annulusThickness = 2*diskRadius;
-    Vertices vertices;
     auto numVertices = 2 *                          // Two circles
                      numberOfSubdivisions +         // Number of vertices per circle
                      1;                             // Vertex at center for the disk
-
-    vertices.reserve(2 * numVertices);           // Position + color
+    using Vertices = Array<float, 3>;
+    Vertices vertices(2*numVertices);    // Position + color
 
     vector<unsigned> faces;
     auto numFaces = numberOfSubdivisions +          // Inner disk has number of subdivision triangles
@@ -204,21 +203,21 @@ void GradientBackground::generateSphericalGradient() {
     // Create a circle centered at origin for the given radius
     auto generateCircle = [&centerColor](
         float const radius,
-        vector<Point3D>& vertices,
+        Vertices& vertices,
         bool const asDisk,
         Color const& color){
 
         if (asDisk) {
-            vertices.emplace_back(0, 0, 0);
-            vertices.emplace_back(centerColor.x, centerColor.y, centerColor.z);
+            vertices.append(0.f, 0.f, 0.f);
+            vertices.append(centerColor.x, centerColor.y, centerColor.z);
         }
         constexpr float thetaIncrement = (2 * M_PI)/numberOfSubdivisions;
         float theta = 0.f;
         for (byte i = 0; i < numberOfSubdivisions; ++i, theta+=thetaIncrement) {
-            vertices.emplace_back(radius * cos(theta),
-                                  radius * sin(theta),
-                                  0);
-            vertices.emplace_back(color.x, color.y, color.z);
+            vertices.append(radius * cos(theta),
+                            radius * sin(theta),
+                            0.f);
+            vertices.append(color.x, color.y, color.z);
         }
     };
 
@@ -245,7 +244,7 @@ void GradientBackground::generateSphericalGradient() {
     glCallWithErrorCheck(glBufferData,
                          GL_ARRAY_BUFFER,
                          6 * sizeof(GLfloat) * numVertices,
-                         vertices,
+                         vertices.getData(),
                          GL_STATIC_DRAW);
 
     // Upload connectivity data to the gpu

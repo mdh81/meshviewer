@@ -143,7 +143,7 @@ Vertex Mesh::getCentroid() const {
 void Mesh::buildVertexData() {
     m_vertexData = VertexData(m_numVertices);
     for (auto& v : m_vertices) {
-        m_vertexData->append({v.x, v.y, v.z});
+        m_vertexData->append(v.x, v.y, v.z);
     }
 }
 
@@ -222,7 +222,7 @@ void Mesh::generateVertexNormals() {
     m_vertexNormals = NormalData(m_numVertices);
     for (size_t i = 0; i < m_numVertices; ++i) {
         auto normal = m_vertices.at(i).getNormal(*this);
-        m_vertexNormals->append({normal[0], normal[1], normal[2]});
+        m_vertexNormals->append(normal[0], normal[1], normal[2]);
     }
 }
 
@@ -231,7 +231,7 @@ void Mesh::generateFaceNormals() {
     m_faceNormals = NormalData(m_numFaces);
     for (size_t i = 0; i < m_numFaces; ++i) {
         auto normal = m_faces.at(i).getNormal(*this);
-        m_faceNormals->append({normal[0], normal[1], normal[2]});
+        m_faceNormals->append(normal[0], normal[1], normal[2]);
     }
 }
 

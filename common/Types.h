@@ -13,33 +13,12 @@
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
 
-using Point3D = math3d::Point3D<float>;
-using Vector3D = math3d::Vector<float, 3>;
+using Point3D = math3d::Vector3D<float>;
+using Vector3D = math3d::Vector3D<float>;
 using Color = Point3D;
 using Line = std::vector<Point3D>;
 using Lines = std::vector<Line>;
 using Points = std::vector<Point3D>;
-
-// Allows accessing data stored in a vector of Point3D as
-// tuples of three floats.
-struct Vertices : public std::vector<Point3D> {
-    std::unique_ptr<float[]> m_data;
-    operator float* () {
-        if (!m_data) {
-            m_data = std::make_unique<float[]>(size() * 3);
-            size_t offset = 0;
-            auto constexpr stride = 3;
-            for (auto & point : *this) {
-                memcpy(m_data.get() + offset, point.getData(), stride * sizeof(GLfloat));
-                offset += stride;
-            }
-        }
-        return m_data.get();
-    }
-    void releaseTuples() {
-        m_data.reset(nullptr);
-    }
-};
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 
@@ -54,7 +33,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 }
 
 // A 2D array whose data can be shared among instances of this type. The data
-// is stored as a 1D array to facilitate easy transfer to OpenGL APIs
+// is stored as a 1D array to facilitate easy transfer to OpenGL APIs.
 template<typename T, unsigned tupleSize=1>
 class Array {
     private:
@@ -74,15 +53,11 @@ class Array {
 
         T const* getData() const { return m_data.get(); }
 
-        void append(const std::initializer_list<T>& d) {
-            if (d.size() != tupleSize) {
-                throw std::invalid_argument("Tuple size is " +
-                                            std::to_string(tupleSize) +
-                                            ". Input size is " +
-                                            std::to_string(d.size()));
-            }
-            memcpy(m_data.get() + m_offset, data(d), sizeof(T) * tupleSize);
-            m_offset += tupleSize;
+        // TODO: Assert that all the parameters are of the same type
+        template<typename... Types>
+        void append(Types... args) {
+            static_assert(sizeof...(args) == tupleSize, "Tuple size and argument size doesn't match");
+            append({args...});
         }
 
         T operator[](unsigned const index) const {
@@ -92,6 +67,27 @@ class Array {
                 throw std::runtime_error(std::to_string(index) + " is out of bounds");
             }
         }
+
+        T& operator[](unsigned const index) {
+            if (index < m_size * tupleSize) {
+                return m_data[index];
+            } else {
+                throw std::runtime_error(std::to_string(index) + " is out of bounds");
+            }
+        }
+
+    private:
+        void append(std::initializer_list<T> const& list) {
+            if (list.size() != tupleSize) {
+                throw std::invalid_argument("Tuple size is " +
+                                            std::to_string(tupleSize) +
+                                            ". Input size is " +
+                                            std::to_string(list.size()));
+            }
+            memcpy(m_data.get() + m_offset, data(list), sizeof(T) * tupleSize);
+            m_offset += tupleSize;
+        }
+
 };
 
 using Triangles = std::vector<Array<unsigned, 3>>;
