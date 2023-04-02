@@ -7,26 +7,39 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include "3dmath/Vector.h"
 #include "GL/GLEW.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
 
-// TODO: replace by mathlib's Vector
-struct Point3D {
-    float x;
-    float y;
-    float z;
-    Point3D() = default;
-    // Emplace support constructor
-    Point3D(float const x, float const y, float const z) : x(x), y(y), z(z) {
-    }
-};
+using Point3D = math3d::Point3D<float>;
 using Vector = Point3D;
 using Color = Point3D;
 using Line = std::vector<Point3D>;
 using Lines = std::vector<Line>;
 using Points = std::vector<Point3D>;
+
+// Allows accessing data stored in a vector of Point3D as
+// tuples of three floats.
+struct Vertices : public std::vector<Point3D> {
+    std::unique_ptr<float[]> m_data;
+    operator float* () {
+        if (!m_data) {
+            m_data = std::make_unique<float[]>(size() * 3);
+            size_t offset = 0;
+            auto constexpr stride = 3;
+            for (auto & point : *this) {
+                memcpy(m_data.get() + offset, point.getData(), stride * sizeof(GLfloat));
+                offset += stride;
+            }
+        }
+        return m_data.get();
+    }
+    void releaseTuples() {
+        m_data.reset(nullptr);
+    }
+};
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 

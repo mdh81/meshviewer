@@ -51,11 +51,10 @@ Color ConfigurationReader::getColor(const std::string &name, const bool normaliz
     istringstream ss(val);
     string colorComponent;
     auto formattedCorrectly = true;
-    auto* colorData = reinterpret_cast<float*>(&color);
     for (common::byte i = 0; i < 3 && formattedCorrectly; ++i) {
         if ((formattedCorrectly = (getline(ss, colorComponent, ',').operator bool() && !colorComponent.empty()))) {
-            colorData[i] = stof(colorComponent);
-            colorData[i] /= normalize ? 255 : 1;
+            color[i] = stof(colorComponent);
+            color[i] /= normalize ? 255 : 1;
         }
     }
     if (!formattedCorrectly) {

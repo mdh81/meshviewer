@@ -183,7 +183,7 @@ void GradientBackground::generateSphericalGradient() {
     constexpr byte numberOfSubdivisions = 16;
     float const diskRadius = std::sqrt(2.f)/3.f;
     float const annulusThickness = 2*diskRadius;
-    vector<Point3D> vertices;
+    Vertices vertices;
     auto numVertices = 2 *                          // Two circles
                      numberOfSubdivisions +         // Number of vertices per circle
                      1;                             // Vertex at center for the disk
@@ -244,8 +244,8 @@ void GradientBackground::generateSphericalGradient() {
     // Upload vertex data to the gpu
     glCallWithErrorCheck(glBufferData,
                          GL_ARRAY_BUFFER,
-                         sizeof(Point3D) * numVertices * 2,
-                         vertices.data(),
+                         6 * sizeof(GLfloat) * numVertices,
+                         vertices,
                          GL_STATIC_DRAW);
 
     // Upload connectivity data to the gpu
