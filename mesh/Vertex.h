@@ -13,24 +13,16 @@ class Mesh;
 class Vertex : public common::Point3D {
 
     public:
-        // For allowing instances of this type to be
-        // stored in containers like vector
         Vertex() = default;
 
-        Vertex(float x, float y, float z) { 
-            this->x = x;
-            this->y = y;
-            this->z = z;
+        Vertex(float const x, float const y, float const z)
+        : common::Point3D(x, y, z) {
         }
 
         bool operator==(const Vertex& another) const {
             return Util::areFloatsEqual(this->x, another.x) &&
                    Util::areFloatsEqual(this->y, another.y) &&
                    Util::areFloatsEqual(this->z, another.z);    
-        }
-
-        math3d::Vector<float, 3> operator-(const Vertex& another) const {
-            return math3d::Vector<float,3>({x - another.x, y - another.y, z - another.z});
         }
 
         void addFace(const unsigned faceId) {
@@ -41,7 +33,7 @@ class Vertex : public common::Point3D {
             faces = m_faces;
         }
 
-        math3d::Vector<float, 3> getNormal(const Mesh&) const; 
+        common::Vector3D getNormal(const Mesh&) const;
 
     private:
         std::vector<unsigned> m_faces;

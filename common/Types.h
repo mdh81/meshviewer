@@ -14,7 +14,7 @@
 namespace mv::common {
 
 using Point3D = math3d::Point3D<float>;
-using Vector = Point3D;
+using Vector3D = math3d::Vector<float, 3>;
 using Color = Point3D;
 using Line = std::vector<Point3D>;
 using Lines = std::vector<Line>;

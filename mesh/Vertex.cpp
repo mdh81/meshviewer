@@ -3,10 +3,12 @@
 
 namespace mv {
 
+using namespace common;
+
 // Compute vertex normal as the average of normals of all faces that
 // share that vertex
-math3d::Vector<float, 3> Vertex::getNormal(const Mesh& mesh) const {
-    math3d::Vector<float,3> normal;
+Vector3D Vertex::getNormal(const Mesh& mesh) const {
+    Vector3D normal;
     for (size_t i = 0; i < m_faces.size(); ++i) {
         const Face& face = mesh.getFace(m_faces.at(i));
         normal += face.getNormal(mesh);
