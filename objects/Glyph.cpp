@@ -154,7 +154,6 @@ void Glyph::render(Camera const& camera) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
 
     // Render lines
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
     glDrawElements(GL_LINES,
                    m_numGlyphs * 2,                // Number of elements
                    GL_UNSIGNED_INT,                 // Type of element buffer data
