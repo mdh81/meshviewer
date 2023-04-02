@@ -27,12 +27,15 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/mdh81/3dmath.git
 )
 FetchContent_MakeAvailable(3dmath)
-set(mathIncDir ${3dmath_SOURCE_DIR}/include)
+include_directories(${3dmath_SOURCE_DIR}/include)
 
+# Set default build type to debug
 set(CMAKE_BUILD_TYPE Debug)
 
+# List of opengl libraries
 set(glLibs GLEW::GLEW glfw ${OPENGL_LIBRARIES})
 
+# Sub-modules
 add_subdirectory(events)
 add_subdirectory(mesh)
 add_subdirectory(objects)
