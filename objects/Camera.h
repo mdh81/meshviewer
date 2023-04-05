@@ -46,7 +46,11 @@ class Camera : public MeshViewerObject {
 
         glm::mat4 getProjectionTransform() const { return m_projectionTransform; }
 
-    private:
+        void notifyWindowResized(common::WindowDimensions const& newDimensions) {
+            m_windowDimensions = newDimensions;
+        }
+
+private:
         void buildViewTransform();
         void buildProjectionTransform();
         void buildPerspectiveProjectionTransform();
