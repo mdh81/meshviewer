@@ -48,6 +48,7 @@ class Viewer : public MeshViewerObject {
         GLuint m_frameBufferId;
         GLuint m_imageTextureId;
         bool m_showGradientBackground;
+        bool m_windowResized;
 
     // Member functions
     private:

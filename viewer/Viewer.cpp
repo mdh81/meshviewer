@@ -40,7 +40,8 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , m_renderToImage(false)
     , m_frameBufferId(0)
     , m_imageTextureId(0)
-    , m_showGradientBackground(true) {
+    , m_showGradientBackground(true)
+    , m_windowResized(false) {
 
     // Initialize GLFW
     if (!glfwInit())
@@ -57,6 +58,16 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
         glfwTerminate();
         throw std::runtime_error("Unable to create GLFW Window");
     }
+
+    // Get notified when window size changes
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetWindowSizeCallback(m_window,
+                              [](GLFWwindow *window, int width, int height) {
+          auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
+          viewer->m_windowWidth = width;
+          viewer->m_windowHeight = height;
+          viewer->m_windowResized = true;
+    });
     glfwMakeContextCurrent(m_window);
 
     // Initialize GLEW
@@ -134,6 +145,11 @@ void Viewer::displayMesh(Mesh& mesh) {
 
     // Rendering loop
 	do {
+
+        if (m_windowResized) {
+            camera.notifyWindowResized({m_windowWidth, m_windowHeight});
+            m_windowResized = false;
+        }
 
         if (m_renderToImage) {
             prepareOffscreenRender();

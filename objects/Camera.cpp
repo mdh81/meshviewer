@@ -13,6 +13,7 @@ namespace mv {
 using namespace common;
 using namespace events;
 
+//TODO: Address clang tidy warnings
 Camera::Camera(const Mesh& m, const WindowDimensions& winDim, const ProjectionType type)
    : m_mesh(m)
    , m_windowDimensions(winDim)
