@@ -165,6 +165,7 @@ class EnumIterator {
 
 using byte = char;
 
+// TODO: It makes more sense to move these definitions to specific types (e.g. Glyph)
 enum class Axis {
     X,
     Y,
@@ -218,6 +219,7 @@ static std::string getGLErrorString(GLint glError) {
     return errStr;
 }
 
+// TODO: Make this a noop in release mode
 static GLuint glError = 0;
 #define checkGLError(glFunc)                                         \
     glError = glGetError();                                          \

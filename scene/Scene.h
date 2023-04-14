@@ -1,12 +1,27 @@
-#ifndef MESH_VIEWER_SCENE_H
-#define MESH_VIEWER_SCENE_H
+#pragma once
 
-namespace meshviewer { namespace scene {
+#include "Viewport.h"
+#include <memory>
+#include <vector>
 
-class Scene {
+namespace mv::scene {
 
-};
+    class Scene {
+    public:
+        using ViewportPointer = std::unique_ptr<Viewport>;
+        using ViewportCollection = std::vector<ViewportPointer>;
 
-} }
+    public:
+        Scene(unsigned const windowWidth, unsigned const windowHeight);
+        ~Scene() = default;
+        void createViewport(Viewport::ViewportCoordinates const& coordinates);
+        [[nodiscard]]
+        ViewportCollection const& getViewports() const { return viewportCollection; }
 
-#endif
+    private:
+        ViewportCollection viewportCollection;
+        unsigned const windowWidth;
+        unsigned const windowHeight;
+    };
+
+}
