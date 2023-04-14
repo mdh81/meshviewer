@@ -2,7 +2,6 @@
 #include "Types.h"
 #include "Mesh.h"
 #include "ShaderLoader.h"
-#include "Util.h"
 #include "CameraFactory.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
@@ -41,7 +40,10 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , m_frameBufferId(0)
     , m_imageTextureId(0)
     , m_showGradientBackground(true)
-    , m_windowResized(false) {
+    , m_windowResized(false)
+    , m_renderMode(RenderMode::Shaded)
+    , m_showNormals(false)
+    , m_addFog(false) {
 
     // Initialize GLFW
     if (!glfwInit())
@@ -53,7 +55,9 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, "MeshViewer", nullptr, nullptr);
+    m_window = glfwCreateWindow(static_cast<int>(m_windowWidth),
+                                static_cast<int>(m_windowHeight),
+                                "MeshViewer", nullptr, nullptr);
     if(!m_window) {
         glfwTerminate();
         throw std::runtime_error("Unable to create GLFW Window");
@@ -101,6 +105,11 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
             Event(GLFW_KEY_G),
             CallbackFactory::getInstance().registerCallback
                     (*this, &Viewer::toggleGradientBackgroundDisplay));
+
+    EventHandler().registerCallback(
+            Event(GLFW_KEY_F),
+            CallbackFactory::getInstance().registerCallback
+                    (*this, &Viewer::toggleFog));
 
     // Start handling events
     EventHandler().start(m_window);
@@ -263,7 +272,9 @@ void Viewer::saveAsImage() {
     // the framebuffer data is flipped on the vertical axis when considered from the "normal"
     // windowing systems perspective
     stbi_flip_vertically_on_write(1);
-    auto status = stbi_write_jpg(imageFileName.string().data(), m_windowWidth, m_windowHeight, 3, rgbData.get(), 100);
+    auto status = stbi_write_jpg(imageFileName.string().data(),
+                                 static_cast<int>(m_windowWidth),
+                                 static_cast<int>(m_windowHeight), 3, rgbData.get(), 100);
 
     // Unbind frame buffer, so the next draw call goes to the default frame buffer
     glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, 0);
