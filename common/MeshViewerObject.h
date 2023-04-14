@@ -11,14 +11,29 @@ namespace mv {
 class MeshViewerObject {
     public:
         // TODO: Experiment with creation semantics
-        MeshViewerObject(std::ostream& os=std::cerr);
+        explicit MeshViewerObject(std::ostream& os=std::cerr);
         // Compares object identifiers
         bool operator==(const MeshViewerObject& another) const;
         // Turns debug on or off
         void debugOn() { std::cout<<"Turning debug on" << std::endl; m_debugOn = true; }
         void debugOff() { m_debugOn = false; }
-        bool isDebugOn() { return m_debugOn; }
-        size_t getId() { return m_id; }
+        bool isDebugOn() const { return m_debugOn; }
+        size_t getId() const { return m_id; }
+
+        struct MeshViewerObjectHash {
+            size_t operator()(MeshViewerObject const& meshViewerObject) const {
+                return meshViewerObject.getId();
+            }
+        };
+
+        struct MeshViewerObjectEquals {
+            bool operator()(MeshViewerObject const& meshViewerObjectA,
+                            MeshViewerObject const& meshViewerObjectB) const {
+                return meshViewerObjectA.getId() == meshViewerObjectB.getId();
+            }
+        };
+
+
     private:
         size_t m_id;
         static size_t sm_instanceCount;

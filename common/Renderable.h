@@ -2,15 +2,15 @@
 #define RENDERABLE_H
 
 #include "MeshViewerObject.h"
-#include <string>
 #include "GL/glew.h"
 #include "glm/glm.hpp"
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 namespace mv {
 
 class Camera;
-
-// TODO: Subclass Renderable to create 3D and 2DRenderable (annotations, images etc)
 
 class Renderable : public MeshViewerObject {
 
@@ -43,6 +43,12 @@ class Renderable : public MeshViewerObject {
         GLuint m_elementBufferObject;
         bool m_readyToRender;
 };
+
+using RenderableReference = std::reference_wrapper<Renderable const>;
+using RenderableReferences = std::unordered_set<RenderableReference,
+        MeshViewerObject::MeshViewerObjectHash,
+        MeshViewerObject::MeshViewerObjectEquals>;
+using Renderables = std::vector<RenderableReference>;
 
 }
 
