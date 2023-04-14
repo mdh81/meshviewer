@@ -25,6 +25,7 @@ class Viewer : public MeshViewerObject {
         enum class RenderMode {
             Wireframe,
             Shaded,
+            ShadedWithEdges
         };
         RenderMode getRenderMode() const { return m_renderMode; }
         // Creation Semantics
@@ -49,10 +50,11 @@ class Viewer : public MeshViewerObject {
         GLuint m_imageTextureId;
         bool m_showGradientBackground;
         bool m_windowResized;
+        bool m_addFog;
 
     // Member functions
     private:
-        void setColors();
+        static void setColors();
         void setRenderMode(const RenderMode);
         void toggleNormalsDisplay() {
             m_showNormals = !m_showNormals;
@@ -62,6 +64,9 @@ class Viewer : public MeshViewerObject {
         }
         void toggleGradientBackgroundDisplay() {
             m_showGradientBackground = !m_showGradientBackground;
+        }
+        void toggleFog() {
+            m_addFog = !m_addFog;
         }
         void prepareOffscreenRender();
         void saveAsImage();
