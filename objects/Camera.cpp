@@ -141,12 +141,12 @@ void Camera::buildProjectionTransform() {
 void Camera::buildOrthographicProjectionTransform() {
 
     float viewWidth = m_viewVolume.len();
-    float viewHeight = (viewWidth * m_windowDimensions.height/m_windowDimensions.width);
+    float viewHeight = (viewWidth * static_cast<float>(m_windowDimensions.height)/static_cast<float>(m_windowDimensions.width));
 
-    float viewMinX = -viewWidth  * 0.5;
-    float viewMaxX =  viewWidth  * 0.5;
-    float viewMinY = -viewHeight * 0.5;
-    float viewMaxY =  viewHeight * 0.5;
+    float viewMinX = -viewWidth  * 0.5f;
+    float viewMaxX =  viewWidth  * 0.5f;
+    float viewMinY = -viewHeight * 0.5f;
+    float viewMaxY =  viewHeight * 0.5f;
     float nearDist =  fabs(m_viewVolume.zmax);
     float farDist  =  fabs(m_viewVolume.zmin);
 
