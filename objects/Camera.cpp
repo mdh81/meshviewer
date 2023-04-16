@@ -100,19 +100,19 @@ void Camera::buildViewTransform() {
     // Translate along -Z by the length of the diagonal of the mesh's bounding box
     // to ensure that the mesh is behind the camera (fixed at 0,0,0)
     auto moveBack = glm::mat4(1.0f);
-    moveBack[3] = glm::vec4(0, 0, -m_mesh.getBounds().len(), 1);
+    moveBack[3] = glm::vec4(0, 0, -m_mesh.getBounds().length(), 1);
 
     // Compute the view volume. The volume should be large enough to prevent the mesh
     // from being clipped against its planes in all orientations of the mesh. To get this
     // we build a "super" bounding box, which is a symmetric bounding box whose side length
     // is equal to the diagonal length of the mesh's original bounding box
-    m_viewVolume = Util::transformBounds(Bounds(m_mesh.getBounds().len()), moveBack);
+    m_viewVolume = Util::transformBounds(Bounds(m_mesh.getBounds().length()), moveBack);
 
     static bool printed = false;
     if (!printed && m_debugOn) {
         m_outputStream << "Mesh Centroid: " << centroid << endl;
         m_outputStream << "Mesh Bounds: " << m_mesh.getBounds() << endl;
-        m_outputStream << "Moving the mesh back along Z by " << m_mesh.getBounds().len() << endl;
+        m_outputStream << "Moving the mesh back along Z by " << m_mesh.getBounds().length() << endl;
         cout << "Translate To Origin" << endl;
         Util::printMatrix(translateToOrigin);
         cout << "Orbit" << endl;
@@ -140,15 +140,15 @@ void Camera::buildProjectionTransform() {
 
 void Camera::buildOrthographicProjectionTransform() {
 
-    float viewWidth = m_viewVolume.len();
+    float viewWidth = m_viewVolume.length();
     float viewHeight = (viewWidth * static_cast<float>(m_windowDimensions.height)/static_cast<float>(m_windowDimensions.width));
 
     float viewMinX = -viewWidth  * 0.5f;
     float viewMaxX =  viewWidth  * 0.5f;
     float viewMinY = -viewHeight * 0.5f;
     float viewMaxY =  viewHeight * 0.5f;
-    float nearDist =  fabs(m_viewVolume.zmax);
-    float farDist  =  fabs(m_viewVolume.zmin);
+    float nearDist =  fabs(m_viewVolume.z.max);
+    float farDist  =  fabs(m_viewVolume.z.min);
 
     m_projectionTransform = glm::ortho(viewMinX, viewMaxX,
                                        viewMinY, viewMaxY,
@@ -210,13 +210,14 @@ void Camera::buildPerspectiveProjectionTransform() {
     // fov = 2 * arctan(BC/AC)
 
 
-    auto AC = fabs(m_viewVolume.zmax);
-    auto BC = m_viewVolume.ylen() * 0.5f;
+    auto AC = fabs(m_viewVolume.z.max);
+    auto BC = m_viewVolume.y.length() * 0.5f;
     m_fieldOfView = 2.f * glm::atan(BC/AC);
     m_projectionTransform =
         glm::perspective(m_fieldOfView,
-                         static_cast<float>(m_windowDimensions.width)/m_windowDimensions.height,
-                         AC, m_viewVolume.zmin);
+                         static_cast<float>(m_windowDimensions.width)/
+                         static_cast<float>(m_windowDimensions.height),
+                         AC, m_viewVolume.z.min);
 
     static bool printed = false;
     if (!printed && m_debugOn) {

@@ -22,6 +22,7 @@ class Renderable : public MeshViewerObject {
         virtual void render(Camera const&) = 0;
 
         // TODO: Support model coordinates for 3DRenderable objects
+        // TODO: Use 3dmath matrix
         glm::mat4 getModelTransform() const { return glm::mat4(1.0); }
 
     protected:

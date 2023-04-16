@@ -29,13 +29,13 @@ TEST_F(OctreeFixture, RootOctant) {
     auto& meshBounds = spMesh->getBounds();
     auto& root = octree.getRoot();
     auto& rootBounds = octree.getBounds(octree.getRoot());
-    ASSERT_NEAR(rootBounds.xmin, meshBounds.xmin, 1e-6);
-    ASSERT_NEAR(rootBounds.ymin, meshBounds.ymin, 1e-6);
-    ASSERT_NEAR(rootBounds.zmin, meshBounds.zmin, 1e-6);
+    ASSERT_NEAR(rootBounds.x.min, meshBounds.x.min, 1e-6);
+    ASSERT_NEAR(rootBounds.y.min, meshBounds.y.min, 1e-6);
+    ASSERT_NEAR(rootBounds.z.min, meshBounds.z.min, 1e-6);
 
-    ASSERT_NEAR(rootBounds.xmax, meshBounds.xmax, 1e-6);
-    ASSERT_NEAR(rootBounds.ymax, meshBounds.ymax, 1e-6);
-    ASSERT_NEAR(rootBounds.zmax, meshBounds.zmax, 1e-6);
+    ASSERT_NEAR(rootBounds.x.max, meshBounds.x.max, 1e-6);
+    ASSERT_NEAR(rootBounds.y.max, meshBounds.y.max, 1e-6);
+    ASSERT_NEAR(rootBounds.z.max, meshBounds.z.max, 1e-6);
 
     // Assert the root octact's vertices list has all the
     // vertices in the mesh
@@ -66,21 +66,21 @@ TEST_F(OctreeFixture, Subdivision) {
     auto& children = octree1.getChildren(rootOctant);
     Bounds childBoundsUnion;
     for (auto& child : children) {
-        childBoundsUnion.xmin = min(octree1.getBounds(*child).xmin, childBoundsUnion.xmin);
-        childBoundsUnion.ymin = min(octree1.getBounds(*child).ymin, childBoundsUnion.ymin);
-        childBoundsUnion.zmin = min(octree1.getBounds(*child).zmin, childBoundsUnion.zmin);
+        childBoundsUnion.x.min = min(octree1.getBounds(*child).x.min, childBoundsUnion.x.min);
+        childBoundsUnion.y.min = min(octree1.getBounds(*child).y.min, childBoundsUnion.y.min);
+        childBoundsUnion.z.min = min(octree1.getBounds(*child).z.min, childBoundsUnion.z.min);
 
-        childBoundsUnion.xmax = max(octree1.getBounds(*child).xmax, childBoundsUnion.xmax);
-        childBoundsUnion.ymax = max(octree1.getBounds(*child).ymax, childBoundsUnion.ymax);
-        childBoundsUnion.zmax = max(octree1.getBounds(*child).zmax, childBoundsUnion.zmax);
+        childBoundsUnion.x.max = max(octree1.getBounds(*child).x.max, childBoundsUnion.x.max);
+        childBoundsUnion.y.max = max(octree1.getBounds(*child).y.max, childBoundsUnion.y.max);
+        childBoundsUnion.z.max = max(octree1.getBounds(*child).z.max, childBoundsUnion.z.max);
     }
-    ASSERT_NEAR(childBoundsUnion.xmin, parentBounds.xmin, 1e-6);
-    ASSERT_NEAR(childBoundsUnion.ymin, parentBounds.ymin, 1e-6);
-    ASSERT_NEAR(childBoundsUnion.zmin, parentBounds.zmin, 1e-6);
+    ASSERT_NEAR(childBoundsUnion.x.min, parentBounds.x.min, 1e-6);
+    ASSERT_NEAR(childBoundsUnion.y.min, parentBounds.y.min, 1e-6);
+    ASSERT_NEAR(childBoundsUnion.z.min, parentBounds.z.min, 1e-6);
 
-    ASSERT_NEAR(childBoundsUnion.xmax, parentBounds.xmax, 1e-6);
-    ASSERT_NEAR(childBoundsUnion.ymax, parentBounds.ymax, 1e-6);
-    ASSERT_NEAR(childBoundsUnion.zmax, parentBounds.zmax, 1e-6);
+    ASSERT_NEAR(childBoundsUnion.x.max, parentBounds.x.max, 1e-6);
+    ASSERT_NEAR(childBoundsUnion.y.max, parentBounds.y.max, 1e-6);
+    ASSERT_NEAR(childBoundsUnion.z.max, parentBounds.z.max, 1e-6);
 
     // Assert that the subdivision criteria (10 vertices per leaf octant)
     auto leaves = octree1.getLeafOctants();

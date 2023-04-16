@@ -48,16 +48,19 @@ void Octree::getNeighboringVertices(const VertexIndex vertexIndex, common::Verte
     }
 }
 
+// xmin --> x.min
+// ymin --> y.min
+// xmax --> x.max
 
 bool Octree::Octant::hasVertex(const unsigned vertexIndex) const {
     const Vertex& vertex = getMesh().getVertex(vertexIndex); 
     return 
-        Util::isGreaterOrEqual(vertex.x, m_bounds.xmin) && 
-        Util::isLessOrEqual(vertex.x, m_bounds.xmax) &&
-        Util::isGreaterOrEqual(vertex.y, m_bounds.ymin) && 
-        Util::isLessOrEqual(vertex.y, m_bounds.ymax) &&
-        Util::isGreaterOrEqual(vertex.z, m_bounds.zmin) && 
-        Util::isLessOrEqual(vertex.z, m_bounds.zmax);
+        Util::isGreaterOrEqual(vertex.x, m_bounds.x.min) &&
+        Util::isLessOrEqual(vertex.x, m_bounds.x.max) &&
+        Util::isGreaterOrEqual(vertex.y, m_bounds.y.min) &&
+        Util::isLessOrEqual(vertex.y, m_bounds.y.max) &&
+        Util::isGreaterOrEqual(vertex.z, m_bounds.z.min) &&
+        Util::isLessOrEqual(vertex.z, m_bounds.z.max);
 }
 
 Octree::Octant::LeafOctants Octree::getLeafOctants() {
@@ -174,21 +177,21 @@ void Octree::Octant::subdivide() {
 Bounds Octree::Octant::getChildOctantBounds(const OctantId childId) {
     switch (childId) {
         case OctantId::Bottom_Left_Back:
-            return { m_bounds.xmin, m_bounds.ymin, m_bounds.zmin, m_bounds.xmid(), m_bounds.ymid(), m_bounds.zmid() };
+            return { {m_bounds.x.min, m_bounds.y.min, m_bounds.z.min}, {m_bounds.x.center(), m_bounds.y.center(), m_bounds.z.center()} };
         case OctantId::Bottom_Right_Back:
-            return { m_bounds.xmid(), m_bounds.ymin, m_bounds.zmin, m_bounds.xmax, m_bounds.ymid(), m_bounds.zmid() };
+            return { {m_bounds.x.center(), m_bounds.y.min, m_bounds.z.min}, {m_bounds.x.max, m_bounds.y.center(), m_bounds.z.center()} };
         case OctantId::Top_Left_Back:
-            return { m_bounds.xmin, m_bounds.ymid(), m_bounds.zmin, m_bounds.xmid(), m_bounds.ymax, m_bounds.zmid() };
+            return { {m_bounds.x.min, m_bounds.y.center(), m_bounds.z.min}, {m_bounds.x.center(), m_bounds.y.max, m_bounds.z.center()} };
         case OctantId::Top_Right_Back:
-            return { m_bounds.xmid(), m_bounds.ymid(), m_bounds.zmin, m_bounds.xmax, m_bounds.ymax, m_bounds.zmid() };
+            return { {m_bounds.x.center(), m_bounds.y.center(), m_bounds.z.min}, {m_bounds.x.max, m_bounds.y.max, m_bounds.z.center()} };
         case OctantId::Bottom_Left_Front:
-            return { m_bounds.xmin, m_bounds.ymin, m_bounds.zmid(), m_bounds.xmid(), m_bounds.ymid(), m_bounds.zmax };
+            return { {m_bounds.x.min, m_bounds.y.min, m_bounds.z.center()}, {m_bounds.x.center(), m_bounds.y.center(), m_bounds.z.max} };
         case OctantId::Bottom_Right_Front:
-            return { m_bounds.xmid(), m_bounds.ymin, m_bounds.zmid(), m_bounds.xmax, m_bounds.ymid(), m_bounds.zmax };
+            return { {m_bounds.x.center(), m_bounds.y.min, m_bounds.z.center()}, {m_bounds.x.max, m_bounds.y.center(), m_bounds.z.max} };
         case OctantId::Top_Left_Front:
-            return { m_bounds.xmin, m_bounds.ymid(), m_bounds.zmid(), m_bounds.xmid(), m_bounds.ymax, m_bounds.zmax };
+            return { {m_bounds.x.min, m_bounds.y.center(), m_bounds.z.center()}, {m_bounds.x.center(), m_bounds.y.max, m_bounds.z.max} };
         case OctantId::Top_Right_Front:
-            return { m_bounds.xmid(), m_bounds.ymid(), m_bounds.zmid(), m_bounds.xmax, m_bounds.ymax, m_bounds.zmax };
+            return { {m_bounds.x.center(), m_bounds.y.center(), m_bounds.z.center()}, {m_bounds.x.max, m_bounds.y.max, m_bounds.z.max} };
         default:
             throw std::runtime_error("Unknown octant id"); 
     }
