@@ -16,7 +16,7 @@ class Vertex : public common::Point3D {
         Vertex() = default;
 
         Vertex(float const x, float const y, float const z)
-        : common::Point3D(x, y, z) {
+        : common::Point3D{x, y, z} {
         }
 
         bool operator==(const Vertex& another) const {

@@ -31,8 +31,6 @@ TEST_F(STLReaderFixture, Read) {
     ASSERT_TRUE(f[0] == 0 && f[1] == 1 && f[2] == 2) << "Face 0 is wrong" << std::endl;
     auto& f1 = spMesh->getFace(11);
     ASSERT_TRUE(f1[0] == 33 && f1[1] == 34 && f1[2] == 35) << "Face 0 is wrong" << std::endl;
-    const Bounds& b = spMesh->getBounds();
-    cout << b.xmin << "," << b.xmax << "," << b.ymin << "," << b.ymax << "," << b.zmin << "," << b.zmax << endl;
 }
 
 TEST_F(STLReaderFixture, Cleanup) {

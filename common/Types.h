@@ -8,7 +8,9 @@
 #include <memory>
 #include <optional>
 #include "3dmath/Vector.h"
+#include "3dmath/Types.h"
 #include "GL/GLEW.h"
+#include "3dmath/OrthographicProjectionMatrix.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
@@ -19,6 +21,8 @@ using Color = Point3D;
 using Line = std::vector<Point3D>;
 using Lines = std::vector<Line>;
 using Points = std::vector<Point3D>;
+using Bounds = math3d::Bounds3D<float>;
+using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]"; 
@@ -91,50 +95,6 @@ class Array {
 };
 
 using Triangles = std::vector<Array<unsigned, 3>>;
-
-struct Bounds {
-    float xmin, xmax;
-    float ymin, ymax;
-    float zmin, zmax;
-    
-    Bounds() { 
-        xmin = std::numeric_limits<float>::max();
-        ymin = std::numeric_limits<float>::max();
-        zmin = std::numeric_limits<float>::max();
-        xmax = -xmin;
-        ymax = -ymin;
-        zmax = -zmin;
-    }
-
-    // Builds a symmetric bounding box where each side is
-    // of the specified length 
-    explicit Bounds(float sideLength) {
-        xmin = -0.5f * sideLength;
-        xmax = +0.5f * sideLength;
-        ymin = -0.5f * sideLength;
-        ymax = +0.5f * sideLength;
-        zmin = -0.5f * sideLength;
-        zmax = +0.5f * sideLength;
-    }
-
-    Bounds(float xmi, float ymi, float zmi, float xmx, float ymx, float zmx) :
-        xmin(xmi), ymin(ymi), zmin(zmi), xmax(xmx), ymax(ymx), zmax(zmx) { }
-    float xlen() const { return xmax - xmin; }
-    float ylen() const { return ymax - ymin; }
-    float zlen() const { return zmax - zmin; }
-    float xmid() const { return (xmin + xmax)*0.5; } 
-    float ymid() const { return (ymin + ymax)*0.5; } 
-    float zmid() const { return (zmin + zmax)*0.5; } 
-    float len() const  { return sqrt( ((xmax - xmin) * (xmax - xmin)) + 
-                                      ((ymax - ymin) * (ymax - ymin)) + 
-                                      ((zmax - zmin) * (zmax - zmin)) ); }
-};
-
-inline std::ostream& operator<<(std::ostream& os, const Bounds& b) {
-    os << "Min:[" << b.xmin << "," << b.ymin << "," << b.zmin << "] "; 
-    os << "Max:[" << b.xmax << "," << b.ymax << "," << b.zmax << "]";
-    return os;
-}
 
 using VertexIndices = std::vector<unsigned>;
 using VertexIndex = unsigned;

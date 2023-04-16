@@ -33,11 +33,11 @@ class Util {
         } 
 
         static common::Bounds transformBounds(const common::Bounds& bounds, const glm::mat4& transformMatrix) {
-            glm::vec4 min(bounds.xmin, bounds.ymin, bounds.zmin, 1.f);
-            glm::vec4 max(bounds.xmax, bounds.ymax, bounds.zmax, 1.f);
+            glm::vec4 min(bounds.x.min, bounds.y.min, bounds.z.min, 1.f);
+            glm::vec4 max(bounds.x.max, bounds.y.max, bounds.z.max, 1.f);
             glm::vec4 newMin = transformMatrix * min;
             glm::vec4 newMax = transformMatrix * max;
-            return common::Bounds{newMin.x, newMin.y, newMin.z, newMax.x, newMax.y, newMax.z};
+            return common::Bounds{{newMin.x, newMax.x}, {newMin.y, newMax.y}, {newMin.z,newMax.z}};
         }
 
         static void printMatrix(glm::mat4& matrix) {
@@ -70,68 +70,68 @@ class Util {
             
             // Back face
             normal[0] = 0.f; normal[1] = 0.f; normal[2] = -1.f;
-            v1[0] = bounds.xmin; v1[1] = bounds.ymax; v1[2] = bounds.zmin;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymin; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymin; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.max; v1[2] = bounds.z.min;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.min; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.min; v3[2] = bounds.z.min;
             writeTri();
-            v1[0] = bounds.xmin; v1[1] = bounds.ymax; v1[2] = bounds.zmin;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymax; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmax; v3[1] = bounds.ymin; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.max; v1[2] = bounds.z.min;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.max; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.max; v3[1] = bounds.y.min; v3[2] = bounds.z.min;
             writeTri();
 
             // Front face
             normal[0] = 0.f; normal[1] = 0.f; normal[2] = 1.f;
-            v1[0] = bounds.xmin; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymin; v2[2] = bounds.zmax;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymax; v3[2] = bounds.zmax;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.min; v2[2] = bounds.z.max;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.max; v3[2] = bounds.z.max;
             writeTri();
-            v1[0] = bounds.xmax; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymax; v2[2] = bounds.zmax;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymax; v3[2] = bounds.zmax;
+            v1[0] = bounds.x.max; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.max; v2[2] = bounds.z.max;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.max; v3[2] = bounds.z.max;
             writeTri();
 
             // Right Face
             normal[0] = 1.f; normal[1] = 0.f; normal[2] = 0.f;
-            v1[0] = bounds.xmax; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymin; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmax; v3[1] = bounds.ymax; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.max; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.min; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.max; v3[1] = bounds.y.max; v3[2] = bounds.z.min;
             writeTri();
-            v1[0] = bounds.xmax; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymax; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmax; v3[1] = bounds.ymax; v3[2] = bounds.zmax;
+            v1[0] = bounds.x.max; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.max; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.max; v3[1] = bounds.y.max; v3[2] = bounds.z.max;
             writeTri();
 
             // Left Face
             normal[0] = -1.f; normal[1] = 0.f; normal[2] = 0.f;
-            v1[0] = bounds.xmin; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmin; v2[1] = bounds.ymax; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymin; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.min; v2[1] = bounds.y.max; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.min; v3[2] = bounds.z.min;
             writeTri();
-            v1[0] = bounds.xmin; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmin; v2[1] = bounds.ymax; v2[2] = bounds.zmax;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymax; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.min; v2[1] = bounds.y.max; v2[2] = bounds.z.max;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.max; v3[2] = bounds.z.min;
             writeTri();
 
             // Top Face
             normal[0] = 0.f; normal[1] = 1.f; normal[2] = 0.f;
-            v1[0] = bounds.xmin; v1[1] = bounds.ymax; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymax; v2[2] = bounds.zmax;
-            v3[0] = bounds.xmax; v3[1] = bounds.ymax; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.max; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.max; v2[2] = bounds.z.max;
+            v3[0] = bounds.x.max; v3[1] = bounds.y.max; v3[2] = bounds.z.min;
             writeTri();
-            v1[0] = bounds.xmin; v1[1] = bounds.ymax; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymax; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymax; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.max; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.max; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.max; v3[2] = bounds.z.min;
             writeTri();
 
             // Bottom Face
             normal[0] = 0.f; normal[1] = -1.f; normal[2] = 0.f;
-            v1[0] = bounds.xmin; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymin; v2[2] = bounds.zmax;
-            v3[0] = bounds.xmax; v3[1] = bounds.ymin; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.min; v2[2] = bounds.z.max;
+            v3[0] = bounds.x.max; v3[1] = bounds.y.min; v3[2] = bounds.z.min;
             writeTri();
-            v1[0] = bounds.xmin; v1[1] = bounds.ymin; v1[2] = bounds.zmax;
-            v2[0] = bounds.xmax; v2[1] = bounds.ymin; v2[2] = bounds.zmin;
-            v3[0] = bounds.xmin; v3[1] = bounds.ymin; v3[2] = bounds.zmin;
+            v1[0] = bounds.x.min; v1[1] = bounds.y.min; v1[2] = bounds.z.max;
+            v2[0] = bounds.x.max; v2[1] = bounds.y.min; v2[2] = bounds.z.min;
+            v3[0] = bounds.x.min; v3[1] = bounds.y.min; v3[2] = bounds.z.min;
             writeTri();
 
             ofs.close();

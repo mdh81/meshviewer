@@ -70,13 +70,13 @@ const Bounds& Mesh::getBounds() const {
 void Mesh::buildBounds() {
     m_bounds.emplace();
     for (auto& v : m_vertices) {
-        if (v.x < m_bounds->xmin) m_bounds->xmin = v.x;
-        if (v.y < m_bounds->ymin) m_bounds->ymin = v.y;
-        if (v.z < m_bounds->zmin) m_bounds->zmin = v.z;
+        if (v.x < m_bounds->x.min) m_bounds->x.min = v.x;
+        if (v.y < m_bounds->y.min) m_bounds->y.min = v.y;
+        if (v.z < m_bounds->z.min) m_bounds->z.min = v.z;
 
-        if (v.x > m_bounds->xmax) m_bounds->xmax = v.x;
-        if (v.y > m_bounds->ymax) m_bounds->ymax = v.y;
-        if (v.z > m_bounds->zmax) m_bounds->zmax = v.z;
+        if (v.x > m_bounds->x.max) m_bounds->x.max = v.x;
+        if (v.y > m_bounds->y.max) m_bounds->y.max = v.y;
+        if (v.z > m_bounds->z.max) m_bounds->z.max = v.z;
     }
 }
 
@@ -135,9 +135,9 @@ Vertex Mesh::getCentroid() const {
     if (!m_bounds) {
         getBounds();
     }
-    return Vertex { (this->m_bounds->xmax + this->m_bounds->xmin) * 0.5f,
-                    (this->m_bounds->ymax + this->m_bounds->ymin) * 0.5f,
-                    (this->m_bounds->zmax + this->m_bounds->zmin) * 0.5f };
+    return Vertex { (this->m_bounds->x.max + this->m_bounds->x.min) * 0.5f,
+                    (this->m_bounds->y.max + this->m_bounds->y.min) * 0.5f,
+                    (this->m_bounds->z.max + this->m_bounds->z.min) * 0.5f };
 }
 
 void Mesh::buildVertexData() {

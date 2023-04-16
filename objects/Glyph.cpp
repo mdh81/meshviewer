@@ -84,7 +84,7 @@ size_t Glyph::buildVertexNormalData() {
         m_mesh.getNormals(common::NormalLocation::Vertex);
 
     // Render normal glyphs a 10th of the mesh size
-    auto scale = m_mesh.getBounds().len() * 0.1f;
+    auto scale = m_mesh.getBounds().length() * 0.1f;
 
     // Create vertex data
     size_t numBytes = 0;
@@ -115,7 +115,7 @@ size_t Glyph::buildFaceNormalData() {
         m_mesh.getNormals(common::NormalLocation::Face);
 
     // Render normal glyphs a 10th of the mesh size
-    auto scale = m_mesh.getBounds().len() * 0.1f;
+    auto scale = m_mesh.getBounds().length() * 0.1f;
 
     // 6 floats per glyph, 3 floats per end point
     m_numGlyphs = m_mesh.getNumberOfFaces();
