@@ -25,6 +25,10 @@ class Renderable : public MeshViewerObject {
         // TODO: Use 3dmath matrix
         glm::mat4 getModelTransform() const { return glm::mat4(1.0); }
 
+        void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) {
+            aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+        }
+
     protected:
         // Set the shader transform matrix inputs
         void setModelViewProjection(Camera const&);
@@ -39,10 +43,11 @@ class Renderable : public MeshViewerObject {
     protected:
         const std::string m_vertexShaderFileName;
         const std::string m_fragmentShaderFileName;
-        GLuint m_shaderProgram;
-        GLuint m_vertexArrayObject;
-        GLuint m_elementBufferObject;
+        unsigned m_shaderProgram;
+        unsigned m_vertexArrayObject;
+        unsigned m_elementBufferObject;
         bool m_readyToRender;
+        float aspectRatio;
 };
 
 using RenderableReference = std::reference_wrapper<Renderable const>;
