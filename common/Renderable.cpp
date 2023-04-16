@@ -13,7 +13,8 @@ Renderable::Renderable(const std::string& vertexShaderFileName,
                        const std::string& fragmentShaderFileName)
     : m_vertexShaderFileName(vertexShaderFileName)
     , m_fragmentShaderFileName(fragmentShaderFileName)
-    , m_readyToRender(false) {
+    , m_readyToRender(false)
+    , aspectRatio(1.0f) {
 
 }
 

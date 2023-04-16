@@ -2,8 +2,11 @@
 #include "ConfigurationReader.h"
 #include "CallbackFactory.h"
 #include "EventHandler.h"
+#include "3dmath/OrthographicProjectionMatrix.h"
 #include <vector>
 #include <cmath>
+#include <glm/gtc/type_ptr.hpp>
+
 using namespace std;
 using namespace mv::common;
 using namespace mv::events;
@@ -34,6 +37,8 @@ GradientBackground::GradientBackground(GradientType const type, GradientDirectio
     CallbackFactory::getInstance().registerCallback
                 (*this, &GradientBackground::toggleGradientType));
 
+    // TODO: Remove after aspect ratio problem is sorted out
+    //m_debugOn = true;
 }
 
 void GradientBackground::render(const mv::Camera &camera) {
@@ -42,17 +47,18 @@ void GradientBackground::render(const mv::Camera &camera) {
         generateRenderData();
     }
 
-    // Vertices are defined in normalized device coordinates, which is a left-handed system
-    // that spans from -1 to +1 in all directions. One way to draw the background is to render
-    // it at z = 1, but due to floating point precision problems results can be non-deterministic.
-    // A better approach is to make sure the background's rendering doesn't write to the depth
-    // buffer so everything that's drawn after the background automatically appears on top of
-    // the background
+    // Since we want the background to be behind everything else on the viewport, we draw the
+    // background as the first rendered item in a frame, and we also make sure the background
+    // doesn't write to the depth buffer. This way, every object that is drawn after the background
+    // overwrites the background's fragments and "appear" on top of the background
     glCallWithErrorCheck(glDisable, GL_DEPTH_TEST);
     glCallWithErrorCheck(glUseProgram, m_shaderProgram);
     glCallWithErrorCheck(glBindVertexArray, m_vertexArrayObject);
     glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
-    glCallWithErrorCheck(glDrawElements, GL_TRIANGLES, m_numberOfConnectivityEntries, GL_UNSIGNED_INT, 0);
+    if (m_debugOn) {
+        glCallWithErrorCheck(glPolygonMode,GL_FRONT_AND_BACK, GL_LINE);
+    }
+    glCallWithErrorCheck(glDrawElements, GL_TRIANGLES, m_numberOfConnectivityEntries, GL_UNSIGNED_INT, nullptr);
     glCallWithErrorCheck(glEnable, GL_DEPTH_TEST);
 }
 
@@ -104,6 +110,13 @@ void GradientBackground::generateRenderData() {
                          6*sizeof(GLfloat),             // Stride
                          (void*)(3*sizeof(GLfloat)));   // Offset
 
+    // Vertices are defined in camera or eye coordinates. They are transformed to the NDC by
+    // the following orthographic projection matrix
+    Bounds geometryBounds { {-1.f, 1.f}, {-1.f, 1.f}, {-1.f, 1.f} };
+    OrthographicProjectionMatrix projectionMatrix{geometryBounds};
+    auto matrixId = glCallWithErrorCheck(glGetUniformLocation, m_shaderProgram, "orthographicProjectionMatrix");
+    glCallWithErrorCheck(glUniformMatrix4fv, matrixId, 1, GL_FALSE, projectionMatrix);
+
     m_readyToRender = true;
 }
 
@@ -119,11 +132,11 @@ void GradientBackground::generateLinearGradient() {
     auto bufferSize = m_numberOfStops * 2 * 6;
     vector<GLfloat> vertexData(bufferSize);
     byte dataIndex = 0;
-    // NDC runs from -1 to +1 in all directions
+    // We set -1,-1 as the left corner and +1,+1 as the right corner
     GLfloat x = -1.f, y = -1.f;
     // NDC is a cube of length 2. We will divide the vertical or horizontal length
     // by the number of gradient stops
-    GLfloat increment = 2.f / (m_numberOfStops-1);
+    GLfloat increment = 2.f / static_cast<float>(m_numberOfStops-1);
     for (byte i = 0; i < 2; ++i) { // Loop over end points
         for (byte j = 0; j < m_numberOfStops; ++j) { // Loop over gradient stops
             // vertex coordinates

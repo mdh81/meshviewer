@@ -149,6 +149,8 @@ void Viewer::displayMesh(Mesh& mesh) {
 
     // Create background geometry
     GradientBackground bg = GradientBackground();
+    // TODO: Make this happen via Viewport -> [Renderables] code path
+    bg.notifyWindowResized(m_windowWidth, m_windowHeight);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -157,6 +159,9 @@ void Viewer::displayMesh(Mesh& mesh) {
 
         if (m_windowResized) {
             camera.notifyWindowResized({m_windowWidth, m_windowHeight});
+            // TODO: Should be viewport.notifyWindowResized(), which will then notify all its
+            // renderables
+            bg.notifyWindowResized(m_windowWidth, m_windowHeight);
             m_windowResized = false;
         }
 

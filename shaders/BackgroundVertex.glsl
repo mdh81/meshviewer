@@ -3,11 +3,12 @@
 in vec3 vertexPosition;
 in vec3 vertexColorIn;
 out vec3 vertexColor;
+uniform mat4 orthographicProjectionMatrix;
 
-// A simple pass through shader for rendering the gradient background
-// The vertex coordinates are assumed to be in normalized device coordinate space
+// The vertex coordinates are assumed to be in camera coordinate space and
+// are converted to NDC using the provided orthographic projection matrix
 
 void main() {
     vertexColor = vertexColorIn;
-    gl_Position = vec4(vertexPosition, 1.0);
+    gl_Position = orthographicProjectionMatrix * vec4(vertexPosition, 1.0);
 }
