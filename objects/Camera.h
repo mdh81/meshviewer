@@ -50,6 +50,8 @@ class Camera : public MeshViewerObject {
             m_windowDimensions = newDimensions;
         }
 
+        common::Bounds getViewVolume() const { return m_viewVolume; }
+
 private:
         void buildViewTransform();
         void buildProjectionTransform();

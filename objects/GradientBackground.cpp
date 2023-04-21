@@ -92,7 +92,7 @@ void GradientBackground::generateRenderData() {
     // the vertex coordinates taking the first three values and the color components taking
     // the next three
     // Coordinates
-    auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexPosition");
+    auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexCameraIn");
     glCallWithErrorCheck(glEnableVertexAttribArray, positionAttrib);
     glCallWithErrorCheck(glVertexAttribPointer, positionAttrib,
                          3,                 // Entries per vertex
@@ -111,11 +111,23 @@ void GradientBackground::generateRenderData() {
                          (void*)(3*sizeof(GLfloat)));   // Offset
 
     // Vertices are defined in camera or eye coordinates. They are transformed to the NDC by
-    // the following orthographic projection matrix
-    Bounds geometryBounds { {-1.f, 1.f}, {-1.f, 1.f}, {-1.f, 1.f} };
-    OrthographicProjectionMatrix projectionMatrix{geometryBounds};
+    // the following orthographic projection matrix. We allow the geometry for linear gradient to be scaled
+    // to fit the window without concern for aspect ratio. We fix the view volume's aspect ratio to the window's
+    // in case of spherical gradient so keep the circles in the center of the geometry circles (Maybe we ought to
+    // generate new mesh that adjusts for aspect ratio)
     auto matrixId = glCallWithErrorCheck(glGetUniformLocation, m_shaderProgram, "orthographicProjectionMatrix");
-    glCallWithErrorCheck(glUniformMatrix4fv, matrixId, 1, GL_FALSE, projectionMatrix);
+    if (m_type == GradientType::Radial) {
+        Bounds geometryBounds;
+        math3d::Extent<float> viewX{-aspectRatio, aspectRatio};
+        geometryBounds = {{viewX.min, viewX.max},
+                          {-1.f,      +1.f},
+                          {-1.f,      1.f}};
+        OrthographicProjectionMatrix projectionMatrix{geometryBounds};
+        glCallWithErrorCheck(glUniformMatrix4fv, matrixId, 1, GL_FALSE, projectionMatrix);
+    } else {
+        auto identityMatrix = math3d::IdentityMatrix<float, 4, 4>{};
+        glCallWithErrorCheck(glUniformMatrix4fv, matrixId, 1, GL_FALSE, identityMatrix);
+    }
 
     m_readyToRender = true;
 }
