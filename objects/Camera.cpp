@@ -65,7 +65,7 @@ Camera::~Camera() {
 void Camera::buildViewTransform() {
     // Converts the mesh vertices from world coordinate system to
     // camera coordinate system. Camera in OpenGL is fixed at global origin looking
-    // down the -Z axis. Moving the model so it is within the frame of the camera
+    // down the -Z axis. Moving the model, so it is within the frame of the camera
     // is accomplished by the view transform
 
     // Get the centroid of the mesh

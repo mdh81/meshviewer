@@ -1,13 +1,14 @@
 #version 410 core
 
-in vec3 vertexPosition;
+in vec3 vertexWorld;
 in vec3 vertexNormal;
-uniform mat4 modelViewProjectionTransform;
+uniform mat4 projectionTransform;
 uniform mat4 modelViewTransform;
 uniform vec3 reflectionCoefficient;
 uniform vec3 lightPosition;
 uniform vec3 lightIntensity; 
 out vec3 vertexColor;
+out vec3 vertexCamera;
 
 // Converts a vector from world coordinates to view coordinates
 vec3 convertToViewCoordinates(vec3 vectorWorld) {
@@ -24,12 +25,13 @@ vec3 diffuseShading() {
     
     mat3 normalMatrix = mat3(modelViewTransform);
     vec3 normalDirection = normalMatrix * vertexNormal;
-    vec3 vertexLocation = convertToViewCoordinates(vertexPosition);
+    vec3 vertexLocation = convertToViewCoordinates(vertexWorld);
     vec3 lightDirection = normalize(vec3(lightPosition - vertexLocation));
     return reflectionCoefficient * lightIntensity * max (dot(normalDirection, lightDirection), 0);
 }
 
 void main() {
+    vertexCamera = convertToViewCoordinates(vertexWorld);
     vertexColor = diffuseShading();
-    gl_Position = modelViewProjectionTransform * vec4(vertexPosition, 1.0);
+    gl_Position = projectionTransform * modelViewTransform * vec4(vertexWorld, 1.0);
 }

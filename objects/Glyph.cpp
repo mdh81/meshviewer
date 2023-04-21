@@ -50,7 +50,7 @@ void Glyph::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, dataSize, m_vertexData.get(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexPosition");
+    GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexWorld");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
@@ -147,7 +147,7 @@ void Glyph::render(Camera const& camera) {
     glUseProgram(m_shaderProgram);
 
     // Set transform shader inputs
-    setModelViewProjection(camera);
+    setTransforms(camera);
 
     // Bind vertex array object and element buffer object
     glBindVertexArray(m_vertexArrayObject);
