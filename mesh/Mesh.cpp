@@ -341,7 +341,7 @@ void Mesh::generateColors() {
     GLint fogColorId = glGetUniformLocation(m_shaderProgram, "fog.color");
     //TODO: Read from config
     //TODO: Sample background color
-    float fogColor[3] = {0.2f, 0.2f, 0.2f};
+    float fogColor[3] = {0.75f, 0.75f, 0.75f};
     glUniform3fv(fogColorId, 1, fogColor);
     GLint fogMinDistId = glGetUniformLocation(m_shaderProgram, "fog.minimumDistance");
     glUniform1f(fogMinDistId, 0.f);
