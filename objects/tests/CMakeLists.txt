@@ -2,13 +2,10 @@ add_executable(
     glyph_test 
     glyph_test.cpp)
 
-add_executable(
-    camera_factory_test
-    camera_factory_test.cpp
-)
+# Add test coverage for gradient background
 
 # Convenience variables
-set(allTests glyph_test camera_factory_test) 
+set(allTests glyph_test)
 
 # All tests include headers from the source directory
 foreach(test ${allTests})
@@ -29,7 +26,7 @@ foreach(test ${allTests})
         common
         mesh
         events
-    )  
+    )
 endforeach(test)
 
 # Enable test discovery for each test

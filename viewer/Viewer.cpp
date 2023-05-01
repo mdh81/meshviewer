@@ -1,8 +1,8 @@
 #include "Viewer.h"
 #include "Types.h"
+#include "Scene.h"
 #include "Mesh.h"
 #include "ShaderLoader.h"
-#include "CameraFactory.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
 #include "Glyph.h"
@@ -39,11 +39,9 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , m_renderToImage(false)
     , m_frameBufferId(0)
     , m_imageTextureId(0)
-    , m_showGradientBackground(true)
     , m_windowResized(false)
     , m_renderMode(RenderMode::Shaded)
-    , m_showNormals(false)
-    , m_addFog(false) {
+    , m_showNormals(false) {
 
     // Initialize GLFW
     if (!glfwInit())
@@ -82,34 +80,9 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
 
     // Register event handlers
     EventHandler().registerCallback(
-        Event(GLFW_KEY_W),
-        CallbackFactory::getInstance().registerCallback
-        (*this, &Viewer::setRenderMode, RenderMode::Wireframe));
-
-    EventHandler().registerCallback(
-        Event(GLFW_KEY_S),
-        CallbackFactory::getInstance().registerCallback
-        (*this, &Viewer::setRenderMode, RenderMode::Shaded));
-
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_N),
-            CallbackFactory::getInstance().registerCallback
-            (*this, &Viewer::toggleNormalsDisplay));
-
-    EventHandler().registerCallback(
             Event(GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT),
             CallbackFactory::getInstance().registerCallback
                     (*this, &Viewer::saveSnapshot));
-
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_G),
-            CallbackFactory::getInstance().registerCallback
-                    (*this, &Viewer::toggleGradientBackgroundDisplay));
-
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_F),
-            CallbackFactory::getInstance().registerCallback
-                    (*this, &Viewer::toggleFog));
 
     // Start handling events
     EventHandler().start(m_window);
@@ -121,16 +94,14 @@ void Viewer::setColors() {
 
 }
 
-void Viewer::setRenderMode(const RenderMode rm) {
-    if (rm == RenderMode::Wireframe) {
-        m_outputStream << "Rendering mesh in wireframe" << endl;
-    } else {
-        m_outputStream << "Rendering mesh shaded" << endl;
+void Viewer::add(Renderable::Renderables& newRenderables) {
+    renderables.reserve(renderables.size() + newRenderables.size());
+    for (auto& newRenderable : newRenderables) {
+        renderables.push_back(std::move(newRenderable));
     }
-    m_renderMode = rm;
 }
 
-void Viewer::displayMesh(Mesh& mesh) {
+void Viewer::render() {
 
     if (!m_window)
         throw std::runtime_error("Unexpected program state");
@@ -141,27 +112,21 @@ void Viewer::displayMesh(Mesh& mesh) {
     // Define colors
     setColors();
 
-    // Create camera for the mesh
-    Camera& camera = CameraFactory::getInstance().getCamera(mesh, {m_windowWidth, m_windowHeight});
+    // Create a scene
+    scene::Scene scene(m_windowWidth, m_windowHeight);
 
-    // Define normal glyphs
-    Glyph gl = Glyph(mesh, common::GlyphAssociation::FaceNormal);
-
-    // Create background geometry
-    GradientBackground bg = GradientBackground();
-    // TODO: Make this happen via Viewport -> [Renderables] code path
-    bg.notifyWindowResized(m_windowWidth, m_windowHeight);
+    // Add renderables to the default scene
+    for (auto& renderable : renderables) {
+        scene.add(*renderable);
+    }
 
     glEnable(GL_DEPTH_TEST);
-
+    m_windowResized = true;
     // Rendering loop
 	do {
 
         if (m_windowResized) {
-            camera.notifyWindowResized({m_windowWidth, m_windowHeight});
-            // TODO: Should be viewport.notifyWindowResized(), which will then notify all its
-            // renderables
-            bg.notifyWindowResized(m_windowWidth, m_windowHeight);
+            scene.notifyWindowResized(m_windowWidth, m_windowHeight);
             m_windowResized = false;
         }
 
@@ -170,27 +135,9 @@ void Viewer::displayMesh(Mesh& mesh) {
             glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, m_frameBufferId);
         }
 
-        // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update camera
-        camera.apply();
-
-        // TODO: Replace with Scene::render()
-
-        // Draw background
-        if (m_showGradientBackground) {
-            bg.render(camera);
-        }
-
-        // Draw mesh
-        mesh.render(camera);
-
-        // Draw glyph
-        if (m_showNormals)
-            gl.render(camera);
-
-        // END TODO
+        scene.render();
 
         if (m_renderToImage) {
             saveAsImage();

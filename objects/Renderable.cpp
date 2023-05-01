@@ -1,20 +1,20 @@
 #include "Renderable.h"
 #include "ShaderLoader.h"
-#include "Camera.h"
 
 #include <filesystem>
+#include <utility>
 using namespace std;
 
 namespace mv {
 
 using namespace common;
 
-Renderable::Renderable(const std::string& vertexShaderFileName,
-                       const std::string& fragmentShaderFileName)
-    : m_vertexShaderFileName(vertexShaderFileName)
-    , m_fragmentShaderFileName(fragmentShaderFileName)
+Renderable::Renderable(std::string  vertexShaderFileName, std::string  fragmentShaderFileName)
+    : m_vertexShaderFileName(std::move(vertexShaderFileName))
+    , m_fragmentShaderFileName(std::move(fragmentShaderFileName))
     , m_readyToRender(false)
-    , aspectRatio(1.0f) {
+    , aspectRatio(1.0f)
+    , camera(Camera(*this, Camera::ProjectionType::Perspective)) {
 
 }
 
@@ -61,7 +61,7 @@ void Renderable::createShaderProgram() {
 
 // Precondition: Every vertex shader must have a uniform mat4 variables named
 // modelViewTransform and projectionTransform
-void Renderable::setTransforms(Camera const& camera) {
+void Renderable::setTransforms() {
 
     // TODO: Use mathlib's matrix
 

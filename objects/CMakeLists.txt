@@ -1,7 +1,7 @@
 add_library(
-    objects 
+    objects
+    Renderable.cpp
     Camera.cpp
-    CameraFactory.cpp
     Glyph.cpp
     GradientBackground.cpp)
 
@@ -14,11 +14,14 @@ target_include_directories(
     ../events
     ../config
     ../writers
+    ../shaders
+    .
 )
 
 target_link_libraries(
     objects
     PUBLIC
+    common
     glm::glm
     GLEW::GLEW
     writers

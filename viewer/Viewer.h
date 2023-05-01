@@ -1,6 +1,4 @@
-#ifndef MESH_VIEWER_VIEWER_H
-#define MESH_VIEWER_VIEWER_H
-
+#pragma once
 #include "Mesh.h"
 #include "Camera.h"
 #include "MeshViewerObject.h"
@@ -13,26 +11,32 @@ class GLFWwindow;
 
 namespace mv {
 
-// At the moment there is a 1-1 relationship between a Viewer and a mesh. In the
-// future, when we support multiple mesh objects the relationship will be 1-N
+// A viewer is a collection of scenes
 class Viewer : public MeshViewerObject {
     public:
         ~Viewer() = default;
-        void displayMesh(Mesh& mesh);
-        unsigned getWidth() const { return m_windowWidth; }
-        unsigned getHeight() const { return m_windowHeight; }
-        bool isDisplayingNormals() const { return m_showNormals; }
+        // Add a renderable to the viewer and transfer ownership of it to the viewer
+        void add(Renderable* renderable) { add(Renderable::RenderablePointer(renderable)); }
+        void add(Renderable::RenderablePointer&& renderable) { renderables.push_back(std::move(renderable)); }
+        // Add a list of renderables to the viewer and transfer ownership of them to the viewer
+        void add(Renderable::Renderables& newRenderables);
+        // Render scenes, viewports, and renderables
+        void render();
+        [[nodiscard]] unsigned getWidth() const { return m_windowWidth; }
+        [[nodiscard]] unsigned getHeight() const { return m_windowHeight; }
+        [[nodiscard]] bool isDisplayingNormals() const { return m_showNormals; }
         enum class RenderMode {
             Wireframe,
             Shaded,
             ShadedWithEdges
         };
-        RenderMode getRenderMode() const { return m_renderMode; }
+        [[nodiscard]] RenderMode getRenderMode() const { return m_renderMode; }
         // Creation Semantics
         static Viewer& getInstance();
 
     private:
-        Viewer(unsigned winWidth=1024, unsigned winHeight=768);
+        explicit Viewer(unsigned winWidth=1024, unsigned winHeight=768);
+    public:
         Viewer(const Viewer&) = delete;
         Viewer(Viewer&&) = delete;
         Viewer& operator=(const Viewer&) = delete;
@@ -48,30 +52,20 @@ class Viewer : public MeshViewerObject {
         bool m_renderToImage;
         GLuint m_frameBufferId;
         GLuint m_imageTextureId;
-        bool m_showGradientBackground;
         bool m_windowResized;
-        bool m_addFog;
+        Renderable::Renderables renderables;
+        RenderableReferences activeObjects;
 
     // Member functions
     private:
         static void setColors();
-        void setRenderMode(const RenderMode);
-        void toggleNormalsDisplay() {
-            m_showNormals = !m_showNormals;
-        }
+
         void saveSnapshot() {
             m_renderToImage = true;
         }
-        void toggleGradientBackgroundDisplay() {
-            m_showGradientBackground = !m_showGradientBackground;
-        }
-        void toggleFog() {
-            m_addFog = !m_addFog;
-        }
+
         void prepareOffscreenRender();
         void saveAsImage();
 };
 
 }
-
-#endif

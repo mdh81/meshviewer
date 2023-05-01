@@ -23,6 +23,9 @@ foreach(test ${allTests})
         gtest_main
         common 
         mesh
+        objects
+        shaders
+        events
     )  
 endforeach(test)
 

@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "MockRendererable.h"
-#include "Viewport.h"
-#include "Scene.h"
+#include "../Viewport.h"
+#include "../Scene.h"
 #include "3dmath/Vector.h"
 using namespace std;
 using namespace mv::scene;

@@ -41,7 +41,7 @@ GradientBackground::GradientBackground(GradientType const type, GradientDirectio
     //m_debugOn = true;
 }
 
-void GradientBackground::render(const mv::Camera &camera) {
+void GradientBackground::render() {
 
     if (!m_readyToRender) {
         generateRenderData();

@@ -26,7 +26,7 @@ TEST_F(OctreeFixture, RootOctant) {
     auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput();
     Octree octree(*spMesh.get());
     // Assert the root octant's bounds match the mesh's bounds
-    auto& meshBounds = spMesh->getBounds();
+    auto meshBounds = spMesh->getBounds();
     auto& root = octree.getRoot();
     auto& rootBounds = octree.getBounds(octree.getRoot());
     ASSERT_NEAR(rootBounds.x.min, meshBounds.x.min, 1e-6);

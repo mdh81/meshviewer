@@ -36,7 +36,7 @@ TEST(Mesh, TestCentroid) {
     m.initialize(2, 1);
     m.addVertex(-5, 0, 0);
     m.addVertex(+5, 0, 0);
-    Vertex centroid = m.getCentroid();
+    auto centroid = m.getCentroid();
     ASSERT_FLOAT_EQ(centroid.x, 0.0) << "Centroid X coordinate is incorrect" << endl;
     ASSERT_FLOAT_EQ(centroid.y, 0.0) << "Centroid Y coordinate is incorrect" << endl;
     ASSERT_FLOAT_EQ(centroid.z, 0.0) << "Centroid Z coordinate is incorrect" << endl;

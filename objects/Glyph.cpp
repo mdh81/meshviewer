@@ -7,11 +7,11 @@ namespace mv {
 
 using namespace common;
 
-    Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
-    : Renderable("GlyphVertex.glsl", "Fragment.glsl")
-    , m_mesh(mesh)
-    , m_association(assoc)
-    , m_numGlyphs(0) {
+Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
+: Renderable("GlyphVertex.glsl", "Fragment.glsl")
+, m_mesh(mesh)
+, m_association(assoc)
+, m_numGlyphs(0) {
 }
 
 void Glyph::generateRenderData() {
@@ -137,7 +137,7 @@ size_t Glyph::buildFaceNormalData() {
     return numBytes;
 }
 
-void Glyph::render(Camera const& camera) {
+void Glyph::render() {
 
     if (!m_readyToRender) {
         generateRenderData();
@@ -147,7 +147,7 @@ void Glyph::render(Camera const& camera) {
     glUseProgram(m_shaderProgram);
 
     // Set transform shader inputs
-    setTransforms(camera);
+    setTransforms();
 
     // Bind vertex array object and element buffer object
     glBindVertexArray(m_vertexArrayObject);
@@ -155,9 +155,9 @@ void Glyph::render(Camera const& camera) {
 
     // Render lines
     glDrawElements(GL_LINES,
-                   m_numGlyphs * 2,                // Number of elements
-                   GL_UNSIGNED_INT,                 // Type of element buffer data
-                   0                              // Offset into element buffer data
+                   static_cast<int>(m_numGlyphs * 2), // Number of elements
+                   GL_UNSIGNED_INT,                    // Type of element buffer data
+                   nullptr                           // Offset into element buffer data
                   );
 
 }
@@ -168,6 +168,14 @@ void Glyph::generateColors() {
     // Set line color
     GLint colorId = glGetUniformLocation(m_shaderProgram, "lineColor");
     glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f)));
+}
+
+Point3D Glyph::getCentroid() const {
+    return m_mesh.getCentroid();
+}
+
+Bounds Glyph::getBounds() const {
+    return m_mesh.getBounds();
 }
 
 }

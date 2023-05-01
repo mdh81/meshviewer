@@ -19,7 +19,8 @@ foreach(test ${allTests})
     )
 endforeach(test)
 
-# All tests link against gtest, reader, mesh and common libraries 
+# All tests link against gtest, reader, mesh and common libraries
+# Makes no sense to link against shaders for testing. Create mock objects
 foreach(test ${allTests})
     target_link_libraries(
         ${test}
@@ -28,6 +29,9 @@ foreach(test ${allTests})
         readers 
         mesh
         common
+        shaders
+        objects
+        events
     )  
 endforeach(test)
 

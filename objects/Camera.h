@@ -1,5 +1,4 @@
-#ifndef MESH_VIEWER_CAMERA_H
-#define MESH_VIEWER_CAMERA_H
+#pragma once
 
 #include <memory>
 #include "GL/glew.h"
@@ -13,19 +12,18 @@
 
 namespace mv {
 
-class Mesh;
+class Renderable;
 
 class Camera : public MeshViewerObject {
 
     public:
-        enum class ProjectionType {
+    enum class ProjectionType {
             Orthographic,
             Perspective
         };
 
     public:
-        Camera(const Mesh& m, const common::WindowDimensions& winDim,
-               const ProjectionType type = ProjectionType::Perspective);
+        explicit Camera(Renderable const& renderable, ProjectionType const type = ProjectionType::Perspective);
         ~Camera();
 
         // Applies the camera parameters and generates a view
@@ -33,24 +31,20 @@ class Camera : public MeshViewerObject {
 
         // Makes the camera orbit around the specified axis
         void setOrbitOn(const common::Axis& axis) { toggleOrbit(axis); }
-        void setOrbitOff() { m_orbitOn = false; }
+        void setOrbitOff() { orbitOn = false; }
 
         // Zooms the camera in and out
         void zoomIn();
         void zoomOut();
 
         // Sets projection type
-        void setProjectionType(const ProjectionType type) { m_projectionType = type; }
+        void setProjectionType(const ProjectionType type) { projectionType = type; }
 
-        glm::mat4 getViewTransform() const { return m_viewTransform; }
+        [[nodiscard]] glm::mat4 getViewTransform() const { return viewTransform; }
 
-        glm::mat4 getProjectionTransform() const { return m_projectionTransform; }
+        [[nodiscard]] glm::mat4 getProjectionTransform() const { return projectionTransform; }
 
-        void notifyWindowResized(common::WindowDimensions const& newDimensions) {
-            m_windowDimensions = newDimensions;
-        }
-
-        common::Bounds getViewVolume() const { return m_viewVolume; }
+        [[nodiscard]] common::Bounds getViewVolume() const { return viewVolume; }
 
 private:
         void buildViewTransform();
@@ -59,23 +53,18 @@ private:
         void buildOrthographicProjectionTransform();
         void toggleOrbit(const common::Axis& axis);
         void orbitLoop();
-        glm::mat4 rotateAboutX(float angleInDegrees);
-        glm::mat4 rotateAboutY(float angleInDegrees);
-        glm::mat4 rotateAboutZ(float angleInDegrees);
 
     private:
-        const Mesh& m_mesh;
-        std::optional<common::Axis> m_orbitAxis;
-        bool m_orbitOn;
-        glm::mat4 m_modelTransform;
-        glm::mat4 m_viewTransform;
-        glm::mat4 m_projectionTransform;
-        ProjectionType m_projectionType;
-        float m_fieldOfView;
-        common::WindowDimensions m_windowDimensions;
-        float m_orbitAngle;
-        std::unique_ptr<std::thread> m_timerThread;
-        common::Bounds m_viewVolume;
+        std::optional<common::Axis> orbitAxis;
+        bool orbitOn;
+        glm::mat4 modelTransform;
+        glm::mat4 viewTransform;
+        glm::mat4 projectionTransform;
+        ProjectionType projectionType;
+        float orbitAngle;
+        std::unique_ptr<std::thread> timerThread;
+        common::Bounds viewVolume;
+        Renderable const& renderable;
 };
 
 inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {
@@ -88,5 +77,3 @@ inline std::ostream& operator<<(std::ostream& os, Camera::ProjectionType p) {
 }
 
 }
-
-#endif
