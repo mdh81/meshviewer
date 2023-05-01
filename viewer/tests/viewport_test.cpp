@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "MockRendererable.h"
-#include "Viewport.h"
+#include "../Viewport.h"
 #include "3dmath/Vector.h"
 using namespace std;
 using namespace mv::scene;
@@ -28,7 +28,8 @@ TEST(Viewport, RendererablesMangement) {
     ASSERT_TRUE(viewport.getRenderables().at(0).get().getId() == renderable1.getId()) << "Unexpected renderable after remove";
     ASSERT_THROW({
         try {
-            viewport.remove(mv::MockRenderable());
+            auto renderable = mv::MockRenderable();
+            viewport.remove(renderable);
         } catch(std::runtime_error&) {
             throw;
         }

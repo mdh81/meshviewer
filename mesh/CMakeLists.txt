@@ -17,6 +17,7 @@ target_include_directories(
 target_link_libraries(
     mesh
     PUBLIC
+    objects
     glm::glm
     GLEW::GLEW
 )

@@ -28,7 +28,15 @@ public:
     }
 
 public:
-    void render(const Camera &camera) override;
+    void render() override;
+
+    [[nodiscard]] common::Point3D getCentroid() const override {
+        return {0, 0, 0};
+    }
+
+    [[nodiscard]] common::Bounds getBounds() const override {
+        return {{-1, 1}, {-1, -1}, {0, 0}};
+    }
 
 protected:
     void generateRenderData() override;

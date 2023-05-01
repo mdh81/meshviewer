@@ -8,6 +8,7 @@ target_include_directories(
     PUBLIC
     ../mesh 
     ../common
+    ../objects
     ${mathIncDir}
 )
 

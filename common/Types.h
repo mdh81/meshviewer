@@ -181,13 +181,13 @@ static std::string getGLErrorString(GLint glError) {
 
 // TODO: Make this a noop in release mode
 static GLuint glError = 0;
-#define checkGLError(glFunc)                                         \
-    glError = glGetError();                                          \
-    if (glError) {                                                   \
-        cout << #glFunc << " returned " << getGLErrorString(glError) \
-             << " at line " << __LINE__ << " of "                    \
-             << __FILE__ << endl;                                    \
-        std::terminate();                                            \
+#define checkGLError(glFunc)                                              \
+    glError = glGetError();                                               \
+    if (glError) {                                                        \
+        std::cout << #glFunc << " returned " << getGLErrorString(glError) \
+             << " at line " << __LINE__ << " of "                         \
+             << __FILE__ << std::endl;                                    \
+        std::terminate();                                                 \
     }
 
 #define glCallWithErrorCheck(glFunc, glArgs...) \

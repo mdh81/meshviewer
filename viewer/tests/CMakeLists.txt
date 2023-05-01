@@ -3,7 +3,17 @@ add_executable(
     viewer_test.cpp
 )
 
-set(allTests viewer_test)
+add_executable(
+    scene_test
+    scene_test.cpp
+)
+
+add_executable(
+    viewport_test
+    viewport_test.cpp
+)
+
+set(allTests viewer_test scene_test viewport_test)
 
 foreach(test ${allTests})
     target_include_directories(
@@ -12,6 +22,7 @@ foreach(test ${allTests})
         ../
         ../../common
         ../../mesh
+        ../../common/testsupport
     )
 endforeach(test)
 
@@ -29,5 +40,6 @@ foreach(test ${allTests})
         mesh
         objects
         configuration
+        gmock
     )
 endforeach(test)
