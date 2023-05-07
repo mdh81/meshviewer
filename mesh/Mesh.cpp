@@ -28,7 +28,7 @@ void Mesh::initialize(const unsigned numVertices, const unsigned numFaces) {
 }
 
 Mesh::Mesh(const Mesh& another) :
-    Renderable(another.m_vertexShaderFileName, another.m_fragmentShaderFileName) {
+    Renderable(another.vertexShaderFileName, another.fragmentShaderFileName) {
     m_numVertices = another.m_numVertices;
     m_numFaces = another.m_numFaces;
     m_vertices.resize(m_numVertices);
@@ -250,17 +250,17 @@ Mesh::NormalData Mesh::getNormals(const NormalLocation location) const {
 
 void Mesh::generateRenderData() {
 
-    if (m_readyToRender) return;
+    if (readyToRender) return;
 
     // Compile and link shaders
     createShaderProgram();
 
     // Switch to mesh shader program
-    glUseProgram(m_shaderProgram);
+    glUseProgram(shaderProgram);
 
     // Create mesh vertex array object
-    glGenVertexArrays(1, &m_vertexArrayObject);
-    glBindVertexArray(m_vertexArrayObject);
+    glGenVertexArrays(1, &vertexArrayObject);
+    glBindVertexArray(vertexArrayObject);
 
     // Create mesh vertex buffer object
     GLuint meshVbo;
@@ -272,7 +272,7 @@ void Mesh::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexData.getDataSize()), vertexData.getData(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexWorld");
+    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexWorld");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
@@ -294,7 +294,7 @@ void Mesh::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(normalData.getDataSize()), normalData.getData(), GL_STATIC_DRAW);
 
     // Define layout of normal data
-    GLint normalAttrib = glGetAttribLocation(m_shaderProgram, "vertexNormal");
+    GLint normalAttrib = glGetAttribLocation(shaderProgram, "vertexNormal");
     glEnableVertexAttribArray(normalAttrib);
     glVertexAttribPointer(normalAttrib,         //attrib identifier
                           3,                    //number of values for this attribute
@@ -306,8 +306,8 @@ void Mesh::generateRenderData() {
 
     // Define element data
     // Create element buffer object
-    glGenBuffers(1, &m_elementBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glGenBuffers(1, &elementBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
     // Upload connectivity data to element buffer object
     size_t numBytes;
@@ -316,55 +316,42 @@ void Mesh::generateRenderData() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(numBytes), faceData, GL_STATIC_DRAW);
 
     generateColors();
-    m_readyToRender = true;
+    readyToRender = true;
 }
 
 void Mesh::generateColors() {
-    if (m_readyToRender) return;
+    if (readyToRender) return;
 
     // Set color for the mesh
-    GLint colorId = glGetUniformLocation(m_shaderProgram, "reflectionCoefficient");
+    GLint colorId = glGetUniformLocation(shaderProgram, "reflectionCoefficient");
     glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.56f, 0.51f, 0.5f)));
 
     // Set light position in view coordinates
     // The default light is a simple headlight that's positioned at the
     // camera's location. Camera in GL is considered to be global origin
-    GLint lightPosId = glGetUniformLocation(m_shaderProgram, "lightPosition");
+    GLint lightPosId = glGetUniformLocation(shaderProgram, "lightPosition");
     glUniform3fv(lightPosId, 1, glm::value_ptr(glm::vec3(0.f, 0.f, 0.f)));
 
     // Set light intensity
-    GLint lightIntensityId = glGetUniformLocation(m_shaderProgram, "lightIntensity");
+    GLint lightIntensityId = glGetUniformLocation(shaderProgram, "lightIntensity");
     glUniform3fv(lightIntensityId, 1, glm::value_ptr(glm::vec3(1.f, 1.f, 1.f)));
-
-    // Enable fog
-    GLint fogEnabledId = glGetUniformLocation(m_shaderProgram, "fog.enabled");
-    glUniform1i(fogEnabledId, true);
-    GLint fogColorId = glGetUniformLocation(m_shaderProgram, "fog.color");
-    //TODO: Read from config
-    //TODO: Sample background color
-    float fogColor[3] = {0.75f, 0.75f, 0.75f};
-    glUniform3fv(fogColorId, 1, fogColor);
-    GLint fogMinDistId = glGetUniformLocation(m_shaderProgram, "fog.minimumDistance");
-    glUniform1f(fogMinDistId, 0.f);
-    GLint fogMaxDistId = glGetUniformLocation(m_shaderProgram, "fog.maximumDistance");
-    glUniform1f(fogMaxDistId, 30.0f);
 }
 
 void Mesh::render() {
 
-    if (!m_readyToRender) {
+    if (!readyToRender) {
         generateRenderData();
     }
 
-    glUseProgram(m_shaderProgram);
+    glUseProgram(shaderProgram);
 
     // Compute view
     camera.apply();
     // Send matrices to the shader
     setTransforms();
 
-    glBindVertexArray(m_vertexArrayObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glBindVertexArray(vertexArrayObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES,

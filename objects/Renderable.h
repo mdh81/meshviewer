@@ -33,6 +33,9 @@ class Renderable : public MeshViewerObject {
         [[nodiscard]]
         virtual common::Bounds getBounds() const = 0;
 
+        // TODO: 1-1 relationship between camera and renderable is not meaningful. For items like background
+        // and axes it makes sense to have separate cameras but not for each 3D renderable. We should have a
+        // 1-1 relationship between a viewport and a camera
         [[nodiscard]]
         Camera& getCamera() { return camera; }
 
@@ -43,14 +46,18 @@ class Renderable : public MeshViewerObject {
         void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) {
             aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
             // TODO: This should trigger just projection re-computation not a geometry regenerate
-            m_readyToRender = false;
+            readyToRender = false;
         }
 
-        float getAspectRatio() const { return aspectRatio; }
+        [[nodiscard]] unsigned getShaderProgram() const { return shaderProgram; }
+
+        [[nodiscard]] float getAspectRatio() const { return aspectRatio; }
 
         [[nodiscard]] virtual bool supportsGlyphs() { return false; }
 
         [[nodiscard]] bool isGlyphDisplayOn() const { return glyphsOn; }
+
+        [[nodiscard]] bool isReadyToRender() const { return readyToRender; }
 
         void setGlyphsOn(bool isOn) { glyphsOn = isOn; }
 
@@ -65,12 +72,12 @@ class Renderable : public MeshViewerObject {
         virtual void generateColors() = 0;
 
     protected:
-        const std::string m_vertexShaderFileName;
-        const std::string m_fragmentShaderFileName;
-        unsigned m_shaderProgram{};
-        unsigned m_vertexArrayObject{};
-        unsigned m_elementBufferObject{};
-        bool m_readyToRender;
+        const std::string vertexShaderFileName;
+        const std::string fragmentShaderFileName;
+        unsigned shaderProgram{};
+        unsigned vertexArrayObject{};
+        unsigned elementBufferObject{};
+        bool readyToRender;
         float aspectRatio;
         Camera camera;
         bool glyphsOn;
