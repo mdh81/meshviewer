@@ -140,7 +140,7 @@ void Camera::buildProjectionTransform() {
 void Camera::buildOrthographicProjectionTransform() {
 
     float viewWidth = viewVolume.length();
-    float viewHeight = viewWidth * renderable.getAspectRatio();
+    float viewHeight = viewWidth / renderable.getAspectRatio();
 
     float viewMinX = -viewWidth  * 0.5f;
     float viewMaxX =  viewWidth  * 0.5f;

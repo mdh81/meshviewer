@@ -18,13 +18,14 @@ public:
     };
     explicit GradientBackground(GradientType const type = GradientType::Linear,
                                 GradientDirection const direction = GradientDirection::Vertical);
+
     void setGradientDirection(GradientDirection const direction) {
         m_direction = direction;
-        m_readyToRender = false;
+        readyToRender = false;
     }
     void setGradientType(GradientType const type) {
         m_type = type;
-        m_readyToRender = false;
+        readyToRender = false;
     }
 
 public:

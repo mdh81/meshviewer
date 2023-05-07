@@ -14,9 +14,6 @@ Scene::Scene(unsigned const windowWidth, unsigned const windowHeight)
 
 void Scene::createViewport(Viewport::ViewportCoordinates const& coordinates) {
    viewports.emplace_back(new Viewport(coordinates));
-   auto background = new objects::GradientBackground;
-   Viewer::getInstance().add(background);
-   add(*background);
 }
 
 void Scene::add(Renderable& renderable) {

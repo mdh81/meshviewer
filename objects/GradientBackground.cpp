@@ -43,7 +43,7 @@ GradientBackground::GradientBackground(GradientType const type, GradientDirectio
 
 void GradientBackground::render() {
 
-    if (!m_readyToRender) {
+    if (!readyToRender) {
         generateRenderData();
     }
 
@@ -52,9 +52,9 @@ void GradientBackground::render() {
     // doesn't write to the depth buffer. This way, every object that is drawn after the background
     // overwrites the background's fragments and "appear" on top of the background
     glCallWithErrorCheck(glDisable, GL_DEPTH_TEST);
-    glCallWithErrorCheck(glUseProgram, m_shaderProgram);
-    glCallWithErrorCheck(glBindVertexArray, m_vertexArrayObject);
-    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glCallWithErrorCheck(glUseProgram, shaderProgram);
+    glCallWithErrorCheck(glBindVertexArray, vertexArrayObject);
+    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
     if (m_debugOn) {
         glCallWithErrorCheck(glPolygonMode,GL_FRONT_AND_BACK, GL_LINE);
     }
@@ -64,19 +64,19 @@ void GradientBackground::render() {
 
 void GradientBackground::generateRenderData() {
 
-    if (m_readyToRender) {
+    if (readyToRender) {
         return;
     }
 
     // TODO: Add dirty flag so shaders won't be recreated on geometry update
     // Create shader program
     createShaderProgram();
-    glCallWithErrorCheck(glUseProgram, m_shaderProgram);
+    glCallWithErrorCheck(glUseProgram, shaderProgram);
 
     // TODO: Delete existing buffers
     // Create vertex data
-    glCallWithErrorCheck(glGenVertexArrays, 1, &m_vertexArrayObject);
-    glCallWithErrorCheck(glBindVertexArray, m_vertexArrayObject);
+    glCallWithErrorCheck(glGenVertexArrays, 1, &vertexArrayObject);
+    glCallWithErrorCheck(glBindVertexArray, vertexArrayObject);
     GLuint gradientVbo;
     glCallWithErrorCheck(glGenBuffers, 1, &gradientVbo);
     glCallWithErrorCheck(glBindBuffer, GL_ARRAY_BUFFER, gradientVbo);
@@ -92,7 +92,7 @@ void GradientBackground::generateRenderData() {
     // the vertex coordinates taking the first three values and the color components taking
     // the next three
     // Coordinates
-    auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexCameraIn");
+    auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, shaderProgram, "vertexCameraIn");
     glCallWithErrorCheck(glEnableVertexAttribArray, positionAttrib);
     glCallWithErrorCheck(glVertexAttribPointer, positionAttrib,
                          3,                 // Entries per vertex
@@ -101,7 +101,7 @@ void GradientBackground::generateRenderData() {
                          6*sizeof(GLfloat), // Stride
                          nullptr);          // Offset
     // Color
-    auto colorAttrib = glCallWithErrorCheck(glGetAttribLocation, m_shaderProgram, "vertexColorIn");
+    auto colorAttrib = glCallWithErrorCheck(glGetAttribLocation, shaderProgram, "vertexColorIn");
     glCallWithErrorCheck(glEnableVertexAttribArray, colorAttrib);
     glCallWithErrorCheck(glVertexAttribPointer, colorAttrib,
                          3,                             // Entries per vertex
@@ -115,7 +115,7 @@ void GradientBackground::generateRenderData() {
     // to fit the window without concern for aspect ratio. We fix the view volume's aspect ratio to the window's
     // in case of spherical gradient so keep the circles in the center of the geometry circles (Maybe we ought to
     // generate new mesh that adjusts for aspect ratio)
-    auto matrixId = glCallWithErrorCheck(glGetUniformLocation, m_shaderProgram, "orthographicProjectionMatrix");
+    auto matrixId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "orthographicProjectionMatrix");
     if (m_type == GradientType::Radial) {
         Bounds geometryBounds;
         math3d::Extent<float> viewX{-aspectRatio, aspectRatio};
@@ -129,7 +129,7 @@ void GradientBackground::generateRenderData() {
         glCallWithErrorCheck(glUniformMatrix4fv, matrixId, 1, GL_FALSE, identityMatrix);
     }
 
-    m_readyToRender = true;
+    readyToRender = true;
 }
 
 void GradientBackground::generateLinearGradient() {
@@ -181,8 +181,8 @@ void GradientBackground::generateLinearGradient() {
                          vertexData.data(), GL_STATIC_DRAW);
 
     // Specify connectivity
-    glCallWithErrorCheck(glGenBuffers, 1, &m_elementBufferObject);
-    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glCallWithErrorCheck(glGenBuffers, 1, &elementBufferObject);
+    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
     // m_numberOfStops - 1 is the number of quads we will draw and
     // each quad will be split into two triangles, each of which will have three indices
     vector<GLuint> faces((m_numberOfStops - 1) * 2 * 3);
@@ -273,8 +273,8 @@ void GradientBackground::generateSphericalGradient() {
                          GL_STATIC_DRAW);
 
     // Upload connectivity data to the gpu
-    glCallWithErrorCheck(glGenBuffers, 1, &m_elementBufferObject);
-    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glCallWithErrorCheck(glGenBuffers, 1, &elementBufferObject);
+    glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
     glCallWithErrorCheck(glBufferData,
                          GL_ELEMENT_ARRAY_BUFFER,
                          sizeof(GLuint) * faces.size(),

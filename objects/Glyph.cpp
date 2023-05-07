@@ -16,7 +16,7 @@ Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
 
 void Glyph::generateRenderData() {
 
-    if (m_readyToRender) return;
+    if (readyToRender) return;
 
     if (m_association == GlyphAssociation::Undefined)
         throw std::runtime_error("Mesh association is undefined for glyph");
@@ -28,11 +28,11 @@ void Glyph::generateRenderData() {
     // Compile and link shaders
     createShaderProgram();
 
-    glUseProgram(m_shaderProgram);
+    glUseProgram(shaderProgram);
 
     // Create VAO
-    glGenVertexArrays(1, &m_vertexArrayObject);
-    glBindVertexArray(m_vertexArrayObject);
+    glGenVertexArrays(1, &vertexArrayObject);
+    glBindVertexArray(vertexArrayObject);
 
     // Create VBO
     GLuint vbo;
@@ -50,7 +50,7 @@ void Glyph::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, dataSize, m_vertexData.get(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexWorld");
+    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexWorld");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
@@ -61,8 +61,8 @@ void Glyph::generateRenderData() {
     );
 
     // Create EBO
-    glGenBuffers(1, &m_elementBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glGenBuffers(1, &elementBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
     // Upload connectivity data to element buffer object
     // Each glyph has two end points and the data type is unsigned int
@@ -75,7 +75,7 @@ void Glyph::generateRenderData() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, m_elementData.get(), GL_STATIC_DRAW);
 
     generateColors();
-    m_readyToRender = true;
+    readyToRender = true;
 }
 
 size_t Glyph::buildVertexNormalData() {
@@ -139,19 +139,19 @@ size_t Glyph::buildFaceNormalData() {
 
 void Glyph::render() {
 
-    if (!m_readyToRender) {
+    if (!readyToRender) {
         generateRenderData();
     }
 
     // Switch to glyph shader program
-    glUseProgram(m_shaderProgram);
+    glUseProgram(shaderProgram);
 
     // Set transform shader inputs
     setTransforms();
 
     // Bind vertex array object and element buffer object
-    glBindVertexArray(m_vertexArrayObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
+    glBindVertexArray(vertexArrayObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
     // Render lines
     glDrawElements(GL_LINES,
@@ -163,10 +163,10 @@ void Glyph::render() {
 }
 
 void Glyph::generateColors() {
-    if (m_readyToRender) return;
+    if (readyToRender) return;
 
     // Set line color
-    GLint colorId = glGetUniformLocation(m_shaderProgram, "lineColor");
+    GLint colorId = glGetUniformLocation(shaderProgram, "lineColor");
     glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f)));
 }
 
