@@ -72,12 +72,7 @@ namespace mv::scene {
         for (auto& renderable : renderableObjects) {
             renderable.get().notifyWindowResized(windowWidth, windowHeight);
         }
-#ifdef OSX
-        // OSX retina displays have twice as many pixels
-        windowDimensions = {2*windowWidth, 2*windowHeight};
-#else
         windowDimensions = {windowWidth, windowHeight};
-#endif
     }
 
     void Viewport::render() {
