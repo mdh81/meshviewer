@@ -39,7 +39,9 @@ class Mesh : public Renderable {
         void render() override;
 
         [[nodiscard]]
-        bool supportsGlyphs() override { return true; }
+        bool supportsGlyphs() const override { return true; }
+
+        [[nodiscard]] bool isModelObject() const override { return true; }
 
     public:
         // TODO: Allow creation of meshes without this call. Make addVertex

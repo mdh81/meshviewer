@@ -9,12 +9,11 @@ namespace mv {
 
 using namespace common;
 
-Renderable::Renderable(std::string  vertexShaderFileName, std::string  fragmentShaderFileName)
+Renderable::Renderable(std::string  vertexShaderFileName, std::string  fragmentShaderFileName, Effect supportedEffects)
     : vertexShaderFileName(std::move(vertexShaderFileName))
     , fragmentShaderFileName(std::move(fragmentShaderFileName))
-    , readyToRender(false)
-    , aspectRatio(1.0f)
-    , camera(Camera(*this, Camera::ProjectionType::Perspective)) {
+    , camera(Camera(*this, Camera::ProjectionType::Perspective))
+    , supportedEffects(supportedEffects) {
 
 }
 

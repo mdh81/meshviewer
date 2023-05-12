@@ -20,10 +20,15 @@ class Renderable : public MeshViewerObject {
         using RenderablePointer = std::shared_ptr<Renderable>;
         using Renderables = std::vector<RenderablePointer>;
 
+        enum Effect {
+            None = 0,
+            Fog = 1,
+        };
+
     public:
         Renderable() = delete;
         virtual ~Renderable() = default;
-        Renderable(std::string vertexShaderFileName, std::string fragmentShaderFileName);
+        Renderable(std::string vertexShaderFileName, std::string fragmentShaderFileName, Effect supportedEffects = Effect::None);
         void createShaderProgram();
         virtual void render() = 0;
 
@@ -53,11 +58,15 @@ class Renderable : public MeshViewerObject {
 
         [[nodiscard]] float getAspectRatio() const { return aspectRatio; }
 
-        [[nodiscard]] virtual bool supportsGlyphs() { return false; }
+        [[nodiscard]] virtual bool supportsGlyphs() const { return false; }
 
         [[nodiscard]] bool isGlyphDisplayOn() const { return glyphsOn; }
 
         [[nodiscard]] bool isReadyToRender() const { return readyToRender; }
+
+        [[nodiscard]] bool supportsEffect(Effect effect) const { return supportedEffects & effect; }
+
+        [[nodiscard]] virtual bool isModelObject() const { return false; }
 
         void setGlyphsOn(bool isOn) { glyphsOn = isOn; }
 
@@ -77,10 +86,11 @@ class Renderable : public MeshViewerObject {
         unsigned shaderProgram{};
         unsigned vertexArrayObject{};
         unsigned elementBufferObject{};
-        bool readyToRender;
-        float aspectRatio;
+        bool readyToRender{};
+        float aspectRatio{1.0f};
         Camera camera;
-        bool glyphsOn;
+        bool glyphsOn{};
+        const unsigned supportedEffects{};
 };
 
 using RenderableReference = std::reference_wrapper<Renderable>;

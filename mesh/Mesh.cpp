@@ -13,7 +13,7 @@ namespace mv {
 using namespace common;
 
 Mesh::Mesh()
-    : Renderable("MeshVertex.glsl", "Fragment.glsl")
+    : Renderable("MeshVertex.glsl", "Fragment.glsl", Effect::Fog)
     , m_numVertices(0)
     , m_numFaces(0)
     , m_connectivityDataSize(0) {
