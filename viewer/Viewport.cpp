@@ -14,7 +14,7 @@ namespace mv::scene {
     Viewport::Viewport(std::initializer_list<float> const& coordinates)
     : coordinates(coordinates)
     , showGradientBackground(true)
-    , addFog(false)
+    , fogEnabled(false)
     , windowDimensions{} {
         registerEventHandlers();
     }
@@ -22,7 +22,7 @@ namespace mv::scene {
     Viewport::Viewport(Viewport::ViewportCoordinates  coordinates)
     : coordinates(std::move(coordinates))
     , showGradientBackground(true)
-    , addFog(false)
+    , fogEnabled(false)
     , windowDimensions{} {
         registerEventHandlers();
     }
@@ -46,19 +46,13 @@ namespace mv::scene {
     }
 
     void Viewport::add(mv::Renderable& renderable) {
-        if (!gradientBackground && dynamic_cast<objects::GradientBackground*>(&renderable)) {
-            gradientBackground = std::ref(renderable);
-        } else {
-            renderableObjects.insert(std::ref(renderable));
-        }
+        renderableObjects.insert(std::ref(renderable));
     }
 
     void Viewport::remove(mv::Renderable& renderable) {
         auto itr = renderableObjects.find(std::ref(renderable));
         if (itr != renderableObjects.end()) {
             renderableObjects.erase(itr);
-        } else if (gradientBackground && gradientBackground->get() == renderable) {
-            gradientBackground.reset();
         } else {
             throw std::runtime_error("Unable to remove renderable. It was never added");
         }
@@ -93,13 +87,49 @@ namespace mv::scene {
                                          (coordinates.topRight.y - coordinates.bottomLeft.y) * windowDimensions.height);
 
         // Background has to be drawn first (it's render method will disable writing to depth buffer)
-        if (gradientBackground && showGradientBackground) {
-            gradientBackground->get().render();
+        if (showGradientBackground) {
+            if (!gradientBackground) {
+                gradientBackground = std::make_unique<objects::GradientBackground>();
+            }
+            gradientBackground->render();
         }
+
+        // Add fog if enabled
+        fogEnabled ? enableFog() : disableFog();
+
         for (auto& renderable : renderableObjects) {
             renderable.get().render();
         }
 
+    }
+
+    void Viewport::enableFog() {
+        for (auto& renderable : renderableObjects) {
+            auto shaderProgram = renderable.get().getShaderProgram();
+            glCallWithErrorCheck(glUseProgram, shaderProgram);
+            GLint fogEnabledId = glGetUniformLocation(shaderProgram, "fog.enabled");
+            glCallWithErrorCheck(glUniform1i, fogEnabledId, true);
+            GLint fogColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "fog.color");
+            //TODO: Read from config
+            //TODO: Sample background color
+            float fogColor[3] = {0.75f, 0.75f, 0.75f};
+            glUniform3fv(fogColorId, 1, fogColor);
+            GLint fogMinDistId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "fog.minimumDistance");
+            glCallWithErrorCheck(glUniform1f, fogMinDistId, 0.f);
+            GLint fogMaxDistId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "fog.maximumDistance");
+            glCallWithErrorCheck(glUniform1f, fogMaxDistId, 30.0f);
+        }
+    }
+
+    void Viewport::disableFog() {
+        for (auto& renderable : renderableObjects) {
+            if (renderable.get().isReadyToRender()) {
+                auto shaderProgram = renderable.get().getShaderProgram();
+                glCallWithErrorCheck(glUseProgram, shaderProgram);
+                GLint fogEnabledId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "fog.enabled");
+                glCallWithErrorCheck(glUniform1i, fogEnabledId, false);
+            }
+        }
     }
 
 }

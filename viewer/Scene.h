@@ -8,6 +8,7 @@ namespace mv::scene {
 
 // A scene is a collection of viewports
 
+// TODO: Add unit tests for testing life-cycle of scenes, renderables, and viewports
 class Scene : public MeshViewerObject {
     public:
         using ViewportPointer = std::unique_ptr<Viewport>;

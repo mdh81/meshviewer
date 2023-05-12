@@ -23,6 +23,7 @@ foreach(test ${allTests})
         ../../common
         ../../mesh
         ../../common/testsupport
+        ../../objects
     )
 endforeach(test)
 

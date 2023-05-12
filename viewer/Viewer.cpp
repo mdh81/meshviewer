@@ -5,8 +5,6 @@
 #include "ShaderLoader.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
-#include "Glyph.h"
-#include "GradientBackground.h"
 #include "ConfigurationReader.h"
 
 #ifdef OSX
@@ -26,7 +24,6 @@ using namespace std;
 namespace mv {
 using namespace common;
 using namespace events;
-using namespace objects;
 
 Viewer& Viewer::getInstance() {
     static Viewer instance;

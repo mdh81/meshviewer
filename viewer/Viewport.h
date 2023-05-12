@@ -1,8 +1,10 @@
 #pragma once
 
-#include "../objects/Renderable.h"
+#include "Renderable.h"
+#include "GradientBackground.h"
 #include "3dmath/Vector.h"
 #include <unordered_set>
+
 
 namespace mv::scene {
 
@@ -59,15 +61,17 @@ class Viewport : public MeshViewerObject {
             showGradientBackground = !showGradientBackground;
         }
         void toggleFog() {
-            addFog = !addFog;
+            fogEnabled = !fogEnabled;
         }
+        void enableFog();
+        void disableFog();
     private:
         RenderableReferences renderableObjects;
-        std::optional<RenderableReference> gradientBackground;
+        std::unique_ptr<mv::objects::GradientBackground> gradientBackground;
         std::optional<RenderableReference> activeObject;
         ViewportCoordinates coordinates;
         common::WindowDimensions windowDimensions;
         bool showGradientBackground;
-        bool addFog;
+        bool fogEnabled;
     };
 }
