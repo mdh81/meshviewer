@@ -41,15 +41,21 @@ namespace mv {
             EventHandler& operator==(EventHandler&&) = delete;
 
         private:
-            // This method is declared static so a regular function pointer can be created from this
-            // method and passed to glfw function. These old C APIs don't support member function pointers
-            static void handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-        private:
             using CallbackRef = std::reference_wrapper<const Callback>;
             using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHash, Event::EventEquals>;
             static EventCallbackMap m_eventCallbackMap;
             static bool m_started;
+
+            // These methods are declared static so a regular function pointer can be created from these
+            // methods and passed to glfw functions. These old C APIs don't support member function pointers
+            static void handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int modifiers);
+            static void handleMouseEvent(GLFWwindow* window, int button, int action, int modifiers);
+
+            // Handle mouse or keyboard event
+            static void handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifiers);
+
+            // Find the Event object to handle the GLFW mouse or keyboard event
+            static Callback const* getEventHandler(int eventIdentifier, int mods);
 
         friend class EventHandlerTest;
         friend class mv::viewer::ViewerTest;
