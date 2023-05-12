@@ -44,7 +44,6 @@ add_subdirectory(readers)
 add_subdirectory(shaders)
 add_subdirectory(viewer)
 add_subdirectory(config)
-add_subdirectory(scene)
 add_subdirectory(writers)
 
 add_executable(

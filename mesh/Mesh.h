@@ -14,14 +14,14 @@
 
 namespace mv {
 
-class Camera;
-
 class Mesh : public Renderable {
     public:
         using Vertices = std::vector<Vertex>;
         using Faces = std::vector<Face>;
         using NormalData = common::Array<float, 3>;
         using VertexData = common::Array<float, 3>;
+        using MeshPointer = std::unique_ptr<mv::Mesh>;
+        using Meshes = std::vector<MeshPointer>;
 
     public:
         Mesh();
@@ -36,16 +36,19 @@ class Mesh : public Renderable {
         //
 
     public:
-        void render(Camera const&) override;
+        void render() override;
+
+        [[nodiscard]]
+        bool supportsGlyphs() override { return true; }
 
     public:
         // TODO: Allow creation of meshes without this call. Make addVertex
         // and addFace allocate memory as needed. Come up with resonable
         // default initial allocation
-        void initialize(const unsigned numVertices, const unsigned numFaces);
+        void initialize(unsigned numVertices, unsigned numFaces);
 
         // Adds a new vertex to this mesh
-        void addVertex(const float x, const float y, const float z);
+        void addVertex(float x, float y, float z);
 
         // Adds a new face that is described the specified vertex identifiers
         // NOTE: vertexIds are 0-based
@@ -56,43 +59,43 @@ class Mesh : public Renderable {
         unsigned removeDuplicateVertices();
 
         // Gets the number of vertices in this mesh
-        unsigned getNumberOfVertices() const { return m_numVertices; }
+        [[nodiscard]] unsigned getNumberOfVertices() const { return m_numVertices; }
 
         // Gets the number of faces in this mesh
-        unsigned getNumberOfFaces() const { return m_numFaces; }
+        [[nodiscard]] unsigned getNumberOfFaces() const { return m_numFaces; }
 
         // Gets all vertices in this mesh
-        const Vertices& getVertices() const { return m_vertices; }
+        [[nodiscard]] const Vertices& getVertices() const { return m_vertices; }
 
         // Gets all faces in this mesh
-        const Faces& getConnectivity() const { return m_faces; }
+        [[nodiscard]] const Faces& getConnectivity() const { return m_faces; }
 
         // Returns a vertex at the specified index
-        const Vertex& getVertex(const unsigned vertexIndex) const;
+        [[nodiscard]] const Vertex& getVertex(unsigned vertexIndex) const;
 
         // Returns a face at the specified index
-        const Face& getFace(const unsigned faceIndex) const;
+        [[nodiscard]] const Face& getFace(unsigned faceIndex) const;
 
         // Gets the bounds of the mesh
-        const common::Bounds& getBounds() const;
+        [[nodiscard]] common::Bounds getBounds() const override;
 
         // Gets the centroid of the mesh
-        Vertex getCentroid() const;
+        [[nodiscard]] common::Point3D getCentroid() const override;
 
         // Gets vertices
-        VertexData getVertexData() const;
+        [[nodiscard]] VertexData getVertexData() const;
 
         // Gets connectivity data in the form a pointer to a contiguous memory
         void getConnectivityData(size_t& numBytes, unsigned*& connData) const;
 
         // Transforms a copy of this mesh and returns the copy
-        std::unique_ptr<Mesh> transform(const glm::mat4& transformMatrix) const;
+        [[nodiscard]] std::unique_ptr<Mesh> transform(const glm::mat4& transformMatrix) const;
 
         // Writes this mesh to a STL file
         void writeToSTL(const std::string& stlFile) const;
 
         // Gets normals
-        NormalData getNormals(const common::NormalLocation) const;
+        [[nodiscard]] NormalData getNormals(common::NormalLocation) const;
 
     protected:
         void generateRenderData() override;

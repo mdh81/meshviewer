@@ -17,8 +17,13 @@ class Glyph : public Renderable {
     // TODO: Define creation semantics
     public:
         Glyph(Mesh const&, const common::GlyphAssociation);
-        void render(Camera const&) override;
-    protected:
+        void render() override;
+
+    [[nodiscard]] common::Point3D getCentroid() const override;
+
+    [[nodiscard]] common::Bounds getBounds() const override;
+
+protected:
         void generateRenderData() override;
         void generateColors() override;
     private:

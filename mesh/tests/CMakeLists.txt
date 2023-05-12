@@ -29,7 +29,8 @@ foreach(test ${allTests})
     )
 endforeach(test)
 
-# All tests link against gtest, mesh, reader and common libraries 
+# All tests link against gtest, mesh, reader and common libraries
+# TODO: Use mocks and replace needless test dependencies
 foreach(test ${allTests})
     target_link_libraries(
         ${test}
@@ -38,6 +39,8 @@ foreach(test ${allTests})
         events
         mesh
         common
+        objects
+        shaders
         readers
     )  
 endforeach(test)

@@ -22,9 +22,9 @@ TEST(Viewer, Singleton) {
 
 TEST(Viewer, Getters) {
     Viewer& v = Viewer::getInstance();
-    ASSERT_EQ(v.isDisplayingNormals(), false) << "Normals display is supposed to be off by default";
+    ASSERT_EQ(v.isDisplayingNormals(), false) << "Normals add is supposed to be off by default";
     mv::viewer::ViewerTest::simulateKeyPress(GLFW_KEY_N);
-    ASSERT_EQ(v.isDisplayingNormals(), true) << "Normals display is not true";
+    ASSERT_EQ(v.isDisplayingNormals(), true) << "Normals add is not true";
     mv::viewer::ViewerTest::simulateKeyPress(GLFW_KEY_W);
     ASSERT_EQ(v.getRenderMode(), mv::Viewer::RenderMode::Wireframe) << "Render mode is not wireframe";
     mv::viewer::ViewerTest::simulateKeyPress(GLFW_KEY_S);

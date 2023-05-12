@@ -1,6 +1,9 @@
 add_library(
     viewer 
-    Viewer.cpp)
+    Viewer.cpp
+    Scene.cpp
+    Viewport.cpp)
+
 
 target_include_directories(
     viewer 

@@ -17,8 +17,8 @@ class MeshViewerObject {
         // Turns debug on or off
         void debugOn() { std::cout<<"Turning debug on" << std::endl; m_debugOn = true; }
         void debugOff() { m_debugOn = false; }
-        bool isDebugOn() const { return m_debugOn; }
-        size_t getId() const { return m_id; }
+        [[nodiscard]] bool isDebugOn() const { return m_debugOn; }
+        [[nodiscard]] size_t getId() const { return m_id; }
 
         struct MeshViewerObjectHash {
             size_t operator()(MeshViewerObject const& meshViewerObject) const {

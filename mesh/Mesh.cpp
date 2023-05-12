@@ -27,7 +27,8 @@ void Mesh::initialize(const unsigned numVertices, const unsigned numFaces) {
     m_faces.reserve(m_numFaces);
 }
 
-Mesh::Mesh(const Mesh& another) : Renderable(another.m_vertexShaderFileName, another.m_fragmentShaderFileName) {
+Mesh::Mesh(const Mesh& another) :
+    Renderable(another.m_vertexShaderFileName, another.m_fragmentShaderFileName) {
     m_numVertices = another.m_numVertices;
     m_numFaces = another.m_numFaces;
     m_vertices.resize(m_numVertices);
@@ -60,7 +61,7 @@ const Face& Mesh::getFace(unsigned faceIndex) const {
     return m_faces.at(faceIndex);
 }
 
-const Bounds& Mesh::getBounds() const {
+Bounds Mesh::getBounds() const {
     if (!m_bounds) {
         const_cast<Mesh*>(this)->buildBounds();
     }
@@ -131,13 +132,13 @@ unsigned Mesh::removeDuplicateVertices() {
     return duplicateVertices.size();
 }
 
-Vertex Mesh::getCentroid() const {
+Point3D Mesh::getCentroid() const {
     if (!m_bounds) {
-        getBounds();
+        const_cast<Mesh*>(this)->buildBounds();
     }
-    return Vertex { (this->m_bounds->x.max + this->m_bounds->x.min) * 0.5f,
-                    (this->m_bounds->y.max + this->m_bounds->y.min) * 0.5f,
-                    (this->m_bounds->z.max + this->m_bounds->z.min) * 0.5f };
+    return { (this->m_bounds->x.max + this->m_bounds->x.min) * 0.5f,
+             (this->m_bounds->y.max + this->m_bounds->y.min) * 0.5f,
+             (this->m_bounds->z.max + this->m_bounds->z.min) * 0.5f };
 }
 
 void Mesh::buildVertexData() {
@@ -323,7 +324,7 @@ void Mesh::generateColors() {
 
     // Set color for the mesh
     GLint colorId = glGetUniformLocation(m_shaderProgram, "reflectionCoefficient");
-    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(1.0f, 0.f, 0.f)));
+    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.56f, 0.51f, 0.5f)));
 
     // Set light position in view coordinates
     // The default light is a simple headlight that's positioned at the
@@ -349,17 +350,18 @@ void Mesh::generateColors() {
     glUniform1f(fogMaxDistId, 30.0f);
 }
 
-void Mesh::render(Camera const& camera) {
+void Mesh::render() {
 
     if (!m_readyToRender) {
         generateRenderData();
     }
 
-    // Switch to glyph shader program
     glUseProgram(m_shaderProgram);
 
+    // Compute view
+    camera.apply();
     // Send matrices to the shader
-    setTransforms(camera);
+    setTransforms();
 
     glBindVertexArray(m_vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
@@ -367,8 +369,8 @@ void Mesh::render(Camera const& camera) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES,
                    static_cast<GLsizei>(getNumberOfVertices()), // Number of elements
-                    GL_UNSIGNED_INT,                             // Type of element buffer data
-                    nullptr                                    // Offset into element buffer data
+                   GL_UNSIGNED_INT,                              // Type of element buffer data
+                   nullptr                                     // Offset into element buffer data
                   );
 }
 
