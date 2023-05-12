@@ -27,13 +27,14 @@ class Renderable : public MeshViewerObject {
 
         void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) {
             aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+            // TODO: This should trigger just projection re-computation not a geometry regenerate
+            m_readyToRender = false;
         }
 
     protected:
         // Set the shader transform matrix inputs
-        void setModelViewProjection(Camera const&);
-        void setModelView(Camera const&);
-        
+        void setTransforms(Camera const &camera);
+
         // Generate data for the rendering pipeline
         virtual void generateRenderData() = 0;
 

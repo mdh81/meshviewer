@@ -59,41 +59,34 @@ void Renderable::createShaderProgram() {
 	}
 }
 
-// Precondition: Every vertex shader must have a uniform mat4 variable named
-// modelViewProjectionTransform
-void Renderable::setModelViewProjection(Camera const& camera) {
+// Precondition: Every vertex shader must have a uniform mat4 variables named
+// modelViewTransform and projectionTransform
+void Renderable::setTransforms(Camera const& camera) {
 
-    // Compute the combined transform that will transform a vertex from
-    // world coordinates to normalized view coordinates
+    // TODO: Use mathlib's matrix
+
+    // Compute the transform that will transform a vertex from
+    // world coordinates to camera coordinates
     // The matrix multiplication order is the reverse order of actual transformations
     // Object -> Global, Global -> Camera, Camera -> Homogenous Coordinates
-    // TODO: Setup an octave session and observe the conversion to homogenous coordinates
-    glm::mat4 compositeTransform = camera.getProjectionTransform() *
-                                   camera.getViewTransform() *
-                                   getModelTransform();
+    glm::mat4 modelView = camera.getViewTransform() * getModelTransform();
 
-    // Get the composite transform matrix id in the shader
-    GLuint mvpId = glGetUniformLocation(m_shaderProgram, "modelViewProjectionTransform");
-
-    // Set model view projection
-    glUniformMatrix4fv(mvpId,
-                       1,        // num matrices,
-                       GL_FALSE, // transpose
-                       &compositeTransform[0][0]);
-
-}
-
-// Precondition: Every vertex shader must have a uniform mat4 variable named
-// modelViewProjectionTransform
-void Renderable::setModelView(Camera const& camera) {
+    // Get the model view transform matrix id in the shader
+    GLint modelViewId = glGetUniformLocation(m_shaderProgram, "modelViewTransform");
 
     // Set model view
-    GLuint mvId = glGetUniformLocation(m_shaderProgram, "modelViewTransform");
-    glm::mat4 modelViewTransform = camera.getViewTransform() * getModelTransform();
-    glUniformMatrix4fv(mvId,
-                       1,
-                       GL_FALSE,
-                       &modelViewTransform[0][0]);
+    glUniformMatrix4fv(modelViewId,
+                       1,        // num matrices,
+                       GL_FALSE, // transpose
+                       &modelView[0][0]);
+    // Get the model view transform matrix id in the shader
+    GLint projectionId = glGetUniformLocation(m_shaderProgram, "projectionTransform");
+
+    // Set projection
+    glUniformMatrix4fv(projectionId,
+                       1,        // num matrices,
+                       GL_FALSE, // transpose
+                       &camera.getProjectionTransform()[0][0]);
 }
 
 }

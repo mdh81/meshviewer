@@ -271,7 +271,7 @@ void Mesh::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexData.getDataSize()), vertexData.getData(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexPosition");
+    GLint posAttrib = glGetAttribLocation(m_shaderProgram, "vertexWorld");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
@@ -323,7 +323,7 @@ void Mesh::generateColors() {
 
     // Set color for the mesh
     GLint colorId = glGetUniformLocation(m_shaderProgram, "reflectionCoefficient");
-    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.56f, 0.51f, 0.5f)));
+    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(1.0f, 0.f, 0.f)));
 
     // Set light position in view coordinates
     // The default light is a simple headlight that's positioned at the
@@ -334,6 +334,19 @@ void Mesh::generateColors() {
     // Set light intensity
     GLint lightIntensityId = glGetUniformLocation(m_shaderProgram, "lightIntensity");
     glUniform3fv(lightIntensityId, 1, glm::value_ptr(glm::vec3(1.f, 1.f, 1.f)));
+
+    // Enable fog
+    GLint fogEnabledId = glGetUniformLocation(m_shaderProgram, "fog.enabled");
+    glUniform1i(fogEnabledId, true);
+    GLint fogColorId = glGetUniformLocation(m_shaderProgram, "fog.color");
+    //TODO: Read from config
+    //TODO: Sample background color
+    float fogColor[3] = {0.2f, 0.2f, 0.2f};
+    glUniform3fv(fogColorId, 1, fogColor);
+    GLint fogMinDistId = glGetUniformLocation(m_shaderProgram, "fog.minimumDistance");
+    glUniform1f(fogMinDistId, 0.f);
+    GLint fogMaxDistId = glGetUniformLocation(m_shaderProgram, "fog.maximumDistance");
+    glUniform1f(fogMaxDistId, 30.0f);
 }
 
 void Mesh::render(Camera const& camera) {
@@ -346,8 +359,7 @@ void Mesh::render(Camera const& camera) {
     glUseProgram(m_shaderProgram);
 
     // Send matrices to the shader
-    setModelViewProjection(camera);
-    setModelView(camera);
+    setTransforms(camera);
 
     glBindVertexArray(m_vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBufferObject);
