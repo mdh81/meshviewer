@@ -60,7 +60,7 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
 
     // Get notified when window size changes
     glfwSetWindowUserPointer(m_window, this);
-    glfwSetWindowSizeCallback(m_window,
+    glfwSetFramebufferSizeCallback(m_window,
                               [](GLFWwindow *window, int width, int height) {
           auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
           viewer->m_windowWidth = width;
