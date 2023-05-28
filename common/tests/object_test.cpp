@@ -9,7 +9,7 @@ TEST(Object, TestIdentifier) {
     Mesh m;
     Octree o(m);
     ASSERT_NE(m.getId(), o.getId()) << "Two different identifiers were expected" << std::endl;
-    ASSERT_EQ(3, o.getId()) << "Wrong identifier" << std::endl;
+    ASSERT_EQ(2, o.getId()) << "Wrong identifier" << std::endl;
     ASSERT_EQ(1, m.getId()) << "Wrong identifier" << std::endl;
 }
 

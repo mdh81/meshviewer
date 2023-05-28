@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Renderable.h"
+#include "Gadget.h"
 #include "Types.h"
 
 namespace mv::objects {
 
-class GradientBackground : public Renderable {
+class GradientBackground : public Gadget {
 
 public:
     enum class GradientType {
@@ -16,8 +16,8 @@ public:
         Horizontal,
         Vertical
     };
-    explicit GradientBackground(GradientType const type = GradientType::Linear,
-                                GradientDirection const direction = GradientDirection::Vertical);
+    explicit GradientBackground(GradientType type = GradientType::Linear,
+                                GradientDirection direction = GradientDirection::Vertical);
 
     void setGradientDirection(GradientDirection const direction) {
         m_direction = direction;

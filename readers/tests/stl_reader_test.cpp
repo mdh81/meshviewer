@@ -20,7 +20,7 @@ class STLReaderFixture : public ::testing::Test {
 
 TEST_F(STLReaderFixture, Read) {
     ReaderPointer stlReader = ReaderFactory::getReader(m_modelsDir/"cube.stl");
-    auto spMesh = stlReader->getOutput();
+    auto spMesh = stlReader->getOutput(false);
     ASSERT_EQ(spMesh->getNumberOfVertices(), 36) << "Incorrect number of vertices" << std::endl;
     ASSERT_EQ(spMesh->getNumberOfFaces(), 12) << "Incorrect number of faces" << std::endl;
     auto& v = spMesh->getVertex(0);

@@ -33,6 +33,8 @@ Viewer& Viewer::getInstance() {
 Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     : m_windowWidth(windowWidth)
     , m_windowHeight(windowHeight)
+    , m_frameBufferWidth(windowWidth)
+    , m_frameBufferHeight(windowHeight)
     , m_renderToImage(false)
     , m_frameBufferId(0)
     , m_imageTextureId(0)
@@ -58,13 +60,19 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
         throw std::runtime_error("Unable to create GLFW Window");
     }
 
+    // Get initial framebuffer size
+    int width, height;
+    glfwGetFramebufferSize(m_window, &width, &height);
+    m_frameBufferWidth = static_cast<unsigned>(width);
+    m_frameBufferHeight = static_cast<unsigned>(height);
+
     // Get notified when window size changes
     glfwSetWindowUserPointer(m_window, this);
     glfwSetFramebufferSizeCallback(m_window,
                               [](GLFWwindow *window, int width, int height) {
           auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
-          viewer->m_windowWidth = width;
-          viewer->m_windowHeight = height;
+          viewer->m_frameBufferWidth = width;
+          viewer->m_frameBufferHeight = height;
           viewer->m_windowResized = true;
     });
     glfwMakeContextCurrent(m_window);
@@ -91,10 +99,10 @@ void Viewer::setColors() {
 
 }
 
-void Viewer::add(Renderable::Renderables& newRenderables) {
-    renderables.reserve(renderables.size() + newRenderables.size());
-    for (auto& newRenderable : newRenderables) {
-        renderables.push_back(std::move(newRenderable));
+void Viewer::add(Drawable::Drawables const& newDrawables) {
+    drawables.reserve(drawables.size() + newDrawables.size());
+    for (auto& drawable : newDrawables) {
+        drawables.push_back(drawable);
     }
 }
 
@@ -110,10 +118,10 @@ void Viewer::render() {
     setColors();
 
     // Create a scene
-    scene::Scene scene(m_windowWidth, m_windowHeight);
+    scene::Scene scene(m_frameBufferWidth, m_frameBufferHeight);
 
     // Add renderables to the default scene
-    for (auto& renderable : renderables) {
+    for (auto& renderable : drawables) {
         scene.add(*renderable);
     }
 
@@ -123,7 +131,7 @@ void Viewer::render() {
 	do {
 
         if (m_windowResized) {
-            scene.notifyWindowResized(m_windowWidth, m_windowHeight);
+            scene.notifyWindowResized(m_frameBufferWidth, m_frameBufferHeight);
             m_windowResized = false;
         }
 
@@ -152,7 +160,7 @@ void Viewer::render() {
 void Viewer::prepareOffscreenRender() {
 
     // Set viewport for the off-screen render
-    glCallWithErrorCheck(glViewport, 0, 0, m_windowWidth, m_windowHeight);
+    glCallWithErrorCheck(glViewport, 0, 0, m_frameBufferWidth, m_frameBufferHeight);
 
     // Create frame buffer object
     glCallWithErrorCheck(glGenFramebuffers, 1, &m_frameBufferId);

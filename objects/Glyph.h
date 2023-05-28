@@ -2,7 +2,7 @@
 #define GLYPH_H
 
 #include "Types.h"
-#include "Renderable.h"
+#include "Drawable3D.h"
 #include <optional>
 #include <memory>
 
@@ -13,10 +13,10 @@ namespace mv {
 class Mesh;
 class Camera;
 
-class Glyph : public Renderable {
+class Glyph : public Drawable3D {
     // TODO: Define creation semantics
     public:
-        Glyph(Mesh const&, const common::GlyphAssociation);
+        Glyph(Mesh const&, common::GlyphAssociation);
         void render() override;
 
     [[nodiscard]] common::Point3D getCentroid() const override;

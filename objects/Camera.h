@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "GL/glew.h"
-#include "MeshViewerObject.h"
+#include "Renderable.h"
 #include "Types.h"
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -12,18 +12,21 @@
 
 namespace mv {
 
-class Renderable;
+class Drawable;
 
 class Camera : public MeshViewerObject {
 
     public:
-    enum class ProjectionType {
-            Orthographic,
-            Perspective
+        enum class ProjectionType {
+                Orthographic,
+                Perspective
         };
 
+        // Cameras are meant to be shared across renderables and across viewports
+        using SharedCameraPointer = std::shared_ptr<Camera>;
+
     public:
-        explicit Camera(Renderable const& renderable, ProjectionType const type = ProjectionType::Perspective);
+        explicit Camera(Renderable const& renderable, ProjectionType type = ProjectionType::Perspective);
         ~Camera();
 
         // Applies the camera parameters and generates a view
