@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "Drawable3D.h"
 #include <limits>
 #include <iostream>
 #include <algorithm>
@@ -13,7 +14,7 @@ namespace mv {
 using namespace common;
 
 Mesh::Mesh()
-    : Renderable("MeshVertex.glsl", "Fragment.glsl", Effect::Fog)
+    : Drawable3D("MeshVertex.glsl", "Fragment.glsl", Effect::Fog)
     , m_numVertices(0)
     , m_numFaces(0)
     , m_connectivityDataSize(0) {
@@ -28,7 +29,7 @@ void Mesh::initialize(const unsigned numVertices, const unsigned numFaces) {
 }
 
 Mesh::Mesh(const Mesh& another) :
-    Renderable(another.vertexShaderFileName, another.fragmentShaderFileName) {
+        Drawable3D(another.vertexShaderFileName, another.fragmentShaderFileName, Effect::Fog) {
     m_numVertices = another.m_numVertices;
     m_numFaces = another.m_numFaces;
     m_vertices.resize(m_numVertices);
@@ -345,8 +346,6 @@ void Mesh::render() {
 
     glUseProgram(shaderProgram);
 
-    // Compute view
-    camera.apply();
     // Send matrices to the shader
     setTransforms();
 

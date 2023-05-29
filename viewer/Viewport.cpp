@@ -6,9 +6,6 @@
 #include "CallbackFactory.h"
 #include "GradientBackground.h"
 
-using namespace mv::events;
-using namespace mv::common;
-
 namespace mv::scene {
 
     Viewport::Viewport(std::initializer_list<float> const& coordinates)
@@ -29,57 +26,74 @@ namespace mv::scene {
 
     void Viewport::registerEventHandlers() {
 
-        EventHandler().registerCallback(
-                Event(GLFW_KEY_N),
-                CallbackFactory::getInstance().registerCallback
+        mv::events::EventHandler().registerCallback(
+                mv::events::Event(GLFW_KEY_N),
+                mv::events::CallbackFactory::getInstance().registerCallback
                         (*this, &Viewport::toggleGlyphsDisplay));
 
-        EventHandler().registerCallback(
-                Event(GLFW_KEY_G),
-                CallbackFactory::getInstance().registerCallback
+        mv::events::EventHandler().registerCallback(
+                mv::events::Event(GLFW_KEY_G),
+                mv::events::CallbackFactory::getInstance().registerCallback
                         (*this, &Viewport::toggleGradientBackgroundDisplay));
 
-        EventHandler().registerCallback(
-                Event(GLFW_KEY_F),
-                CallbackFactory::getInstance().registerCallback
+        mv::events::EventHandler().registerCallback(
+                mv::events::Event(GLFW_KEY_F),
+                mv::events::CallbackFactory::getInstance().registerCallback
                         (*this, &Viewport::toggleFog));
     }
 
-    void Viewport::add(mv::Renderable& renderable) {
-        renderableObjects.insert(std::ref(renderable));
+    void Viewport::add(mv::Drawable& drawable) {
+        drawables.insert(std::ref(drawable));
     }
 
-    void Viewport::remove(mv::Renderable& renderable) {
-        auto itr = renderableObjects.find(std::ref(renderable));
-        if (itr != renderableObjects.end()) {
-            renderableObjects.erase(itr);
+    void Viewport::remove(mv::Drawable& drawable) {
+        auto itr = drawables.find(std::ref(drawable));
+        if (itr != drawables.end()) {
+            drawables.erase(itr);
         } else {
-            throw std::runtime_error("Unable to remove renderable. It was never added");
+            throw std::runtime_error("Unable to remove drawable. It was never added");
         }
     }
 
-    Renderables Viewport::getRenderables() const {
-        Renderables renderableList;
-        renderableList.reserve(renderableObjects.size());
-        std::for_each(renderableObjects.begin(), renderableObjects.end(),
-                      [&renderableList](auto& renderable) {
-            renderableList.push_back(renderable);
+    Drawable::DrawableReferences Viewport::getDrawables() const {
+        Drawable::DrawableReferences drawableList;
+        drawableList.reserve(drawables.size());
+        std::for_each(drawables.begin(), drawables.end(),
+                      [&drawableList](auto& drawable) {
+            drawableList.push_back(drawable);
         });
-        return renderableList;
+        return drawableList;
     }
 
     void Viewport::notifyWindowResized(unsigned int const windowWidth, unsigned int const windowHeight) {
-        for (auto& renderable : renderableObjects) {
-            renderable.get().notifyWindowResized(windowWidth, windowHeight);
+        for (auto& drawable : drawables) {
+            drawable.get().notifyWindowResized(windowWidth, windowHeight);
         }
         windowDimensions = {windowWidth, windowHeight};
+        Renderable::notifyWindowResized(windowWidth, windowHeight);
     }
 
     void Viewport::render() {
+        using namespace mv::common;
         glCallWithErrorCheck(glViewport, coordinates.bottomLeft.x * windowDimensions.width,
-                                         coordinates.bottomLeft.y * windowDimensions.height,
-                                         (coordinates.topRight.x - coordinates.bottomLeft.x) * windowDimensions.width,
-                                         (coordinates.topRight.y - coordinates.bottomLeft.y) * windowDimensions.height);
+                             coordinates.bottomLeft.y * windowDimensions.height,
+                             (coordinates.topRight.x - coordinates.bottomLeft.x) * windowDimensions.width,
+                             (coordinates.topRight.y - coordinates.bottomLeft.y) * windowDimensions.height);
+
+        if (!camera) {
+            camera = std::make_shared<mv::Camera>(*this, Camera::ProjectionType::Perspective);
+            for (auto &drawable: drawables) {
+                // All 3D drawables share this viewport's camera
+                if (drawable.get().is3D()) {
+                    drawable.get().setCamera(camera);
+                }
+                // Set the initial window size for all drawables during this first render call
+                drawable.get().notifyWindowResized(windowDimensions.width, windowDimensions.height);
+            }
+        }
+
+        // Compute the view
+        camera->apply();
 
         // Background has to be drawn first (it's render method will disable writing to depth buffer)
         if (showGradientBackground) {
@@ -92,15 +106,16 @@ namespace mv::scene {
         // Add fog if enabled
         fogEnabled ? enableFog() : disableFog();
 
-        for (auto& renderable : renderableObjects) {
-            renderable.get().render();
+        for (auto& drawable : drawables) {
+            drawable.get().render();
         }
 
     }
 
     void Viewport::enableFog() {
-        for (auto& renderable : renderableObjects) {
-            auto shaderProgram = renderable.get().getShaderProgram();
+        using namespace mv::common;
+        for (auto& drawable : drawables) {
+            auto shaderProgram = drawable.get().getShaderProgram();
             glCallWithErrorCheck(glUseProgram, shaderProgram);
             GLint fogEnabledId = glGetUniformLocation(shaderProgram, "fog.enabled");
             glCallWithErrorCheck(glUniform1i, fogEnabledId, true);
@@ -117,9 +132,10 @@ namespace mv::scene {
     }
 
     void Viewport::disableFog() {
-        for (auto& renderable : renderableObjects) {
-            if (renderable.get().isReadyToRender()) {
-                auto shaderProgram = renderable.get().getShaderProgram();
+        using namespace mv::common;
+        for (auto& drawable : drawables) {
+            if (drawable.get().isReadyToRender()) {
+                auto shaderProgram = drawable.get().getShaderProgram();
                 glCallWithErrorCheck(glUseProgram, shaderProgram);
                 GLint fogEnabledId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "fog.enabled");
                 glCallWithErrorCheck(glUniform1i, fogEnabledId, false);
@@ -127,4 +143,38 @@ namespace mv::scene {
         }
     }
 
+    mv::common::Point3D Viewport::getCentroid() const {
+        if (drawables.empty()) {
+            throw std::runtime_error("Cannot compute centroid. Viewport is empty");
+        }
+        mv::common::Point3D centroid;
+        for (auto& drawable : drawables) {
+            auto drawableCentroid = drawable.get().getCentroid();
+            centroid.x += drawableCentroid.x;
+            centroid.y += drawableCentroid.y;
+            centroid.z += drawableCentroid.z;
+        }
+        centroid.x /= static_cast<float>(drawables.size());
+        centroid.y /= static_cast<float>(drawables.size());
+        centroid.z /= static_cast<float>(drawables.size());
+        return centroid;
+    }
+
+    mv::common::Bounds Viewport::getBounds() const {
+        if (drawables.empty()) {
+            throw std::runtime_error("Cannot compute centroid. Viewport is empty");
+        }
+        mv::common::Bounds viewportBounds;
+        for (auto& drawable : drawables) {
+            auto drawableBounds = drawable.get().getBounds();
+            viewportBounds.x.min = std::min(drawableBounds.x.min, viewportBounds.x.min);
+            viewportBounds.y.min = std::min(drawableBounds.y.min, viewportBounds.y.min);
+            viewportBounds.z.min = std::min(drawableBounds.z.min, viewportBounds.z.min);
+
+            viewportBounds.x.max = std::max(drawableBounds.x.max, viewportBounds.x.max);
+            viewportBounds.y.max = std::max(drawableBounds.y.max, viewportBounds.y.max);
+            viewportBounds.z.max = std::max(drawableBounds.z.max, viewportBounds.z.max);
+        }
+        return viewportBounds;
+    }
 }

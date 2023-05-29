@@ -1,5 +1,6 @@
-#include "Renderable.h"
+#include "Drawable.h"
 #include "ShaderLoader.h"
+#include "Drawable3D.h"
 
 #include <filesystem>
 #include <utility>
@@ -9,15 +10,16 @@ namespace mv {
 
 using namespace common;
 
-Renderable::Renderable(std::string  vertexShaderFileName, std::string  fragmentShaderFileName, Effect supportedEffects)
+Drawable::Drawable(std::string  vertexShaderFileName, std::string fragmentShaderFileName,
+                   Camera::SharedCameraPointer camera, Effect supportedEffects)
     : vertexShaderFileName(std::move(vertexShaderFileName))
     , fragmentShaderFileName(std::move(fragmentShaderFileName))
-    , camera(Camera(*this, Camera::ProjectionType::Perspective))
+    , camera(camera)
     , supportedEffects(supportedEffects) {
 
 }
 
-void Renderable::createShaderProgram() {
+void Drawable::createShaderProgram() {
 
     filesystem::path shaderDir = "./shaders";
 
@@ -60,7 +62,7 @@ void Renderable::createShaderProgram() {
 
 // Precondition: Every vertex shader must have a uniform mat4 variables named
 // modelViewTransform and projectionTransform
-void Renderable::setTransforms() {
+void Drawable::setTransforms() {
 
     // TODO: Use mathlib's matrix
 
@@ -68,7 +70,7 @@ void Renderable::setTransforms() {
     // world coordinates to camera coordinates
     // The matrix multiplication order is the reverse order of actual transformations
     // Object -> Global, Global -> Camera, Camera -> Homogenous Coordinates
-    glm::mat4 modelView = camera.getViewTransform() * getModelTransform();
+    glm::mat4 modelView = camera->getViewTransform() * getModelTransform();
 
     // Get the model view transform matrix id in the shader
     GLint modelViewId = glGetUniformLocation(shaderProgram, "modelViewTransform");
@@ -85,7 +87,7 @@ void Renderable::setTransforms() {
     glUniformMatrix4fv(projectionId,
                        1,        // num matrices,
                        GL_FALSE, // transpose
-                       &camera.getProjectionTransform()[0][0]);
+                       &camera->getProjectionTransform()[0][0]);
 }
 
 }

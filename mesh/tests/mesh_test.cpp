@@ -89,7 +89,7 @@ TEST(Mesh, TransformMesh) {
 
 TEST_F(MeshFixture, WriteSTL) {
     auto inputPath = MeshFixture::m_modelsDir/"cube.stl";
-    auto spMesh = ReaderFactory::getReader(inputPath)->getOutput();
+    auto spMesh = ReaderFactory::getReader(inputPath)->getOutput(false);
     auto inputFs = filesystem::file_size(inputPath);
     ASSERT_TRUE(inputFs > 0) << "Input STL file is bad";
     auto outputPath = MeshFixture::m_modelsDir/"cubeOut.stl";

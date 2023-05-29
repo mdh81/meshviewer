@@ -23,15 +23,15 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    Renderable::Renderables renderables;
-    renderables.reserve(argc - 1);
+    Drawable::Drawables drawables;
+    drawables.reserve(argc - 1);
     for (unsigned i = 1; i < argc; ++i) {
         auto spMesh =
                 ReaderFactory::getReader(argv[1])->
                         getOutput(ConfigurationReader::getInstance().getBoolean("cleanupOnImport"));
-        renderables.push_back(std::move(spMesh));
+        drawables.push_back(std::move(spMesh));
     }
-    Viewer::getInstance().add(renderables);
+    Viewer::getInstance().add(drawables);
     Viewer::getInstance().render();
     return 0;
 }

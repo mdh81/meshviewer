@@ -1,6 +1,6 @@
 add_library(
     objects
-    Renderable.cpp
+    Drawable.cpp
     Camera.cpp
     Glyph.cpp
     GradientBackground.cpp)

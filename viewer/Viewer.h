@@ -2,7 +2,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "MeshViewerObject.h"
-#include "Renderable.h"
+#include "Drawable.h"
 
 #include "GL/glew.h"
 #include <memory>
@@ -15,11 +15,11 @@ namespace mv {
 class Viewer : public MeshViewerObject {
     public:
         ~Viewer() = default;
-        // Add a renderable to the viewer and transfer ownership of it to the viewer
-        void add(Renderable* renderable) { add(Renderable::RenderablePointer(renderable)); }
-        void add(Renderable::RenderablePointer&& renderable) { renderables.push_back(std::move(renderable)); }
-        // Add a list of renderables to the viewer and transfer ownership of them to the viewer
-        void add(Renderable::Renderables& newRenderables);
+        // Add a drawable to the viewer and transfer ownership of it to the viewer
+        void add(Drawable* drawable) { add(Drawable::DrawablePointer(drawable)); }
+        void add(Drawable::DrawablePointer&& drawable) { drawables.push_back(std::move(drawable)); }
+        // Add a list of drawables to the viewer and transfer ownership of them to the viewer
+        void add(Drawable::Drawables const& newDrawables);
         // Render scenes, viewports, and renderables
         void render();
         [[nodiscard]] unsigned getWidth() const { return m_windowWidth; }
@@ -46,6 +46,8 @@ class Viewer : public MeshViewerObject {
     private:
         unsigned m_windowWidth;
         unsigned m_windowHeight;
+        unsigned m_frameBufferWidth;
+        unsigned m_frameBufferHeight;
         GLFWwindow* m_window;
         bool m_showNormals;
         RenderMode m_renderMode;
@@ -53,8 +55,8 @@ class Viewer : public MeshViewerObject {
         GLuint m_frameBufferId;
         GLuint m_imageTextureId;
         bool m_windowResized;
-        Renderable::Renderables renderables;
-        RenderableReferences activeObjects;
+        Drawable::Drawables drawables;
+        Drawable::Drawables activeObjects;
 
     // Member functions
     private:

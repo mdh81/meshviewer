@@ -1,6 +1,7 @@
 #ifndef STL_READER_H
 #define STL_READER_H
 #include <string>
+#include <utility>
 #include "Mesh.h"
 #include "Reader.h"
 
@@ -8,11 +9,11 @@ namespace mv::readers {
 
 class STLReader : public MeshViewerObject, Reader {
     public:
-        MeshPointer getOutput(bool const clean) override;
+        MeshPointer getOutput(bool clean) override;
     private:
-        STLReader(const std::string& fn)
-            : m_fileName(fn) {}
-        MeshPointer readBinary(std::ifstream& ifs, bool const clean);
+        explicit STLReader(std::string  fn)
+            : m_fileName(std::move(fn)) {}
+        MeshPointer readBinary(std::ifstream& ifs, bool clean);
     private:
         std::string m_fileName;
 

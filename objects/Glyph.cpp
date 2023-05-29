@@ -1,6 +1,7 @@
 #include "Glyph.h"
 #include "Mesh.h"
 #include "glm/gtc/type_ptr.hpp"
+
 using namespace std;
 
 namespace mv {
@@ -8,7 +9,7 @@ namespace mv {
 using namespace common;
 
 Glyph::Glyph(Mesh const& mesh, const GlyphAssociation assoc)
-: Renderable("GlyphVertex.glsl", "Fragment.glsl")
+: Drawable3D("GlyphVertex.glsl", "Fragment.glsl")
 , m_mesh(mesh)
 , m_association(assoc)
 , m_numGlyphs(0) {

@@ -3,6 +3,7 @@
 #include "CallbackFactory.h"
 #include "EventHandler.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
+#include "Gadget.h"
 #include <vector>
 #include <cmath>
 #include <glm/gtc/type_ptr.hpp>
@@ -17,7 +18,7 @@ namespace mv::objects {
 using byte = mv::common::byte;
 
 GradientBackground::GradientBackground(GradientType const type, GradientDirection const direction)
-: Renderable("BackgroundVertex.glsl", "Fragment.glsl")
+: Gadget("BackgroundVertex.glsl", "Fragment.glsl")
 , m_direction(direction)
 , m_type(type)
 , m_numberOfStops (3)

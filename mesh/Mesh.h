@@ -5,8 +5,9 @@
 #include <array>
 #include <vector>
 #include <optional>
+#include <filesystem>
 #include "Types.h"
-#include "Renderable.h"
+#include "Drawable3D.h"
 #include "Octree.h"
 #include "Vertex.h"
 #include "Face.h"
@@ -14,7 +15,7 @@
 
 namespace mv {
 
-class Mesh : public Renderable {
+class Mesh : public Drawable3D {
     public:
         using Vertices = std::vector<Vertex>;
         using Faces = std::vector<Face>;
@@ -26,7 +27,7 @@ class Mesh : public Renderable {
     public:
         Mesh();
 
-        ~Mesh() = default;
+        ~Mesh() override = default;
 
         Mesh(const Mesh &);
 
@@ -40,8 +41,6 @@ class Mesh : public Renderable {
 
         [[nodiscard]]
         bool supportsGlyphs() const override { return true; }
-
-        [[nodiscard]] bool isModelObject() const override { return true; }
 
     public:
         // TODO: Allow creation of meshes without this call. Make addVertex
@@ -99,7 +98,16 @@ class Mesh : public Renderable {
         // Gets normals
         [[nodiscard]] NormalData getNormals(common::NormalLocation) const;
 
-    protected:
+        void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
+            std::filesystem::path filePath = fileName;
+            if (filePath.extension() == ".STL" || filePath.extension() == ".stl") {
+                this->transform(transform)->writeToSTL(fileName);
+            } else {
+                throw std::runtime_error("Currently, only STL output for meshes is supported.");
+            }
+        }
+
+protected:
         void generateRenderData() override;
         void generateColors() override;
 

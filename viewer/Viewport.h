@@ -1,14 +1,17 @@
 #pragma once
 
-#include "Renderable.h"
+#include "Drawable.h"
 #include "GradientBackground.h"
 #include "3dmath/Vector.h"
+#include "Drawable3D.h"
+#include "Camera.h"
 #include <unordered_set>
 
 
 namespace mv::scene {
 
-class Viewport : public MeshViewerObject {
+// A viewport draws a list of drawables. Viewports maintain a reference to drawables that are owned by the Viewer
+class Viewport : public Renderable {
     public:
         struct ViewportCoordinates {
             math3d::Vector2D<float> bottomLeft;
@@ -27,14 +30,14 @@ class Viewport : public MeshViewerObject {
 
         explicit Viewport(ViewportCoordinates  viewportCoordinates);
 
-        void add(Renderable& renderable);
+        void add(Drawable& drawable);
 
-        void remove(Renderable& renderable);
+        void remove(Drawable& drawable);
 
-        void render();
+        void render() override;
 
         [[nodiscard]]
-        Renderables getRenderables() const;
+        Drawable::DrawableReferences getDrawables() const;
 
         [[nodiscard]]
         math3d::Vector2D<float> getOrigin() const {
@@ -47,9 +50,24 @@ class Viewport : public MeshViewerObject {
         [[nodiscard]]
         float getHeight() const { return coordinates.topRight.y - coordinates.bottomLeft.y; }
 
-        void notifyWindowResized(unsigned windowWidth, unsigned windowHeight);
+        void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) override;
 
-    private:
+        [[nodiscard]]
+        common::Point3D getCentroid() const override;
+
+        [[nodiscard]]
+        common::Bounds getBounds() const override;
+
+        void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
+            for (auto& drawable : drawables) {
+                if (drawable.get().is3D()) {
+                    Drawable3D& drawable3D = dynamic_cast<Drawable3D&>(drawable.get());
+                    drawable3D.writeToFile(fileName, transform);
+                }
+            }
+        }
+
+private:
         void registerEventHandlers();
         void toggleGlyphsDisplay() {
             if (activeObject && activeObject->get().supportsGlyphs()) {
@@ -66,11 +84,15 @@ class Viewport : public MeshViewerObject {
         void enableFog();
         void disableFog();
     private:
-        RenderableReferences renderableObjects;
+        using DrawablesSet = std::unordered_set<Drawable::DrawableReference,
+                MeshViewerObject::MeshViewerObjectHash,
+                MeshViewerObject::MeshViewerObjectEquals>;
+        DrawablesSet drawables;
         std::unique_ptr<mv::objects::GradientBackground> gradientBackground;
-        std::optional<RenderableReference> activeObject;
+        std::optional<Drawable::DrawableReference> activeObject;
         ViewportCoordinates coordinates;
         common::WindowDimensions windowDimensions;
+        Camera::SharedCameraPointer camera;
         bool showGradientBackground;
         bool fogEnabled;
     };

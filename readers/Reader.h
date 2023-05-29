@@ -10,7 +10,7 @@ using MeshPointer = std::unique_ptr<mv::Mesh>;
 
 class Reader {
 public:
-    virtual MeshPointer getOutput(bool const clean = false) = 0;
+    virtual MeshPointer getOutput(bool clean) = 0;
     virtual ~Reader() = default;
 };
 

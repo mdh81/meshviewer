@@ -1,8 +1,9 @@
 #include "Camera.h"
-#include "Renderable.h"
+#include "Drawable.h"
 #include "Types.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
+#include "ConfigurationReader.h"
 #include "Util.h"
 #include <iostream>
 #include <exception>
@@ -154,21 +155,26 @@ void Camera::buildOrthographicProjectionTransform() {
                                      nearDist, farDist);
 
     static bool printed = false;
+    m_debugOn = true;
     if (!printed && m_debugOn) {
         auto bounds = renderable.getBounds();
-        // TODO: Replace with temp directory read from config
-        //renderable.transform(viewTransform)->writeToSTL("/Users/deye/viewer/build/viewTransformed.stl");
+        config::ConfigurationReader& cfgReader = config::ConfigurationReader::getInstance();
+        std::filesystem::path tmpDir(cfgReader.getValue("temporaryFilesDirectory"));
+        if (!std::filesystem::exists(tmpDir)) {
+            std::filesystem::create_directory(tmpDir);
+        }
+        renderable.writeToFile(tmpDir/"viewTransformed.stl", viewTransform);
         Util::printMatrix(viewTransform);
         m_outputStream << "Mesh Bounds " << bounds << endl;
         m_outputStream << "View Volume " << viewVolume << endl;
         m_outputStream << "Left: " << viewMinX << " Right: " << viewMaxX
-                  << " Bottom: " << viewMinY << " Top: " << viewMaxY
-                  << " Near: " << nearDist
-                  << " Far: " << farDist
-                  << endl;
-        Util::writeBounds("/Users/deye/viewer/build/objectBounds.stl",
+                        << " Bottom: " << viewMinY << " Top: " << viewMaxY
+                        << " Near: " << nearDist
+                        << " Far: " << farDist
+                        << endl;
+        Util::writeBounds(tmpDir/"objectBounds.stl",
                           renderable.getBounds());
-        Util::writeBounds("/Users/deye/viewer/build/viewBounds.stl",
+        Util::writeBounds(tmpDir/"viewBounds.stl",
                           viewVolume);
         printed = true;
     }
