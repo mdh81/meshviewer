@@ -21,6 +21,8 @@ class Scene : public Renderable {
 
         void createViewport(Viewport::ViewportCoordinates const& coordinates);
 
+        void removeViewport(ViewportPointer const& viewportToRemove);
+
         [[nodiscard]]
         ViewportCollection const& getViewports() const { return viewports; }
 
