@@ -3,10 +3,6 @@
 
 #include <iostream>
 
-//TODO: Uniform usage of const for function parameters.
-// Use paramType const paramName format to facilitate reading function arguments
-// right to left
-
 namespace mv { namespace events {
 
 class Event { 
@@ -18,23 +14,23 @@ class Event {
         
         // Copy construction is allowed. This allows an instance of Event to be copy constructed
         // and placed in the memory of lookup data structures that map an event to its callback
-        Event(const Event& other) : m_id(other.m_id), m_modifier(other.m_modifier) {}
+        Event(Event const& other) : m_id(other.m_id), m_modifier(other.m_modifier) {}
         // Move is strictly not necessary, but doesn't feel correct to support copy construction
         // and leave out move construction
         Event(Event&& other) : m_id(other.m_id), m_modifier(other.m_modifier) {}
         // No use case to assign one event to another
-        Event& operator=(const Event&) = delete;
+        Event& operator=(Event const&) = delete;
         Event& operator=(Event&& other) = delete;
 
         struct EventEquals {
-            bool operator()(const Event& eventA, const Event& eventB) const {
+            bool operator()(Event const& eventA, Event const& eventB) const {
                 return eventA.m_id == eventB.m_id &&
                     eventA.m_modifier == eventB.m_modifier;
             }
         };
 
         struct EventHash {
-            size_t operator()(const Event& event) const  {
+            size_t operator()(Event const& event) const  {
                 return event.m_id;
             }
         };

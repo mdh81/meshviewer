@@ -31,7 +31,15 @@ namespace mv {
             void start(GLFWwindow* window);
 
             // Register a callback for the specified event
-            void registerCallback(const Event&, const Callback& callback);
+            void registerCallback(Event const&, Callback const& callback);
+
+            // Raise an event
+            void raiseEvent(Event const& event);
+
+            // Check if modifier key is currently pressed
+            bool isModifierKeyPressed(unsigned int modifierKey) {
+                return modifierKeys & modifierKey;
+            }
 
             // Disallow copies as copying is not a meaningful operation
             // for monostate instances
@@ -43,8 +51,9 @@ namespace mv {
         private:
             using CallbackRef = std::reference_wrapper<const Callback>;
             using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHash, Event::EventEquals>;
-            static EventCallbackMap m_eventCallbackMap;
-            static bool m_started;
+            static EventCallbackMap eventCallbackMap;
+            static bool started;
+            static unsigned modifierKeys;
 
             // These methods are declared static so a regular function pointer can be created from these
             // methods and passed to glfw functions. These old C APIs don't support member function pointers

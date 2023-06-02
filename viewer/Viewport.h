@@ -5,6 +5,7 @@
 #include "3dmath/Vector.h"
 #include "Drawable3D.h"
 #include "Camera.h"
+#include "3dmath/Matrix.h"
 #include <unordered_set>
 
 
@@ -13,22 +14,10 @@ namespace mv::scene {
 // A viewport draws a list of drawables. Viewports maintain a reference to drawables that are owned by the Viewer
 class Viewport : public Renderable {
     public:
-        struct ViewportCoordinates {
-            math3d::Vector2D<float> bottomLeft;
-            math3d::Vector2D<float> topRight;
-            ViewportCoordinates(std::initializer_list<float> const& list) {
-                if (list.size() != 4) throw std::runtime_error("Unexpected arguments to initialize viewport coordinates");
-                bottomLeft.x = data(list)[0];
-                bottomLeft.y = data(list)[1];
-                topRight.x = data(list)[2];
-                topRight.y = data(list)[3];
-            }
-        };
+        using ViewportCoordinates = common::Bounds;
 
     public:
-        Viewport(std::initializer_list<float> const& viewportCoordinates);
-
-        explicit Viewport(ViewportCoordinates  viewportCoordinates);
+        explicit Viewport(ViewportCoordinates viewportCoordinates);
 
         void add(Drawable& drawable);
 
@@ -41,14 +30,14 @@ class Viewport : public Renderable {
 
         [[nodiscard]]
         math3d::Vector2D<float> getOrigin() const {
-            return {coordinates.bottomLeft.x, coordinates.bottomLeft.y};
+            return {coordinates.x.min, coordinates.y.min};
         }
 
         [[nodiscard]]
-        float getWidth() const { return coordinates.topRight.x - coordinates.bottomLeft.x; }
+        float getWidth() const { return coordinates.x.max - coordinates.x.min; }
 
         [[nodiscard]]
-        float getHeight() const { return coordinates.topRight.y - coordinates.bottomLeft.y; }
+        float getHeight() const { return coordinates.y.max - coordinates.y.min; }
 
         void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) override;
 
@@ -57,6 +46,14 @@ class Viewport : public Renderable {
 
         [[nodiscard]]
         common::Bounds getBounds() const override;
+
+        math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const {
+            return math3d::Matrix<float, 3, 3> {
+                    {1.f/windowDimensions.width,  0.f,                         0.f},
+                    {0.f,                        -1.f/windowDimensions.height, 1.f},
+                    {0.f,                         0.f,                         0.f}
+            }.transpose();
+        }
 
         void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
             for (auto& drawable : drawables) {
@@ -83,6 +80,9 @@ private:
         }
         void enableFog();
         void disableFog();
+        void zoom3DView();
+        [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
+
     private:
         using DrawablesSet = std::unordered_set<Drawable::DrawableReference,
                 MeshViewerObject::MeshViewerObjectHash,
@@ -90,10 +90,11 @@ private:
         DrawablesSet drawables;
         std::unique_ptr<mv::objects::GradientBackground> gradientBackground;
         std::optional<Drawable::DrawableReference> activeObject;
-        ViewportCoordinates coordinates;
+        common::Bounds coordinates;
         common::WindowDimensions windowDimensions;
         Camera::SharedCameraPointer camera;
         bool showGradientBackground;
         bool fogEnabled;
+        friend class ViewportTest;
     };
 }

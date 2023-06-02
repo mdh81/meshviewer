@@ -6,7 +6,7 @@
 namespace mv::scene {
 
 Scene::Scene(int frameBufferWidth, int frameBufferHeight) {
-    createViewport({0, 0, 1, 1});
+    createViewport({{0, 0}, {1, 1}});
     notifyWindowResized(frameBufferWidth, frameBufferHeight);
 }
 
