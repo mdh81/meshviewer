@@ -31,6 +31,10 @@ class Viewer : public MeshViewerObject {
             ShadedWithEdges
         };
         [[nodiscard]] RenderMode getRenderMode() const { return m_renderMode; }
+        [[nodiscard]] common::Point2D getCursorPosition() const { return cursorPosition; };
+        [[nodiscard]] common::Point2D getCursorPositionDifference() const { return cursorPositionDifference; }
+        [[nodiscard]] math3d::Matrix<float, 3, 3> getViewportToWindowTransform() const;
+
         // Creation Semantics
         static Viewer& getInstance();
 
@@ -57,6 +61,8 @@ class Viewer : public MeshViewerObject {
         bool m_windowResized;
         Drawable::Drawables drawables;
         Drawable::Drawables activeObjects;
+        common::Point2D cursorPosition;
+        common::Point2D cursorPositionDifference;
 
     // Member functions
     private:

@@ -83,6 +83,25 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
         throw std::runtime_error("Unable to initialize GLEW");
     }
 
+    // Keep track of cursor position to handle various interaction gestures
+    glfwSetCursorPosCallback(m_window,[](GLFWwindow* window, double x, double y) {
+        auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
+        common::Point2D currentCursorPosition {static_cast<float>(x), static_cast<float>(y)};
+        viewer->cursorPositionDifference = currentCursorPosition - viewer->cursorPosition;
+        viewer->cursorPosition = currentCursorPosition;
+    });
+    glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xOffset, double yOffset) {
+        auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
+        viewer->cursorPositionDifference = {static_cast<float>(xOffset), static_cast<float>(yOffset)};
+        unsigned modifierKeys = 0;
+        if (EventHandler().isModifierKeyPressed(GLFW_MOD_SHIFT)) {
+            modifierKeys |= GLFW_MOD_SHIFT;
+        }
+        if (EventHandler().isModifierKeyPressed(GLFW_MOD_CONTROL)) {
+            modifierKeys |= GLFW_MOD_CONTROL;
+        }
+        EventHandler().raiseEvent(Event(MOUSE_WHEEL_EVENT, modifierKeys));
+    });
     // Register event handlers
     EventHandler().registerCallback(
             Event(GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT),
@@ -251,6 +270,24 @@ void Viewer::saveAsImage() {
     } else {
         cerr << "Failed to write to contents to image!" << endl;
     }
+
+}
+
+math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
+    // Viewport coordinates are normalized, so they need to be scaled to window's size
+    // Viewport and window have their x-coordinates pointing in the same direction, but
+    // +Y goes up for viewport and down for window. We need to account for that via this
+    // formula:
+    // window.x = viewport.x * windowWidth + 0;
+    // window.y = -viewport.y * windowHeight + windowHeight
+    float windowWidth = static_cast<float>(m_windowWidth);
+    float windowHeight = static_cast<float>(m_windowHeight);
+    return math3d::Matrix<float, 3, 3> {
+            {windowWidth,   0.f,            0.f},
+            {0.f,           -windowHeight,  windowHeight},
+            {0.f,            0.f,           1.f}
+    }.transpose();
+
 
 }
 

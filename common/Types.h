@@ -1,5 +1,4 @@
-#ifndef TYPES_H
-#define TYPES_H
+#pragma once
 #include <vector>
 #include <limits>
 #include <type_traits>
@@ -17,6 +16,7 @@ namespace mv::common {
 
 using Point3D = math3d::Vector3D<float>;
 using Vector3D = math3d::Vector3D<float>;
+using Point2D = math3d::Vector2D<float>;
 using Color = Point3D;
 using Line = std::vector<Point3D>;
 using Lines = std::vector<Line>;
@@ -193,5 +193,7 @@ static GLuint glError = 0;
 #define glCallWithErrorCheck(glFunc, glArgs...) \
     glFunc(glArgs);                             \
     checkGLError(glFunc)
+
+unsigned const MOUSE_WHEEL_EVENT = 1000;
+
 }
-#endif

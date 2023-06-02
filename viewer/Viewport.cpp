@@ -2,25 +2,20 @@
 #include <functional>
 #include <utility>
 #include <vector>
+#include "Viewer.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
 #include "GradientBackground.h"
+#include "Types.h"
 
 namespace mv::scene {
-
-    Viewport::Viewport(std::initializer_list<float> const& coordinates)
-    : coordinates(coordinates)
-    , showGradientBackground(true)
-    , fogEnabled(false)
-    , windowDimensions{} {
-        registerEventHandlers();
-    }
 
     Viewport::Viewport(Viewport::ViewportCoordinates  coordinates)
     : coordinates(std::move(coordinates))
     , showGradientBackground(true)
     , fogEnabled(false)
     , windowDimensions{} {
+        MeshViewerObject::m_debugOn = true;
         registerEventHandlers();
     }
 
@@ -40,6 +35,11 @@ namespace mv::scene {
                 mv::events::Event(GLFW_KEY_F),
                 mv::events::CallbackFactory::getInstance().registerCallback
                         (*this, &Viewport::toggleFog));
+
+        mv::events::EventHandler().registerCallback(
+                mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_CONTROL),
+                mv::events::CallbackFactory::getInstance().registerCallback(
+                        *this, &Viewport::zoom3DView));
     }
 
     void Viewport::add(mv::Drawable& drawable) {
@@ -75,10 +75,10 @@ namespace mv::scene {
 
     void Viewport::render() {
         using namespace mv::common;
-        glCallWithErrorCheck(glViewport, coordinates.bottomLeft.x * windowDimensions.width,
-                             coordinates.bottomLeft.y * windowDimensions.height,
-                             (coordinates.topRight.x - coordinates.bottomLeft.x) * windowDimensions.width,
-                             (coordinates.topRight.y - coordinates.bottomLeft.y) * windowDimensions.height);
+        glCallWithErrorCheck(glViewport, coordinates.x.min * windowDimensions.width,
+                             coordinates.y.min * windowDimensions.height,
+                             coordinates.x.length() * windowDimensions.width,
+                             coordinates.y.length() * windowDimensions.height);
 
         if (!camera) {
             camera = std::make_shared<mv::Camera>(*this, Camera::ProjectionType::Perspective);
@@ -177,4 +177,26 @@ namespace mv::scene {
         }
         return viewportBounds;
     }
+
+    void Viewport::zoom3DView() {
+        common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
+        if (m_debugOn) {
+            std::cerr << "Zooming 3D view" << std::endl;
+            std::cerr << "Is viewport event: " << isViewportEvent(cursorPosition);
+        }
+        if (isViewportEvent(cursorPosition)) {
+            common::Point2D cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+            if (m_debugOn) {
+                std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
+            }
+        }
+    }
+
+    bool Viewport::isViewportEvent(const common::Point2D& cursorPosition) const {
+        auto windowToViewport = getWindowToViewportTransform();
+        common::Point3D cursorWindowPosition = { cursorPosition.x, cursorPosition.y, 1.f };
+        common::Point3D cursorViewportPosition = windowToViewport * cursorWindowPosition;
+        return coordinates.contains(cursorViewportPosition);
+    }
+
 }
