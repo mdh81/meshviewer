@@ -19,15 +19,15 @@ TEST(Scene, CreationOfDefaultViewport) {
 
 TEST(Scene, AddViewports) {
     Scene scene(100, 100);
-    scene.createViewport({0.0f, 0.0f, 0.5f,0.5f});
-    scene.createViewport({0.5f, 0.5f, 1.0f,1.0f});
+    scene.createViewport({{0.0f, 0.0f}, {0.5f,0.5f}});
+    scene.createViewport({{0.5f, 0.5f}, {1.0f,1.0f}});
     ASSERT_EQ(scene.getViewports().size(), 3) << "Incorrect number of viewports added";
 }
 
 TEST(Scene, RemoveViewports) {
     Scene scene(100, 100);
-    scene.createViewport({0.0f, 0.0f, 0.5f,0.5f});
-    scene.createViewport({0.5f, 0.5f, 1.0f,1.0f});
+    scene.createViewport({{0.0f, 0.0f}, {0.5f,0.5f}});
+    scene.createViewport({{0.5f, 0.5f}, {1.0f,1.0f}});
     auto& viewports = scene.getViewports();
     auto hasViewport = [&scene](Viewport* viewport) {
         return std::find_if(scene.getViewports().begin(), scene.getViewports().end(),
