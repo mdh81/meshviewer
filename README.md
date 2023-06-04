@@ -11,8 +11,7 @@ The viewer is its infancy. It supports:
 * Zoom
 * Built-in event handler that can register member/free functions as event handlers for keyboard and mouse events
 
-<img width="1028" alt="Screen Shot 2022-08-28 at 2 46 33 PM" src="https://user-images.githubusercontent.com/73474502/187095797-da56a625-d4c1-45c9-b55b-1e92a4c3a5ab.png">
-
+<img width="1021" alt="Screenshot 2023-06-03 at 7 34 25 PM" src="https://github.com/mdh81/meshviewer/assets/73474502/db2c053d-deea-44f6-bd8d-eb2c4fc23540">
 
 # Future plans
 
