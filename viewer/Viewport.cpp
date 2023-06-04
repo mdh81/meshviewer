@@ -189,6 +189,7 @@ namespace mv::scene {
             if (m_debugOn) {
                 std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
             }
+            cursorPositionDifference.y > 0 ? camera->zoomOut() : camera->zoomIn();
         }
     }
 
