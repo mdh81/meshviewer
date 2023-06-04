@@ -22,7 +22,9 @@ using namespace events;
     , modelTransform(glm::mat4(1.0))
     , viewTransform(glm::mat4(1.0))
     , projectionTransform(glm::mat4(1.0))
-    , orbitAngle(0.f) {
+    , orbitAngle(0.f)
+    , zoomFactor(1.f)
+    , zoomIncrement(.02f) {
     // Register event handlers for switching between perspective and orthographic
     EventHandler().registerCallback(Event(GLFW_KEY_O),
         CallbackFactory::getInstance().registerCallback(
@@ -49,9 +51,7 @@ using namespace events;
 }
 
 void Camera::apply() {
-
     buildViewTransform();
-
     buildProjectionTransform();
 }
 
@@ -97,16 +97,24 @@ void Camera::buildViewTransform() {
         }
     }
 
+    auto viewBounds = renderable.getBounds();
+    viewBounds.x.min *= zoomFactor;
+    viewBounds.y.min *= zoomFactor;
+    viewBounds.z.min *= zoomFactor;
+    viewBounds.x.max *= zoomFactor;
+    viewBounds.y.max *= zoomFactor;
+    viewBounds.z.max *= zoomFactor;
+
     // Translate along -Z by the length of the diagonal of the renderable's bounding box
     // to ensure that the renderable is behind the camera (fixed at 0,0,0)
     auto moveBack = glm::mat4(1.0f);
-    moveBack[3] = glm::vec4(0, 0, -renderable.getBounds().length(), 1);
+    moveBack[3] = glm::vec4(0, 0, -viewBounds.length(), 1);
 
     // Compute the view volume. The volume should be large enough to prevent the renderable
     // from being clipped against its planes in all orientations of the renderable. To get this
     // we build a "super" bounding box, which is a symmetric bounding box whose side length
     // is equal to the diagonal length of the renderable's original bounding box
-    viewVolume = Util::transformBounds(Bounds(renderable.getBounds().length()), moveBack);
+    viewVolume = Util::transformBounds(Bounds(viewBounds.length()), moveBack);
 
     static bool printed = false;
     if (!printed && m_debugOn) {
@@ -269,5 +277,14 @@ void Camera::toggleOrbit(const common::Axis& axis) {
         timerThread = std::make_unique<std::thread>(&Camera::orbitLoop, this);
     }
 }
+
+// TODO: Implement zoom to cursor location
+void Camera::zoomIn() {
+    zoomFactor += zoomIncrement;
+}
+
+ void Camera::zoomOut() {
+     zoomFactor -= zoomIncrement;
+ }
 
 }

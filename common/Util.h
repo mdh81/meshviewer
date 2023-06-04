@@ -37,7 +37,7 @@ class Util {
             glm::vec4 max(bounds.x.max, bounds.y.max, bounds.z.max, 1.f);
             glm::vec4 newMin = transformMatrix * min;
             glm::vec4 newMax = transformMatrix * max;
-            return common::Bounds{{newMin.x, newMax.x}, {newMin.y, newMax.y}, {newMin.z,newMax.z}};
+            return common::Bounds{{newMin.x, newMin.y, newMin.z}, {newMax.x, newMax.y, newMax.z}};
         }
 
         static void printMatrix(glm::mat4& matrix) {

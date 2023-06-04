@@ -63,6 +63,9 @@ private:
         glm::mat4 modelTransform;
         glm::mat4 viewTransform;
         glm::mat4 projectionTransform;
+        math3d::Matrix<float, 4, 4> projectionTransformTest;
+        float zoomFactor;
+        float zoomIncrement;
         ProjectionType projectionType;
         float orbitAngle;
         std::unique_ptr<std::thread> timerThread;
