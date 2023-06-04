@@ -9,6 +9,7 @@ The viewer is its infancy. It supports:
 * Rendering triangle meshes as wireframe or shaded
 * Orbiting the camera around cardinal axes
 * Zoom
+* Gradient backgrounds
 * Built-in event handler that can register member/free functions as event handlers for keyboard and mouse events
 
 <img width="1021" alt="Screenshot 2023-06-03 at 7 34 25 PM" src="https://github.com/mdh81/meshviewer/assets/73474502/db2c053d-deea-44f6-bd8d-eb2c4fc23540">
