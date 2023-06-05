@@ -47,6 +47,7 @@ class Viewport : public Renderable {
         [[nodiscard]]
         common::Bounds getBounds() const override;
 
+        [[nodiscard]]
         math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const {
             return math3d::Matrix<float, 3, 3> {
                     {1.f/windowDimensions.width,  0.f,                         0.f},
@@ -58,7 +59,7 @@ class Viewport : public Renderable {
         void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
             for (auto& drawable : drawables) {
                 if (drawable.get().is3D()) {
-                    Drawable3D& drawable3D = dynamic_cast<Drawable3D&>(drawable.get());
+                    auto& drawable3D = dynamic_cast<Drawable3D&>(drawable.get());
                     drawable3D.writeToFile(fileName, transform);
                 }
             }
@@ -81,6 +82,7 @@ private:
         void enableFog();
         void disableFog();
         void zoom3DView();
+        void pan3DView();
         [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
 
     private:

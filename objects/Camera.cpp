@@ -24,7 +24,7 @@ using namespace events;
     , projectionTransform(glm::mat4(1.0))
     , orbitAngle(0.f)
     , zoomFactor(1.f)
-    , zoomIncrement(.02f) {
+    , movementIncrement(.02f) {
     // Register event handlers for switching between perspective and orthographic
     EventHandler().registerCallback(Event(GLFW_KEY_O),
         CallbackFactory::getInstance().registerCallback(
@@ -69,7 +69,7 @@ void Camera::buildViewTransform() {
     // is accomplished by the view transform
 
     // Get the centroid of the renderable
-    // Translate the renderable, so it's at world origin
+    // Translate the renderable so it's at world origin
     auto translateToOrigin = glm::mat4(1.0f);
     common::Point3D centroid = renderable.getCentroid();
     translateToOrigin[3] = glm::vec4(-centroid.x, -centroid.y, -centroid.z, 1.f);
@@ -96,6 +96,10 @@ void Camera::buildViewTransform() {
                 throw std::runtime_error("Orbiting about arbitrary axis is not supported");
         }
     }
+
+    // Pan the view
+    glm::mat4 pan = glm::mat4(1.0);
+    pan[3] = glm::vec4(panTarget.x, panTarget.y, 0.f, 1.f);
 
     auto viewBounds = renderable.getBounds();
     viewBounds.x.min *= zoomFactor;
@@ -133,7 +137,7 @@ void Camera::buildViewTransform() {
     }
 
     // Combine the translations and orbit to produce the view transform
-    viewTransform = moveBack * orbit * translateToOrigin;
+    viewTransform = moveBack * pan * orbit * translateToOrigin;
 }
 
 void Camera::buildProjectionTransform() {
@@ -279,12 +283,36 @@ void Camera::toggleOrbit(const common::Axis& axis) {
 }
 
 // TODO: Implement zoom to cursor location
-void Camera::zoomIn() {
-    zoomFactor += zoomIncrement;
+void Camera::zoom(common::Direction direction) {
+    switch (direction) {
+        case common::Direction::Forward:
+            zoomFactor += movementIncrement;
+            break;
+        case common::Direction::Backward:
+            zoomFactor -= movementIncrement;
+            break;
+        default:
+            throw std::runtime_error("Camera zoom direction is invalid. Zoom operates only forward or backward");
+    }
 }
 
- void Camera::zoomOut() {
-     zoomFactor -= zoomIncrement;
+ void Camera::pan(common::Direction direction) {
+     switch (direction) {
+         case common::Direction::Left:
+             panTarget.x -= movementIncrement;
+             break;
+         case common::Direction::Right:
+             panTarget.x += movementIncrement;
+             break;
+         case common::Direction::Up:
+             panTarget.y += movementIncrement;
+             break;
+         case common::Direction::Down:
+             panTarget.y -= movementIncrement;
+             break;
+         default:
+             throw std::runtime_error("Camera pan direction is invalid. Pan operates only left, right, up or down");
+     }
  }
 
 }

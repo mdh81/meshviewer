@@ -196,4 +196,13 @@ static GLuint glError = 0;
 
 unsigned const MOUSE_WHEEL_EVENT = 1000;
 
+enum class Direction {
+    Left,
+    Right,
+    Up,
+    Down,
+    Forward,
+    Backward
+};
+
 }

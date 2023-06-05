@@ -36,9 +36,9 @@ class Camera : public MeshViewerObject {
         void setOrbitOn(const common::Axis& axis) { toggleOrbit(axis); }
         void setOrbitOff() { orbitOn = false; }
 
-        // Zooms the camera in and out
-        void zoomIn();
-        void zoomOut();
+        // View controls
+        void zoom(common::Direction direction);
+        void pan(common::Direction direction);
 
         // Sets projection type
         void setProjectionType(const ProjectionType type) { projectionType = type; }
@@ -65,7 +65,8 @@ private:
         glm::mat4 projectionTransform;
         math3d::Matrix<float, 4, 4> projectionTransformTest;
         float zoomFactor;
-        float zoomIncrement;
+        float movementIncrement;
+        common::Point2D panTarget;
         ProjectionType projectionType;
         float orbitAngle;
         std::unique_ptr<std::thread> timerThread;
