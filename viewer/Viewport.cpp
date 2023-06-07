@@ -40,6 +40,11 @@ namespace mv::scene {
                 mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_CONTROL),
                 mv::events::CallbackFactory::getInstance().registerCallback(
                         *this, &Viewport::zoom3DView));
+
+        mv::events::EventHandler().registerCallback(
+                mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_SHIFT),
+                mv::events::CallbackFactory::getInstance().registerCallback(
+                        *this, &Viewport::pan3DView));
     }
 
     void Viewport::add(mv::Drawable& drawable) {
@@ -180,16 +185,34 @@ namespace mv::scene {
 
     void Viewport::zoom3DView() {
         common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
-        if (m_debugOn) {
-            std::cerr << "Zooming 3D view" << std::endl;
-            std::cerr << "Is viewport event: " << isViewportEvent(cursorPosition);
-        }
+        common::Point2D cursorPositionDifference;
         if (isViewportEvent(cursorPosition)) {
-            common::Point2D cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+            cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+            // TODO: Shouldn't this be the opposite? Is the window origin in a different place than
+            // expected
+            cursorPositionDifference.y > 0 ? camera->zoom(common::Direction::Backward) :
+                                             camera->zoom(common::Direction::Forward);
             if (m_debugOn) {
-                std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
+                std::cerr << "Zooming 3D view" << std::endl;
+                std::cerr << "Is viewport event: " << isViewportEvent(cursorPosition);
+                if (isViewportEvent(cursorPosition)) {
+                    std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
+                }
             }
-            cursorPositionDifference.y > 0 ? camera->zoomOut() : camera->zoomIn();
+        }
+    }
+
+    void Viewport::pan3DView() {
+        common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
+        std::cerr << "Cursor Position: " << cursorPosition << std::endl;
+        common::Point2D cursorPositionDifference;
+        if (isViewportEvent(cursorPosition)) {
+            cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+            if (fabs(cursorPositionDifference.x) > fabs(cursorPositionDifference.y)) {
+                camera->pan(cursorPositionDifference.x > 0 ? common::Direction::Right : common::Direction::Left);
+            } else {
+                camera->pan(cursorPositionDifference.y > 0 ? common::Direction::Down : common::Direction::Up);
+            }
         }
     }
 
