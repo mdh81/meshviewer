@@ -69,7 +69,7 @@ void Camera::buildViewTransform() {
     // is accomplished by the view transform
 
     // Get the centroid of the renderable
-    // Translate the renderable so it's at world origin
+    // Translate the renderable to world origin
     auto translateToOrigin = glm::mat4(1.0f);
     common::Point3D centroid = renderable.getCentroid();
     translateToOrigin[3] = glm::vec4(-centroid.x, -centroid.y, -centroid.z, 1.f);
@@ -285,11 +285,15 @@ void Camera::toggleOrbit(const common::Axis& axis) {
 // TODO: Implement zoom to cursor location
 void Camera::zoom(common::Direction direction) {
     switch (direction) {
-        case common::Direction::Forward:
+        case common::Direction::Backward:
             zoomFactor += movementIncrement;
             break;
-        case common::Direction::Backward:
+        case common::Direction::Forward:
             zoomFactor -= movementIncrement;
+            // TODO: Don't clamp the zoom factor this prevents the viewer from reaching
+            // all areas of the model. Walkthrough like interaction is prevented by this
+            // clamping
+            zoomFactor = std::max(zoomFactor, 1e-6f);
             break;
         default:
             throw std::runtime_error("Camera zoom direction is invalid. Zoom operates only forward or backward");

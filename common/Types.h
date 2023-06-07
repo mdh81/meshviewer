@@ -6,6 +6,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <glm/ext/matrix_float4x4.hpp>
 #include "3dmath/Vector.h"
 #include "3dmath/OtherTypes.h"
 #include "GL/GLEW.h"
@@ -205,4 +206,30 @@ enum class Direction {
     Backward
 };
 
+inline
+std::ostream& operator<<(std::ostream& os, Direction const direction) {
+    switch (direction) {
+        case Direction::Left:
+            os << "Left";
+            break;
+        case Direction::Right:
+            os << "Right";
+            break;
+        case Direction::Up:
+            os << "Up";
+            break;
+        case Direction::Down:
+            os << "Down";
+            break;
+        case Direction::Forward:
+            os << "Forward";
+            break;
+        case Direction::Backward:
+            os << "Backward";
+            break;
+        default:
+            os << "Unknown";
+    }
+    return os;
+}
 }
