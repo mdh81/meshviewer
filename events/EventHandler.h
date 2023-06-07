@@ -1,8 +1,8 @@
-#ifndef MESH_VIEWER_EVENT_HANDLER_H
-#define MESH_VIEWER_EVENT_HANDLER_H
+#pragma once
 
 #include "Callback.h" 
 #include "Event.h"
+#include "MeshViewerObject.h"
 #include "GLFW/glfw3.h"
 #include <unordered_map>
 #include <functional>
@@ -20,8 +20,7 @@ namespace mv {
 
     // A monostate class that is responsible for handling events. Events are handled in the context
     // of a GLFW window.
-    // TODO: Make it inherit from MeshViewerObject so it can turn on debug output similar to other objects
-    class EventHandler {
+    class EventHandler : public MeshViewerObject {
 
         public:
             EventHandler() = default;
@@ -54,6 +53,7 @@ namespace mv {
             static EventCallbackMap eventCallbackMap;
             static bool started;
             static unsigned modifierKeys;
+            static MeshViewerObject* objectPointer;
 
             // These methods are declared static so a regular function pointer can be created from these
             // methods and passed to glfw functions. These old C APIs don't support member function pointers
@@ -71,5 +71,3 @@ namespace mv {
     };
 
 } }
-
-#endif

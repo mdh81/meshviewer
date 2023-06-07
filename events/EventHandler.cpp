@@ -3,14 +3,13 @@
 #include <exception>
 #include <unordered_map>
 
-using namespace std;
-
-namespace mv { namespace events {
+namespace mv::events {
 
 // init static variables
 bool EventHandler::started = false;
 EventHandler::EventCallbackMap EventHandler::eventCallbackMap;
 unsigned EventHandler::modifierKeys = 0;
+MeshViewerObject* EventHandler::objectPointer = nullptr;
 
 void EventHandler::handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
     if (action == GLFW_PRESS) {
@@ -30,8 +29,8 @@ void EventHandler::handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifier
     auto callback = getEventHandler(keyOrButtonIdentifier, modifiers);
     if (callback) {
         callback->call();
-    } else {
-        cerr << "No callback associated with " << keyOrButtonIdentifier << " and modifier " << modifiers << endl;
+    } else if (objectPointer && objectPointer->isDebugOn()){
+        std::cerr << "No callback associated with " << keyOrButtonIdentifier << " and modifier " << modifiers << std::endl;
     }
 }
 
@@ -44,8 +43,9 @@ void EventHandler::start(GLFWwindow* window) {
         glfwSetKeyCallback(window, &handleKeyPress);
         glfwSetMouseButtonCallback(window, &handleMouseEvent);
         started = true;
+        objectPointer = this;
     } else {
-        runtime_error("Event handler already initialized");
+        std::runtime_error("Event handler already initialized");
     }
 }
 
