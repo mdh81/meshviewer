@@ -9,7 +9,7 @@ namespace mv::events {
 bool EventHandler::started = false;
 EventHandler::EventCallbackMap EventHandler::eventCallbackMap;
 unsigned EventHandler::modifierKeys = 0;
-MeshViewerObject* EventHandler::objectPointer = nullptr;
+MeshViewerObject* EventHandler::self = nullptr;
 
 void EventHandler::handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
     if (action == GLFW_PRESS) {
@@ -29,7 +29,7 @@ void EventHandler::handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifier
     auto callback = getEventHandler(keyOrButtonIdentifier, modifiers);
     if (callback) {
         callback->call();
-    } else if (objectPointer && objectPointer->isDebugOn()){
+    } else if (self->isDebugOn()){
         std::cerr << "No callback associated with " << keyOrButtonIdentifier << " and modifier " << modifiers << std::endl;
     }
 }
@@ -43,7 +43,7 @@ void EventHandler::start(GLFWwindow* window) {
         glfwSetKeyCallback(window, &handleKeyPress);
         glfwSetMouseButtonCallback(window, &handleMouseEvent);
         started = true;
-        objectPointer = this;
+        self = this;
     } else {
         std::runtime_error("Event handler already initialized");
     }
@@ -62,4 +62,4 @@ void EventHandler::raiseEvent(const Event &event) {
     handleKeyOrMouseEvent(event.getId(), event.getModifier());
 }
 
-} }
+}
