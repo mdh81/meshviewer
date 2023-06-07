@@ -53,7 +53,7 @@ namespace mv {
             static EventCallbackMap eventCallbackMap;
             static bool started;
             static unsigned modifierKeys;
-            static MeshViewerObject* objectPointer;
+            static MeshViewerObject* self;
 
             // These methods are declared static so a regular function pointer can be created from these
             // methods and passed to glfw functions. These old C APIs don't support member function pointers
