@@ -5,7 +5,6 @@
 #include "Viewer.h"
 #include "EventHandler.h"
 #include "CallbackFactory.h"
-#include "GradientBackground.h"
 #include "Types.h"
 
 namespace mv::scene {
@@ -184,14 +183,13 @@ namespace mv::scene {
     }
 
     void Viewport::zoom3DView() {
+        m_debugOn = false;
         common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
         common::Point2D cursorPositionDifference;
         if (isViewportEvent(cursorPosition)) {
             cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
-            // TODO: Shouldn't this be the opposite? Is the window origin in a different place than
-            // expected
-            cursorPositionDifference.y > 0 ? camera->zoom(common::Direction::Backward) :
-                                             camera->zoom(common::Direction::Forward);
+            cursorPositionDifference.y > 0 ? camera->zoom(common::Direction::Forward) :
+                                             camera->zoom(common::Direction::Backward);
             if (m_debugOn) {
                 std::cerr << "Zooming 3D view" << std::endl;
                 std::cerr << "Is viewport event: " << isViewportEvent(cursorPosition);
@@ -199,12 +197,13 @@ namespace mv::scene {
                     std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
                 }
             }
+        } else if (m_debugOn) {
+            std::cerr << "Is not viewport event: " << cursorPosition << std::endl;
         }
     }
 
     void Viewport::pan3DView() {
         common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
-        std::cerr << "Cursor Position: " << cursorPosition << std::endl;
         common::Point2D cursorPositionDifference;
         if (isViewportEvent(cursorPosition)) {
             cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
