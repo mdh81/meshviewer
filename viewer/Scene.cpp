@@ -5,7 +5,10 @@
 
 namespace mv::scene {
 
-Scene::Scene(int frameBufferWidth, int frameBufferHeight) {
+Scene::Scene(unsigned frameBufferWidth, unsigned frameBufferHeight) {
+    if (!frameBufferWidth || !frameBufferHeight) {
+        throw std::runtime_error("Scene's dimensions cannot be zero");
+    }
     createViewport({{0, 0}, {1, 1}});
     notifyWindowResized(frameBufferWidth, frameBufferHeight);
 }
@@ -31,7 +34,7 @@ void Scene::notifyWindowResized(unsigned int const newWindowWidth, unsigned int 
 }
 
 void Scene::removeViewport(ViewportPointer const& viewportToRemove) {
-    ViewportCollection::iterator removedViewport = viewports.end();
+    auto removedViewport = viewports.end();
     if (viewports.size() > 1) {
         removedViewport =
                 std::remove_if(viewports.begin(), viewports.end(),

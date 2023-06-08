@@ -167,15 +167,8 @@ void Camera::buildOrthographicProjectionTransform() {
                                      nearDist, farDist);
 
     static bool printed = false;
-    m_debugOn = true;
     if (!printed && m_debugOn) {
         auto bounds = renderable.getBounds();
-        config::ConfigurationReader& cfgReader = config::ConfigurationReader::getInstance();
-        std::filesystem::path tmpDir(cfgReader.getValue("temporaryFilesDirectory"));
-        if (!std::filesystem::exists(tmpDir)) {
-            std::filesystem::create_directory(tmpDir);
-        }
-        renderable.writeToFile(tmpDir/"viewTransformed.stl", viewTransform);
         Util::printMatrix(viewTransform);
         m_outputStream << "Mesh Bounds " << bounds << endl;
         m_outputStream << "View Volume " << viewVolume << endl;
@@ -184,12 +177,9 @@ void Camera::buildOrthographicProjectionTransform() {
                         << " Near: " << nearDist
                         << " Far: " << farDist
                         << endl;
-        Util::writeBounds(tmpDir/"objectBounds.stl",
-                          renderable.getBounds());
-        Util::writeBounds(tmpDir/"viewBounds.stl",
-                          viewVolume);
         printed = true;
     }
+    writeViewConfigurationToFile();
 }
 
 void Camera::buildPerspectiveProjectionTransform() {
@@ -229,7 +219,6 @@ void Camera::buildPerspectiveProjectionTransform() {
     // fov/2 = arctan(BC/AC)
     // fov = 2 * arctan(BC/AC)
 
-
     auto AC = fabs(viewVolume.z.max);
     auto BC = viewVolume.y.length() * 0.5f;
     auto fieldOfView = 2.f * glm::atan(BC/AC);
@@ -244,6 +233,22 @@ void Camera::buildPerspectiveProjectionTransform() {
         m_outputStream << "Fov = " << glm::degrees(fieldOfView) << endl;
         printed = true;
     }
+    writeViewConfigurationToFile();
+}
+
+void Camera::writeViewConfigurationToFile() {
+     m_debugOn = true;
+     if (m_debugOn) {
+         auto bounds = renderable.getBounds();
+         config::ConfigurationReader &cfgReader = config::ConfigurationReader::getInstance();
+         std::filesystem::path tmpDir(cfgReader.getValue("temporaryFilesDirectory"));
+         if (!std::filesystem::exists(tmpDir)) {
+             std::filesystem::create_directory(tmpDir);
+         }
+         renderable.writeToFile(tmpDir / "viewTransformed.stl", viewTransform);
+         Util::writeBounds(tmpDir / "objectBounds.stl", renderable.getBounds());
+         Util::writeBounds(tmpDir / "viewBounds.stl", viewVolume);
+     }
 }
 
 void Camera::orbitLoop() {
@@ -290,7 +295,7 @@ void Camera::zoom(common::Direction direction) {
             break;
         case common::Direction::Forward:
             zoomFactor -= movementIncrement;
-            // TODO: Don't clamp the zoom factor this prevents the viewer from reaching
+            // TODO: Don't clamp the zoom factor. This prevents the viewer from reaching
             // all areas of the model. Walkthrough like interaction is prevented by this
             // clamping
             zoomFactor = std::max(zoomFactor, 1e-6f);

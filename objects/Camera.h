@@ -57,6 +57,8 @@ private:
         void toggleOrbit(const common::Axis& axis);
         void orbitLoop();
 
+        void writeViewConfigurationToFile();
+
     private:
         std::optional<common::Axis> orbitAxis;
         bool orbitOn;
