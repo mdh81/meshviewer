@@ -62,7 +62,6 @@ target_include_directories(
     config
 )
 
-#TODO: Is it necessary to link all of these? Won't they be implicitly linked via target_link_libraries in the respective libraries
 target_link_libraries(
     meshviewerapp
     PUBLIC
