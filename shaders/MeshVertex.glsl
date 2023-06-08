@@ -21,13 +21,23 @@ vec3 diffuseShading() {
     // diffuse light as a RGB vector that is scaled by the dot
     // product of the light and normal directions. This way, the 
     // intensity of reflected light at a vertex becomes dependent
-    // on the vertex's orientation relative to the light 
+    // on the vertex's orientation relative to the light
+
+    // NOTE: To support two-sided lighting, we flip the normal if we
+    // encounter back faces
     
     mat3 normalMatrix = mat3(modelViewTransform);
     vec3 normalDirection = normalMatrix * vertexNormal;
     vec3 vertexLocation = convertToViewCoordinates(vertexWorld);
     vec3 lightDirection = normalize(vec3(lightPosition - vertexLocation));
-    return reflectionCoefficient * lightIntensity * max (dot(normalDirection, lightDirection), 0);
+    vec3 vertexToCamera = -vertexLocation;
+    vec3 diffuseColor;
+    if (dot(vertexToCamera, normalDirection) < 0) {
+        diffuseColor = reflectionCoefficient * lightIntensity * max (dot(-normalDirection, lightDirection), 0);
+    } else {
+        diffuseColor = reflectionCoefficient * lightIntensity * max (dot(normalDirection, lightDirection), 0);
+    }
+    return diffuseColor;
 }
 
 void main() {
