@@ -15,16 +15,22 @@ class Scene : public Renderable {
         using ViewportCollection = std::vector<ViewportPointer>;
 
     public:
-        // TODO: Complete creation semantics
-        Scene(int frameBufferWidth, int frameBufferHeight);
+        Scene(unsigned frameBufferWidth, unsigned frameBufferHeight);
         ~Scene() = default;
+        // Scenes cannot be copied or assigned
+        Scene(Scene const&) = delete;
+        Scene& operator=(Scene const&) = delete;
+        Scene(Scene&&) = delete;
+        Scene& operator=(Scene&&) = delete;
 
         void createViewport(Viewport::ViewportCoordinates const& coordinates);
 
         void removeViewport(ViewportPointer const& viewportToRemove);
 
         [[nodiscard]]
-        ViewportCollection const& getViewports() const { return viewports; }
+        ViewportCollection const& getViewports() const {
+            return viewports;
+        }
 
         // Add a renderable to the default viewport
         void add(Drawable& drawable);

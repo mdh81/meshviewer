@@ -6,6 +6,17 @@
 using namespace std;
 using namespace mv::scene;
 
+TEST(Scene, Creation) {
+    Scene s1(10, 10);
+    EXPECT_THROW({
+        try {
+            Scene s2(0, 10);
+        } catch(exception& ex) {
+            throw;
+        }
+    }, std::runtime_error) << "Expected an exception when scene's dimensions are zero";
+}
+
 TEST(Scene, CreationOfDefaultViewport) {
     Scene scene(100, 100);
     auto& viewports = scene.getViewports();
