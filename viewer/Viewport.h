@@ -53,7 +53,7 @@ class Viewport : public Renderable {
                     {1.f/windowDimensions.width,  0.f,                         0.f},
                     {0.f,                        -1.f/windowDimensions.height, 1.f},
                     {0.f,                         0.f,                         0.f}
-            }.transpose();
+            };
         }
 
         void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
