@@ -286,7 +286,7 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
             {windowWidth,   0.f,            0.f},
             {0.f,           -windowHeight,  windowHeight},
             {0.f,            0.f,           1.f}
-    }.transpose();
+    };
 
 
 }

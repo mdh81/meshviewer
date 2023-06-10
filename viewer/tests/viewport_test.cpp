@@ -68,4 +68,12 @@ namespace mv::scene {
                                     << "Cursor position outside window is wrongly classified as inside the viewport";
     }
 
+    TEST_F(ViewportTest, SharedCamera) {
+        auto& v = Viewer::getInstance(/*width = 1024, height = 768*/);
+        Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
+        MockDrawable d1, d2;
+        viewport.add(d1);
+        viewport.add(d2);
+    }
+
 }
