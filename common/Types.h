@@ -191,9 +191,13 @@ static GLuint glError = 0;
         std::terminate();                                                 \
     }
 
+#ifndef UNIT_TESTING_IN_PROGRESS
 #define glCallWithErrorCheck(glFunc, glArgs...) \
     glFunc(glArgs);                             \
     checkGLError(glFunc)
+#else
+#define glCallWithErrorCheck(glFunc, glArgs...)
+#endif
 
 unsigned const MOUSE_WHEEL_EVENT = 1000;
 

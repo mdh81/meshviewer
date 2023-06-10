@@ -25,9 +25,11 @@ foreach(test ${allTests})
         ../../common/testsupport
         ../../objects
     )
-endforeach(test)
-
-foreach(test ${allTests})
+    target_compile_definitions(
+        ${test}
+        PUBLIC
+        -DUNIT_TESTING_IN_PROGRESS
+    )
     target_link_libraries(
         ${test} 
         PUBLIC
