@@ -237,7 +237,6 @@ void Camera::buildPerspectiveProjectionTransform() {
 }
 
 void Camera::writeViewConfigurationToFile() {
-     m_debugOn = true;
      if (m_debugOn) {
          auto bounds = renderable.getBounds();
          config::ConfigurationReader &cfgReader = config::ConfigurationReader::getInstance();

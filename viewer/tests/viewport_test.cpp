@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "MockDrawable.h"
+#include "Mock3DDrawable.h"
 #include "../Viewport.h"
 #include "3dmath/Vector.h"
 #include "Viewer.h"
@@ -24,7 +24,7 @@ namespace mv::scene {
 
     TEST_F(ViewportTest, DrawablesManagement) {
         Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
-        mv::MockDrawable drawable1, drawable2;
+        mv::Mock3DDrawable drawable1, drawable2;
         viewport.add(drawable1);
         viewport.add(drawable2);
         ASSERT_EQ(viewport.getDrawables().size(), 2) << "Unexpected number of renderables after add";
@@ -40,7 +40,7 @@ namespace mv::scene {
                                     << "Unexpected renderable after remove";
         ASSERT_THROW({
                          try {
-                             auto drawable = mv::MockDrawable();
+                             auto drawable = mv::Mock3DDrawable();
                              viewport.remove(drawable);
                          } catch (std::runtime_error &) {
                              throw;
@@ -71,9 +71,12 @@ namespace mv::scene {
     TEST_F(ViewportTest, SharedCamera) {
         auto& v = Viewer::getInstance(/*width = 1024, height = 768*/);
         Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
-        MockDrawable d1, d2;
+        viewport.enableGradientBackground(false);
+        Mock3DDrawable d1, d2;
         viewport.add(d1);
         viewport.add(d2);
+        viewport.render();
+        ASSERT_EQ(d1.getCamera()->getId(), d2.getCamera()->getId());
     }
 
 }

@@ -64,6 +64,9 @@ class Viewport : public Renderable {
                 }
             }
         }
+        void enableGradientBackground(bool on) {
+            showGradientBackground = on;
+        }
 
 private:
         void registerEventHandlers();

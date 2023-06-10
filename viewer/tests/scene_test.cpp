@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "MockDrawable.h"
+#include "Mock3DDrawable.h"
 #include "../Viewport.h"
 #include "../Scene.h"
 #include "3dmath/Vector.h"
