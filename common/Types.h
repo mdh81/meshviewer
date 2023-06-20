@@ -8,7 +8,7 @@
 #include <optional>
 #include <glm/ext/matrix_float4x4.hpp>
 #include "3dmath/Vector.h"
-#include "3dmath/OtherTypes.h"
+#include "3dmath/SupportingTypes.h"
 #include "GL/GLEW.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 
