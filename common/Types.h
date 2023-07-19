@@ -180,8 +180,8 @@ static std::string getGLErrorString(GLint glError) {
     return errStr;
 }
 
-// TODO: Make this a noop in release mode
 static GLuint glError = 0;
+#ifdef DEBUG
 #define checkGLError(glFunc)                                              \
     glError = glGetError();                                               \
     if (glError) {                                                        \
@@ -190,6 +190,9 @@ static GLuint glError = 0;
              << __FILE__ << std::endl;                                    \
         std::terminate();                                                 \
     }
+#else
+#define CheckGLError(glFunc)
+#endif
 
 #ifndef UNIT_TESTING_IN_PROGRESS
 #define glCallWithErrorCheck(glFunc, glArgs...) \
