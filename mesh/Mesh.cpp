@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "Drawable3D.h"
+#include "ConfigurationReader.h"
 #include <limits>
 #include <iostream>
 #include <algorithm>
@@ -323,19 +324,28 @@ void Mesh::generateRenderData() {
 void Mesh::generateColors() {
     if (readyToRender) return;
 
-    // Set color for the mesh
-    GLint colorId = glGetUniformLocation(shaderProgram, "reflectionCoefficient");
-    glUniform3fv(colorId, 1, glm::value_ptr(glm::vec3(0.56f, 0.51f, 0.5f)));
+    auto& cfgReader = config::ConfigurationReader::getInstance();
 
+    // Set mesh colors
+    GLint diffuseColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "material.diffuseColor");
+    glCallWithErrorCheck(glUniform3fv, diffuseColorId, 1, cfgReader.getColor("MeshDiffuseColor", true).getData());
+    GLint ambientColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "material.ambientColor");
+    glCallWithErrorCheck(glUniform3fv, ambientColorId, 1, cfgReader.getColor("MeshAmbientColor", true).getData());
+    GLint specularColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "material.specularColor");
+    glCallWithErrorCheck(glUniform3fv, specularColorId, 1, cfgReader.getColor("MeshSpecularColor", true).getData());
+    GLint shininessId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "material.shininess");
+    glCallWithErrorCheck(glUniform1f, shininessId, std::atof(cfgReader.getValue("MeshShininess").c_str()));
+
+    // TODO: This moves to the viewport.
     // Set light position in view coordinates
     // The default light is a simple headlight that's positioned at the
     // camera's location. Camera in GL is considered to be global origin
-    GLint lightPosId = glGetUniformLocation(shaderProgram, "lightPosition");
-    glUniform3fv(lightPosId, 1, glm::value_ptr(glm::vec3(0.f, 0.f, 0.f)));
+    GLint lightPosId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "light.position");
+    glCallWithErrorCheck(glUniform3fv, lightPosId, 1, cfgReader.getVector("LightPosition").getData());
 
     // Set light intensity
-    GLint lightIntensityId = glGetUniformLocation(shaderProgram, "lightIntensity");
-    glUniform3fv(lightIntensityId, 1, glm::value_ptr(glm::vec3(1.f, 1.f, 1.f)));
+    GLint lightIntensityId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "light.color");
+    glCallWithErrorCheck(glUniform3fv, lightIntensityId, 1, cfgReader.getColor("LightColor", true).getData());
 }
 
 void Mesh::render() {

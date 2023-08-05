@@ -15,9 +15,10 @@
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
 
-using Point3D = math3d::Vector3D<float>;
-using Vector3D = math3d::Vector3D<float>;
-using Point2D = math3d::Vector2D<float>;
+using Point3D = math3d::Vector3<float>;
+using Vector3D = math3d::Vector3<float>;
+using Point2D = math3d::Vector2<float>;
+using Vector2D = math3d::Vector2<float>;
 using Color = Point3D;
 using Line = std::vector<Point3D>;
 using Lines = std::vector<Line>;

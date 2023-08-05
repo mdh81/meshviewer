@@ -1,12 +1,11 @@
-#ifndef MESH_VIEWER_CONFIG_READER_H
-#define MESH_VIEWER_CONFIG_READER_H
+#pragma once
 
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include "Types.h"
 
-namespace mv { namespace config {
+namespace mv::config {
 
 class ConfigurationReader {
     public:
@@ -20,12 +19,17 @@ class ConfigurationReader {
 
     public:
        ~ConfigurationReader() = default;
-       std::string getValue(const std::string& name);
-       bool getBoolean(std::string const& name);
-       common::Color getColor(std::string const& name, bool const normalize=true);
+       [[nodiscard]]
+       std::string getValue(const std::string& name) const;
+       [[nodiscard]]
+       bool getBoolean(std::string const& name) const;
+       [[nodiscard]]
+       common::Color getColor(std::string const& name, bool normalize=true) const;
+       [[nodiscard]]
+       common::Vector3D getVector(std::string const& name) const;
 
-    private:
-       ConfigurationReader(const ConfigurationReader&) = delete;
+    public:
+       ConfigurationReader(ConfigurationReader const&) = delete;
        ConfigurationReader(ConfigurationReader&&) = delete;
        ConfigurationReader& operator=(const ConfigurationReader&) = delete;
        ConfigurationReader& operator=(ConfigurationReader&&) = delete;
@@ -36,7 +40,4 @@ class ConfigurationReader {
        friend class ConfigurationReaderTest;
 };
 
-} }
-
-
-#endif
+}
