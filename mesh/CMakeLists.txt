@@ -18,6 +18,7 @@ target_link_libraries(
     mesh
     PUBLIC
     objects
+    configuration
     glm::glm
     GLEW::GLEW
 )

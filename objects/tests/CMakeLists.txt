@@ -26,6 +26,7 @@ foreach(test ${allTests})
         common
         mesh
         events
+        configuration
     )
 endforeach(test)
 
