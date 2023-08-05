@@ -1,7 +1,7 @@
 #version 410 core
 
-in vec3 vertexWorld;
-in vec3 vertexNormal;
+in vec3 vertexModel;
+in vec3 vertexNormalModel;
 uniform mat4 projectionTransform;
 uniform mat4 modelViewTransform;
 out vec3 vertexColor;
@@ -44,8 +44,8 @@ vec3 diffuseShading() {
     // NOTE: To support two-sided lighting, we flip the normal if we
     // encounter back faces
 
-    vec3 normalDirection = convertDirectionVectorToView(vertexNormal);
-    vec3 vertexLocation = convertPositionVectorToView(vertexWorld);
+    vec3 normalDirection = convertDirectionVectorToView(vertexNormalModel);
+    vec3 vertexLocation = convertPositionVectorToView(vertexModel);
     vec3 lightDirection = normalize(vec3(light.position - vertexLocation));
     vec3 vertexToCamera = -vertexLocation;
     vec3 diffuseColor;
@@ -60,8 +60,8 @@ vec3 diffuseShading() {
 vec3 phongShading() {
 
     // Compute specular light at vertex
-    vec3 vertexView = convertPositionVectorToView(vertexWorld);
-    vec3 vertexNormalCamera = convertDirectionVectorToView(vertexNormal);
+    vec3 vertexView = convertPositionVectorToView(vertexModel);
+    vec3 vertexNormalCamera = convertDirectionVectorToView(vertexNormalModel);
     vec3 vertexToLight = normalize(light.position - vertexView);
     vec3 parallelToNormal = dot(vertexToLight, vertexNormalCamera) * vertexNormalCamera;
     vec3 perpendicularToNormal = vertexToLight - parallelToNormal;
@@ -81,7 +81,7 @@ vec3 phongShading() {
 }
 
 void main() {
-    vertexCamera = convertPositionVectorToView(vertexWorld);
+    vertexCamera = convertPositionVectorToView(vertexModel);
     vertexColor = phongShading();
-    gl_Position = projectionTransform * modelViewTransform * vec4(vertexWorld, 1.0);
+    gl_Position = projectionTransform * modelViewTransform * vec4(vertexModel, 1.0);
 }
