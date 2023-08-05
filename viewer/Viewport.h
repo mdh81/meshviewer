@@ -6,6 +6,7 @@
 #include "Drawable3D.h"
 #include "Camera.h"
 #include "3dmath/Matrix.h"
+#include "Types.h"
 #include <unordered_set>
 
 
@@ -29,7 +30,7 @@ class Viewport : public Renderable {
         Drawable::DrawableReferences getDrawables() const;
 
         [[nodiscard]]
-        math3d::Vector2D<float> getOrigin() const {
+        common::Vector2D getOrigin() const {
             return {coordinates.x.min, coordinates.y.min};
         }
 

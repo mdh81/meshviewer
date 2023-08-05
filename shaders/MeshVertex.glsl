@@ -4,44 +4,84 @@ in vec3 vertexWorld;
 in vec3 vertexNormal;
 uniform mat4 projectionTransform;
 uniform mat4 modelViewTransform;
-uniform vec3 reflectionCoefficient;
-uniform vec3 lightPosition;
-uniform vec3 lightIntensity; 
 out vec3 vertexColor;
 out vec3 vertexCamera;
 
-// Converts a vector from world coordinates to view coordinates
-vec3 convertToViewCoordinates(vec3 vectorWorld) {
-    return (modelViewTransform * vec4(vectorWorld, 1.0)).xyz;
+uniform struct {
+    vec3 ambientColor;
+    vec3 diffuseColor;
+    vec3 specularColor;
+    float shininess;
+} material;
+
+// NOTE: Light position is assumed to be in view coordinates
+// TODO: Support light position in world coordinates
+uniform struct {
+    vec3 position;
+    vec3 color;
+} light;
+
+const float specularReflectivity = 0.8;
+
+// Converts a position vector from model to view coordinates
+vec3 convertPositionVectorToView(vec3 vectorModel) {
+    return (modelViewTransform * vec4(vectorModel, 1.0)).xyz;
+}
+
+// Converts a direction vector from model to view coordinates
+vec3 convertDirectionVectorToView(vec3 vectorModel) {
+    return mat3(modelViewTransform) * vectorModel;
 }
 
 vec3 diffuseShading() {
-    
+
     // Compute diffuse light at each vertex by evaluating the
     // diffuse light as a RGB vector that is scaled by the dot
-    // product of the light and normal directions. This way, the 
+    // product of the light and normal directions. This way, the
     // intensity of reflected light at a vertex becomes dependent
     // on the vertex's orientation relative to the light
 
     // NOTE: To support two-sided lighting, we flip the normal if we
     // encounter back faces
-    
-    mat3 normalMatrix = mat3(modelViewTransform);
-    vec3 normalDirection = normalMatrix * vertexNormal;
-    vec3 vertexLocation = convertToViewCoordinates(vertexWorld);
-    vec3 lightDirection = normalize(vec3(lightPosition - vertexLocation));
+
+    vec3 normalDirection = convertDirectionVectorToView(vertexNormal);
+    vec3 vertexLocation = convertPositionVectorToView(vertexWorld);
+    vec3 lightDirection = normalize(vec3(light.position - vertexLocation));
     vec3 vertexToCamera = -vertexLocation;
     vec3 diffuseColor;
     if (dot(vertexToCamera, normalDirection) < 0) {
-        diffuseColor = reflectionCoefficient * lightIntensity * max (dot(-normalDirection, lightDirection), 0);
+        diffuseColor = material.diffuseColor * light.color * max(dot(-normalDirection, lightDirection), 0.0);
     } else {
-        diffuseColor = reflectionCoefficient * lightIntensity * max (dot(normalDirection, lightDirection), 0);
+        diffuseColor = material.diffuseColor * light.color * max(dot(normalDirection, lightDirection), 0.0);
     }
     return diffuseColor;
 }
 
+vec3 phongShading() {
+
+    // Compute specular light at vertex
+    vec3 vertexView = convertPositionVectorToView(vertexWorld);
+    vec3 vertexNormalCamera = convertDirectionVectorToView(vertexNormal);
+    vec3 vertexToLight = normalize(light.position - vertexView);
+    vec3 parallelToNormal = dot(vertexToLight, vertexNormalCamera) * vertexNormalCamera;
+    vec3 perpendicularToNormal = vertexToLight - parallelToNormal;
+    vec3 perfectReflection = 2*parallelToNormal - vertexToLight;
+    vec3 vertexToCamera = -normalize(vertexView);
+    float specularPower = pow(max(dot(perfectReflection, vertexToCamera), 0.0), material.shininess);
+    vec3 specularLight = light.color * specularReflectivity * specularPower;
+
+    // Compute diffuse light
+    vec3 diffuseLight = diffuseShading();
+
+    // Ambient light is not directional
+    vec3 ambientLight = light.color * material.ambientColor;
+
+    // Combine all components for final result
+    return ambientLight + diffuseLight + specularLight;
+}
+
 void main() {
-    vertexCamera = convertToViewCoordinates(vertexWorld);
-    vertexColor = diffuseShading();
+    vertexCamera = convertPositionVectorToView(vertexWorld);
+    vertexColor = phongShading();
     gl_Position = projectionTransform * modelViewTransform * vec4(vertexWorld, 1.0);
 }
