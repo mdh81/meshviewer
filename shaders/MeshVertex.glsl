@@ -68,7 +68,7 @@ vec3 phongShading() {
     vec3 perfectReflection = 2*parallelToNormal - vertexToLight;
     vec3 vertexToCamera = -normalize(vertexView);
     float specularPower = pow(max(dot(perfectReflection, vertexToCamera), 0.0), material.shininess);
-    vec3 specularLight = light.color * specularReflectivity * specularPower;
+    vec3 specularLight = light.color * material.specularColor * specularReflectivity * specularPower;
 
     // Compute diffuse light
     vec3 diffuseLight = diffuseShading();
