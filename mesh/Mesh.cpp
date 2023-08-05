@@ -274,7 +274,7 @@ void Mesh::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexData.getDataSize()), vertexData.getData(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexWorld");
+    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexModel");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
@@ -296,7 +296,7 @@ void Mesh::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(normalData.getDataSize()), normalData.getData(), GL_STATIC_DRAW);
 
     // Define layout of normal data
-    GLint normalAttrib = glGetAttribLocation(shaderProgram, "vertexNormal");
+    GLint normalAttrib = glGetAttribLocation(shaderProgram, "vertexNormalModel");
     glEnableVertexAttribArray(normalAttrib);
     glVertexAttribPointer(normalAttrib,         //attrib identifier
                           3,                    //number of values for this attribute

@@ -51,7 +51,7 @@ void Glyph::generateRenderData() {
     glBufferData(GL_ARRAY_BUFFER, dataSize, m_vertexData.get(), GL_STATIC_DRAW);
 
     // Define layout of vertex data
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexWorld");
+    GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexModel");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib,            //attrib identifier
                           3,                    //number of values for this attribute
