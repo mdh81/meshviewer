@@ -89,7 +89,7 @@ TEST_F(ConfigurationReaderFixture, InvalidConfigEntry) {
     ConfigurationReader& cr = ConfigurationReaderTest::getReader();
     EXPECT_THROW({
         try {
-            cr.getBoolean("boolVarThatDoesntExist");
+            auto booleanValue = cr.getBoolean("boolVarThatDoesntExist");
         } catch (std::runtime_error& ex) {
             throw;
         }
