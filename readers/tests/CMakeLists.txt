@@ -1,42 +1,26 @@
-add_executable(
-    reader_factory_test
-    reader_factory_test.cpp)
+include(GoogleTest)
+file(GLOB sources "*.cpp")
 
-add_executable(
-    stl_reader_test
-    stl_reader_test.cpp)
-
-# Convenience variables
-set(allTests reader_factory_test stl_reader_test)
-
-# All tests include headers from the source directory
-foreach(test ${allTests})
+foreach(source ${sources})
+    get_filename_component(testExecutable ${source} NAME_WE)
+    add_executable(${testExecutable} ${source})
     target_include_directories(
-        ${test} 
+        ${testExecutable}
         PUBLIC
         ../
         ../../mesh
     )
-endforeach(test)
-
-# All tests link against gtest, reader, mesh and common libraries
-# Makes no sense to link against shaders for testing. Create mock objects
-foreach(test ${allTests})
+    # TODO: Create mocks for all dependencies. Reader tests should link only against reader library
     target_link_libraries(
-        ${test}
+        ${testExecutable}
         PUBLIC
         gtest_main
-        readers 
+        readers
         mesh
         common
         shaders
         objects
         events
-    )  
-endforeach(test)
-
-# Enable test discovery for each test
-include(GoogleTest)
-foreach(test ${allTests})
-    gtest_discover_tests(${test} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
-endforeach(test)
+    )
+    gtest_discover_tests(${testExecutable} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
+endforeach(source)

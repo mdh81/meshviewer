@@ -1,7 +1,4 @@
 #include "Mesh.h"
-#include "Camera.h"
-#include "glm/gtc/type_ptr.hpp"
-#include "Drawable3D.h"
 #include "ConfigurationReader.h"
 #include <limits>
 #include <iostream>
@@ -177,7 +174,7 @@ void Mesh::getConnectivityData(size_t& numBytes, unsigned*& pConnData) const {
     pConnData = m_connectivity.get();
 }
 
-
+// TODO: Replace with 3dmath
 std::unique_ptr<Mesh> Mesh::transform(glm::mat4 const& transformMatrix) const {
     std::unique_ptr<Mesh> transformedMesh(new Mesh(*this));
     auto& vertices = transformedMesh->getVertices();
@@ -201,20 +198,18 @@ void Mesh::writeToSTL(std::string const& fileName) const {
     auto numTris = static_cast<unsigned>(m_faces.size());
     ofs.write(reinterpret_cast<char*>(&numTris), 4);
     unsigned short dummy = 0;
-    // TODO: Replace with mathlib
     for (auto& face : m_faces) {
         if (face.size() != 3) throw std::runtime_error("Cannot write to STL. Mesh is not triangulated");
         auto& A = m_vertices.at(face.at(0));
         auto& B = m_vertices.at(face.at(1));
         auto& C = m_vertices.at(face.at(2));
-        glm::vec3 AB {B.x - A.x, B.y - A.y, B.z - A.z};
-        glm::vec3 AC {C.x - A.x, C.y - A.y, C.z - A.z};
-        glm::vec3 normal = glm::cross(AC, AB);
-        float n[3] = {normal.x, normal.y, normal.z};
-        ofs.write(reinterpret_cast<const char*>(n), 12);
-        ofs.write(reinterpret_cast<const char*>(&A), 12);
-        ofs.write(reinterpret_cast<const char*>(&B), 12);
-        ofs.write(reinterpret_cast<const char*>(&C), 12);
+        auto AB = B-A;
+        auto AC = C-A;
+        auto normal = (AC * AB).normalize();
+        ofs.write(reinterpret_cast<const char*>(normal.getData()), 12);
+        ofs.write(reinterpret_cast<const char*>(A.getData()), 12);
+        ofs.write(reinterpret_cast<const char*>(B.getData()), 12);
+        ofs.write(reinterpret_cast<const char*>(C.getData()), 12);
         ofs.write(reinterpret_cast<char*>(&dummy), 2);
     }
     ofs.close();
@@ -319,6 +314,8 @@ void Mesh::generateRenderData() {
 
     generateColors();
     readyToRender = true;
+
+    // TODO: Dump member data buffers
 }
 
 void Mesh::generateColors() {
@@ -364,7 +361,7 @@ void Mesh::render() {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES,
-                   static_cast<GLsizei>(getNumberOfVertices()), // Number of elements
+                   static_cast<int>(m_numFaces*3),              // Number of entries in the connectivity array
                    GL_UNSIGNED_INT,                              // Type of element buffer data
                    nullptr                                     // Offset into element buffer data
                   );

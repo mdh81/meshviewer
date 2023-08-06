@@ -33,7 +33,7 @@ class Vertex : public common::Point3D {
             faces = m_faces;
         }
 
-        common::Vector3D getNormal(const Mesh&) const;
+        [[nodiscard]] common::Vector3D getNormal(const Mesh&) const;
 
     private:
         std::vector<unsigned> m_faces;

@@ -23,7 +23,7 @@ class OctreeFixture : public ::testing::Test {
 };
 
 TEST_F(OctreeFixture, RootOctant) {
-    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput(false);
+    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput();
     Octree octree(*spMesh.get());
     // Assert the root octant's bounds match the mesh's bounds
     auto meshBounds = spMesh->getBounds();
@@ -48,7 +48,7 @@ TEST_F(OctreeFixture, RootOctant) {
 }
 
 TEST_F(OctreeFixture, Subdivision) {
-    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput(false);
+    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput();
     // Create octree with 100 vertices per octant
     Octree octree(*spMesh.get(), 100);
     // The triangulated cube above will have 36 vertices, so only one 
@@ -113,7 +113,7 @@ TEST_F(OctreeFixture, Subdivision) {
 
 
 TEST_F(OctreeFixture, NeighboringVertices) {
-    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput(false);
+    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput();
 
     // Create octree with 5 vertices per octant
     Octree octree(*spMesh.get(), 5);

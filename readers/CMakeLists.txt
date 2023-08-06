@@ -1,6 +1,8 @@
+file(GLOB sources "*.cpp")
+
 add_library(
-    readers 
-    STLReader.cpp
+    readers
+    ${sources}
 )
 
 target_include_directories(

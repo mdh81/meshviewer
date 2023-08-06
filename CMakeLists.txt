@@ -88,7 +88,11 @@ file(
     GLOB
     models
     ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.stl
+    ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.ply
 )
+
+message(STATUS "Will copy models" ${models})
+
 add_custom_target(
     testFiles ALL
     ${CMAKE_COMMAND} -E copy ${models} ${CMAKE_BINARY_DIR}/testfiles/

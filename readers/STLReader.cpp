@@ -5,16 +5,18 @@ using namespace mv;
 
 namespace mv::readers {
 
-MeshPointer STLReader::getOutput(bool clean) {
-    ifstream ifs(m_fileName, ios::binary);
+MeshPointer STLReader::getOutput() {
+    // TODO: Turn on clean by default
+    bool clean = false;
+    ifstream ifs(fileName, ios::binary);
     if (!ifs) {
-        throw std::runtime_error("Unable to open file " + m_fileName + '!');
+        throw std::runtime_error("Unable to open file " + fileName + '!');
     }
     string header;
     header.resize(80);
     ifs.read(header.data(), 80);
     if (!ifs) {
-        throw std::runtime_error("Unable to read file" + m_fileName + '!');
+        throw std::runtime_error("Unable to read file" + fileName + '!');
     }
     if(header.find("solid") == string::npos) {
         return readBinary(ifs, clean);

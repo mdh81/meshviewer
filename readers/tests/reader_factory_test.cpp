@@ -39,7 +39,7 @@ TEST_F(ReaderFixture, NonExistentFile) {
             throw;
         }
     }, std::runtime_error
-    ) << "No error raised when file without extension is specified";
+    ) << "No error raised when a non-existent file is specified";
 }
 
 TEST_F(ReaderFixture, UnsupportedFormat) {
@@ -51,7 +51,7 @@ TEST_F(ReaderFixture, UnsupportedFormat) {
             throw;
         }
     }, std::runtime_error
-    ) << "No error raised when file without extension is specified";
+    ) << "No error raised when unsupported file format is specified";
 }
 
 TEST_F(ReaderFixture, SupportedFormats) {
@@ -59,9 +59,10 @@ TEST_F(ReaderFixture, SupportedFormats) {
     {
         try {
             ReaderFactory::getReader((m_modelsDir/"cube.stl").string());
+            ReaderFactory::getReader((m_modelsDir/"cube.ply").string());
         } catch (std::runtime_error& ex) {
             throw;
         }
     }
-    ) << "No error raised when file without extension is specified";
+    ) << "Error unexpectedly raised when supported file formats were specified";
 }
