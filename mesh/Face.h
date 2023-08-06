@@ -21,8 +21,10 @@ class Face {
             m_vertexIds = vertexIds;
         }
 
-        math3d::Vector<float, 3> getNormal(const Mesh&) const;
+        [[nodiscard]]
+        common::Vector3D getNormal(const Mesh&) const;
 
+        [[nodiscard]]
         size_t size() const { 
             return m_vertexIds.size(); 
         }
@@ -31,6 +33,7 @@ class Face {
             vertices = m_vertexIds; 
         }
 
+        [[nodiscard]]
         unsigned at(unsigned i) const { 
             if (i >= m_vertexIds.size())
                throw std::invalid_argument("Index " + std::to_string(i) + 
@@ -43,12 +46,14 @@ class Face {
             return at(i);
         }
 
+        [[nodiscard]]
         const unsigned* data() const { 
             return std::data(m_vertexIds);
         } 
 
-        void replaceVertex(unsigned const oldIndex, unsigned const newIndex);
+        void replaceVertex(unsigned oldIndex, unsigned newIndex);
 
+        [[nodiscard]]
         common::Point3D getCentroid(Mesh const&) const; 
 
     private:

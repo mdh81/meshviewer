@@ -27,8 +27,7 @@ int main(int argc, char** argv) {
     drawables.reserve(argc - 1);
     for (unsigned i = 1; i < argc; ++i) {
         auto spMesh =
-                ReaderFactory::getReader(argv[1])->
-                        getOutput(ConfigurationReader::getInstance().getBoolean("cleanupOnImport"));
+                ReaderFactory::getReader(argv[1])->getOutput();
         drawables.push_back(std::move(spMesh));
     }
     Viewer::getInstance().add(drawables);

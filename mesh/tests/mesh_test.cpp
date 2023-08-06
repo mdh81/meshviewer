@@ -23,7 +23,7 @@ class MeshFixture : public ::testing::Test {
 };
 
 TEST_F(MeshFixture, RemoveDuplicateVertices) {
-    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput(true);
+    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput();
     int numOrigVertices = spMesh->getNumberOfVertices();
     spMesh->removeDuplicateVertices();
     int numNewVertices = spMesh->getNumberOfVertices();
@@ -89,7 +89,7 @@ TEST(Mesh, TransformMesh) {
 
 TEST_F(MeshFixture, WriteSTL) {
     auto inputPath = MeshFixture::m_modelsDir/"cube.stl";
-    auto spMesh = ReaderFactory::getReader(inputPath)->getOutput(false);
+    auto spMesh = ReaderFactory::getReader(inputPath)->getOutput();
     auto inputFs = filesystem::file_size(inputPath);
     ASSERT_TRUE(inputFs > 0) << "Input STL file is bad";
     auto outputPath = MeshFixture::m_modelsDir/"cubeOut.stl";

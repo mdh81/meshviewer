@@ -53,9 +53,9 @@ class Array {
             , m_data(new T[m_size * tupleSize], std::default_delete<T[]>()) {
         }
 
-        size_t getSize() const { return m_size; }
+        [[nodiscard]] size_t getSize() const { return m_size; }
 
-        size_t getDataSize() const { return m_size * tupleSize * sizeof(T); }
+        [[nodiscard]] size_t getDataSize() const { return m_size * tupleSize * sizeof(T); }
 
         T const* getData() const { return m_data.get(); }
 
