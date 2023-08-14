@@ -114,7 +114,7 @@ void GradientBackground::generateRenderData() {
     // Vertices are defined in camera or eye coordinates. They are transformed to the NDC by
     // the following orthographic projection matrix. We allow the geometry for linear gradient to be scaled
     // to fit the window without concern for aspect ratio. We fix the view volume's aspect ratio to the window's
-    // in case of spherical gradient so keep the circles in the center of the geometry circles (Maybe we ought to
+    // in case of spherical gradient to keep the circles in the center of the geometry as circles (Maybe we ought to
     // generate new mesh that adjusts for aspect ratio)
     auto matrixId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "orthographicProjectionMatrix");
     if (m_type == GradientType::Radial) {
@@ -146,9 +146,8 @@ void GradientBackground::generateLinearGradient() {
     vector<GLfloat> vertexData(bufferSize);
     byte dataIndex = 0;
     // We set -1,-1 as the left corner and +1,+1 as the right corner
+    // and divide this geometry of length 2 by the number of gradient stops
     GLfloat x = -1.f, y = -1.f;
-    // NDC is a cube of length 2. We will divide the vertical or horizontal length
-    // by the number of gradient stops
     GLfloat increment = 2.f / static_cast<float>(m_numberOfStops-1);
     for (byte i = 0; i < 2; ++i) { // Loop over end points
         for (byte j = 0; j < m_numberOfStops; ++j) { // Loop over gradient stops
