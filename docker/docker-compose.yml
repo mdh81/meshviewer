@@ -1,0 +1,8 @@
+services:
+  mvlinux:
+    image: mvlinux 
+    environment:
+      DEV_CONTAINER: "true"
+    volumes:
+      - ../:/meshviewer
+      - ~/.vimrc:/root/.vimrc
