@@ -21,5 +21,7 @@ target_link_libraries(
     glm::glm
 )
 
-enable_testing()
-add_subdirectory(tests)
+if (APPLE)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

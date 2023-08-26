@@ -9,7 +9,7 @@
 #include <glm/ext/matrix_float4x4.hpp>
 #include "3dmath/Vector.h"
 #include "3dmath/SupportingTypes.h"
-#include "GL/GLEW.h"
+#include "GL/glew.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
@@ -27,7 +27,7 @@ using Bounds = math3d::Bounds3D<float>;
 using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
-    os << "[" << v.x << "," << v.y << "," << v.z << "]"; 
+    os << "[" << v.x << "," << v.y << "," << v.z << "]";
     return os;
 }
 
@@ -117,7 +117,7 @@ class EnumIterator {
             ++m_val;
             return *this;
         }
-        // Dereference operator 
+        // Dereference operator
         T operator*() { return static_cast<T>(m_val); }
         // Begin and end methods
         EnumIterator begin() { return *this; }
@@ -192,7 +192,7 @@ static GLuint glError = 0;
         std::terminate();                                                 \
     }
 #else
-#define CheckGLError(glFunc)
+#define checkGLError(glFunc)
 #endif
 
 #ifndef UNIT_TESTING_IN_PROGRESS

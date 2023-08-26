@@ -1,6 +1,7 @@
 #include "PLYReader.h"
 #include <fstream>
 #include <array>
+#include <algorithm>
 #include "Mesh.h"
 
 namespace {

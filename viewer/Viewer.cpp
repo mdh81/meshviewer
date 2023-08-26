@@ -216,6 +216,7 @@ void Viewer::prepareOffscreenRender() {
 }
 
 void Viewer::saveAsImage() {
+#ifdef OSX
     // Create directory if it doesn't exist
     string outputDir = config::ConfigurationReader::getInstance().getValue("snapshotsDirectory");
     if (!filesystem::exists(outputDir)) {
@@ -270,7 +271,7 @@ void Viewer::saveAsImage() {
     } else {
         cerr << "Failed to write to contents to image!" << endl;
     }
-
+#endif
 }
 
 math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {

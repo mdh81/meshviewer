@@ -2,6 +2,7 @@
 #include "Viewer.h"
 #include "GradientBackground.h"
 #include <utility>
+#include <algorithm>
 
 namespace mv::scene {
 

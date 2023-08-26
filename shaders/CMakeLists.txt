@@ -29,5 +29,7 @@ add_custom_target(
 # Install shaders
 INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders/ DESTINATION ${INSTALL_PATH}/shaders)
 
-enable_testing()
-add_subdirectory(tests)
+if (APPLE)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

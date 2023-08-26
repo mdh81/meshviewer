@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <exception>
 #include <memory>
+#include <algorithm>
 
 namespace mv::readers {
 using ReaderPointer = std::unique_ptr<Reader>;

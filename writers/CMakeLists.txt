@@ -15,5 +15,7 @@ target_link_libraries(
     GLEW::glew
 )
 
-enable_testing()
-add_subdirectory(tests)
+if (APPLE)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

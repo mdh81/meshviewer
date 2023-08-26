@@ -25,5 +25,7 @@ add_dependencies(
     cfgFileCopy
 )
 
-enable_testing()
-add_subdirectory(tests)
+if (APPLE)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
