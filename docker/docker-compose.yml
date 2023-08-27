@@ -1,8 +1,11 @@
 services:
   mvlinux:
-    image: mvlinux 
+    image: mdh81/linux-vnc-base
     environment:
       DEV_CONTAINER: "true"
     volumes:
-      - ../:/meshviewer
-      - ~/.vimrc:/root/.vimrc
+      - ../:/headless/meshviewer
+      - ~/.vimrc:/headless/.vimrc
+      - ~/.vim:/headless/.vim  
+    ports:
+      - "6911:6901"
