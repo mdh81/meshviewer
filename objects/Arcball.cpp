@@ -32,7 +32,7 @@ namespace mv::objects {
 
         glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_FILL);
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
-                             static_cast<int>(10),     // Number of entries in the connectivity array
+                             numConnectivityEntries,   // Number of entries in the connectivity array
                              GL_UNSIGNED_INT,          // Type of element buffer data
                              nullptr);                 // Offset into element buffer data
     }
@@ -56,7 +56,7 @@ namespace mv::objects {
 
         // Create sphere centered at origin and set the radius so that
         // the sphere circumscribes the view volume
-        math3d::Sphere sphere {{0, 0, 0}, sqrt(3.f), sphereResolution };
+        math3d::Sphere sphere {{0, 0, 0}, static_cast<float>(sqrt(3.f)), sphereResolution };
         sphere.generateGeometry();
 
         // The sphere will not have any shading, it will be a solid color and
@@ -77,15 +77,15 @@ namespace mv::objects {
             size_t numVertices = sphere.getVertices().size();
             size_t numCoordinates = numVertices * 3;
             dataSize = numCoordinates * sizeof(GLfloat);
-            std::unique_ptr<GLfloat[], void (*)(GLfloat const*)> vertexData(new GLfloat[numCoordinates],
-                                                                       [](GLfloat const* arrayData) { delete[] arrayData; });
-
-            // NOTE: math3d::types::Vertex is not a 3-tuple of floats. This forces us to copy data into a temporary buffer and
-            // pass that to OpenGL
+            std::unique_ptr<GLfloat[], void (*)(GLfloat const*)>
+                vertexData(new GLfloat[numCoordinates],
+                           [](GLfloat const* arrayData) { delete[] arrayData; });
+            // NOTE: math3d::types::Vertex is not a 3-tuple of floats.
+            // This forces us to copy data into a temporary buffer and pass that to OpenGL
             offset = 0;
             for (auto &vertex: sphere.getVertices()) {
                 memcpy(vertexData.get() + offset, vertex.getData(), sizeof(GLfloat)*3);
-                offset += 3 * sizeof(GLfloat);
+                offset += 3;
             }
             glCallWithErrorCheck(glBufferData, GL_ARRAY_BUFFER, dataSize, vertexData.get(), GL_STATIC_DRAW);
         }
@@ -112,8 +112,6 @@ namespace mv::objects {
         glCallWithErrorCheck(glBufferData, GL_ELEMENT_ARRAY_BUFFER, dataSize, sphere.getTris().data(), GL_STATIC_DRAW);
 
         numConnectivityEntries = static_cast<unsigned>(sphere.getTris().size() * 3);
-        //writers::ObjWriter("/tmp/MeshViewerDebug/ArcballGeometry.obj").writeTriangles(vertexData.get(), numVertices,
-        //                                                                              faceData.get(), sphere.getTris().size());
     }
 
     void Arcball::generateColors() {
