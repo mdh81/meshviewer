@@ -101,7 +101,7 @@ namespace mv::scene {
 
         // Draw arcball interactor next with depth write disabled so all scene objects will render on top of arcball
         if (showArcball) {
-           displayArcball();
+            displayArcball();
         }
 
         // Add fog if enabled
@@ -123,6 +123,9 @@ namespace mv::scene {
     void Viewport::displayArcball() {
         if (!arcball) {
             arcball = std::make_unique<objects::Arcball>();
+            // TODO: This should just add arcball to list of drawables
+            // When arcball is hidden there should be a separate call to remove it from drawables
+            arcball->notifyWindowResized(windowDimensions.width, windowDimensions.height);
         }
         arcball->render();
     }
