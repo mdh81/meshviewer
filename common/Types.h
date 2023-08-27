@@ -6,6 +6,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <cstring>
 #include <glm/ext/matrix_float4x4.hpp>
 #include "3dmath/Vector.h"
 #include "3dmath/SupportingTypes.h"

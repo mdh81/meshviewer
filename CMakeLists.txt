@@ -21,14 +21,15 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(-DDEBUG)
 endif()
 
-# The linux dev environment container uses alpine, which doesn't install dependencies with 
+# The linux dev environment container uses debian, which doesn't install dependencies with 
 # cmake configuration files. Set up the dependencies manually as imported/interface libraries
 if (DEFINED ENV{DEV_CONTAINER})
+    set(LIBRARY_PATH /usr/lib/aarch64-linux-gnu/)
     add_library(GLEW::glew SHARED IMPORTED GLOBAL)
-    set_target_properties(GLEW::glew PROPERTIES IMPORTED_LOCATION /usr/lib/libGLEW.so)
+    set_target_properties(GLEW::glew PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libGLEW.so)
     target_include_directories(GLEW::glew INTERFACE /usr/include)
     add_library(glfw SHARED IMPORTED)
-    set_target_properties(glfw PROPERTIES IMPORTED_LOCATION /usr/lib/libglfw.so)
+    set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libglfw.so)
     target_include_directories(glfw INTERFACE /usr/include)
     add_library(glm INTERFACE)
     target_include_directories(glm INTERFACE /usr/include)
