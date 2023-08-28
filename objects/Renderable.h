@@ -30,6 +30,7 @@ public:
 
     virtual void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) {
         aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+        updateProjection = true;
         // TODO: This should trigger just projection re-computation not a geometry regenerate
         readyToRender = false;
     }

@@ -1,7 +1,5 @@
-#include "Arcball.h"
-#include "3dmath/SupportingTypes.h"
+#include "ArcballSphere.h"
 #include "3dmath/primitives/Sphere.h"
-#include "Gadget.h"
 #include "Types.h"
 
 using namespace mv::common;
@@ -9,18 +7,15 @@ using namespace mv::common;
 namespace mv::objects {
 
     // TODO: Read colors and other immutable properties from config
-    Arcball::Arcball()
-    : Gadget("ArcballSphere.vert", "ArcballSphere.frag")
-    , sphereResolution(32)
-    , sphereColor({0.5, 0.5, 0.5, 0.2}) {
-
+    ArcballSphere::ArcballSphere()
+    : ArcballVisualizationItem("ArcballSphere.vert", "ArcballSphere.frag")
+    , resolution(64)
+    , color({0.5, 0.5, 0.5}) {
+        opacity = 0.2f;
     }
 
-    void Arcball::render() {
-        if (!readyToRender) {
-            generateRenderData();
-            readyToRender = true;
-        }
+    void ArcballSphere::render() {
+        ArcballVisualizationItem::render();
 
         glCallWithErrorCheck(glUseProgram, shaderProgram);
 
@@ -31,20 +26,17 @@ namespace mv::objects {
         glCallWithErrorCheck(glEnable, GL_BLEND);
         glCallWithErrorCheck(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
         glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_FILL);
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
                              numConnectivityEntries,   // Number of entries in the connectivity array
                              GL_UNSIGNED_INT,          // Type of element buffer data
                              nullptr);                 // Offset into element buffer data
-        setTransforms();
-
         // Reset state
         glCallWithErrorCheck(glEnable, GL_DEPTH_TEST);
         glCallWithErrorCheck(glDisable, GL_BLEND);
     }
 
-    void Arcball::generateRenderData() {
+    void ArcballSphere::generateRenderData() {
         if (readyToRender) {
             return;
         }
@@ -52,13 +44,10 @@ namespace mv::objects {
         createShaderProgram();
         glCallWithErrorCheck(glUseProgram, shaderProgram);
 
-        // Create sphere centered at origin and set the radius so that
-        // the sphere circumscribes the view volume
-        math3d::Sphere sphere {{0, 0, 0}, 1.f, sphereResolution };
+        // Create sphere centered at origin and set the radius to 1 so that
+        // the sphere fits within the NDC view volume which is a cube of length 2
+        math3d::Sphere sphere {{0, 0, 0}, 1.f, resolution };
         sphere.generateGeometry();
-
-        // The sphere will not have any shading, it will be a solid color and
-        // will be transparent so the model's meshes can be seen through it
 
         // Create vertex array object
         glCallWithErrorCheck(glGenVertexArrays, 1, &vertexArrayObject);
@@ -89,7 +78,7 @@ namespace mv::objects {
         }
 
         // Define layout of the vertex data
-        // Sphere's vertices are in camera coordinates
+        // NOTE: Sphere's vertices are in camera coordinates
         auto vertexAttribCoordinates = glGetAttribLocation(shaderProgram, "sphereVertex");
         glCallWithErrorCheck(glEnableVertexAttribArray, vertexAttribCoordinates);
         glCallWithErrorCheck(glVertexAttribPointer,
@@ -114,33 +103,24 @@ namespace mv::objects {
         generateColors();
     }
 
-    void Arcball::generateColors() {
+    void ArcballSphere::generateColors() {
         if (readyToRender) return;
+        updateColor();
+    }
 
+    void ArcballSphere::fadeOut() {
+        // TODO: Read this fade out amount from config
+        opacity -= .02f;
+        updateColor();
+    }
+
+    void ArcballSphere::updateColor() {
         auto sphereColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "sphereColor");
-        glCallWithErrorCheck(glUniform4fv, sphereColorId, 1, sphereColor.getData());
+        RGBAColor color4;
+        color4.r = color.r;
+        color4.g = color.g;
+        color4.b = color.b;
+        color4.a = opacity;
+        glCallWithErrorCheck(glUniform4fv, sphereColorId, 1, color4.getData());
     }
-
-    void Arcball::notifyWindowResized(unsigned int windowWidth, unsigned int windowHeight) {
-        Renderable::notifyWindowResized(windowWidth, windowHeight);
-
-        // Create an orthographic projection matrix that will render our circumscribing sphere with the correct
-        // aspect ratio
-        float width = 1.f; // NDC view volume side length is 2
-        float height = width / Renderable::aspectRatio;
-        projectionMatrix.update({{-width, -height, -1.f}, {+width, +height, +1.f}});
-    }
-
-    void Arcball::setTransforms() {
-        if (needsProjectionUpdate()) {
-            GLint projectionId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "orthographicProjectionMatrix");
-            // Set projection
-            glCallWithErrorCheck(glUniformMatrix4fv, projectionId,
-                               1,        // num matrices,
-                               GL_FALSE, // transpose
-                               projectionMatrix.getData());
-            setProjectionUpdated();
-        }
-    }
-
 }

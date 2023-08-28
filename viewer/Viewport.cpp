@@ -11,7 +11,8 @@ namespace mv::scene {
     , showGradientBackground(true)
     , fogEnabled(false)
     , windowDimensions{}
-    , showArcball(false) {
+    , showArcball(false)
+    , arcballController(std::make_unique<objects::ArcballController>()){
         MeshViewerObject::debug = true;
         registerEventHandlers();
     }
@@ -36,6 +37,9 @@ namespace mv::scene {
 
         mv::events::EventHandler().registerDataEventCallback(
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
+
+        mv::events::EventHandler().registerBasicEventCallback(
+                mv::events::Event{events::EventId::Scrolled}, *this, &Viewport::rotate3DView);
 
         mv::events::EventHandler().registerBasicEventCallback(
                 mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
@@ -65,11 +69,12 @@ namespace mv::scene {
     }
 
     void Viewport::notifyWindowResized(unsigned int const windowWidth, unsigned int const windowHeight) {
+        Renderable::notifyWindowResized(windowWidth, windowHeight);
         for (auto& drawable : drawables) {
             drawable.get().notifyWindowResized(windowWidth, windowHeight);
         }
+        arcballController->notifyWindowResized(windowWidth, windowHeight);
         windowDimensions = {windowWidth, windowHeight};
-        Renderable::notifyWindowResized(windowWidth, windowHeight);
     }
 
     void Viewport::render() {
@@ -80,6 +85,7 @@ namespace mv::scene {
                              coordinates.y.length() * windowDimensions.height);
 
         if (!camera) {
+            // First render
             camera = std::make_shared<mv::Camera>(*this, Camera::ProjectionType::Perspective);
             for (auto &drawable: drawables) {
                 // All 3D drawables share this viewport's camera
@@ -89,6 +95,7 @@ namespace mv::scene {
                 // Set the initial window size for all drawables during this first render call
                 drawable.get().notifyWindowResized(windowDimensions.width, windowDimensions.height);
             }
+            arcballController->notifyWindowResized(windowDimensions.width, windowDimensions.height);
         }
 
         // Compute the view
@@ -100,9 +107,8 @@ namespace mv::scene {
         }
 
         // Draw arcball interactor next with depth write disabled so all scene objects will render on top of arcball
-        if (showArcball) {
-            displayArcball();
-        }
+        // NOTE: render call is always made to support the fade out use case
+        arcballController->render();
 
         // Add fog if enabled
         fogEnabled ? enableFog() : disableFog();
@@ -118,16 +124,6 @@ namespace mv::scene {
             gradientBackground = std::make_unique<objects::GradientBackground>();
         }
         gradientBackground->render();
-    }
-
-    void Viewport::displayArcball() {
-        if (!arcball) {
-            arcball = std::make_unique<objects::Arcball>();
-            // TODO: This should just add arcball to list of drawables
-            // When arcball is hidden there should be a separate call to remove it from drawables
-            arcball->notifyWindowResized(windowDimensions.width, windowDimensions.height);
-        }
-        arcball->render();
     }
 
     void Viewport::enableFog() {
@@ -224,6 +220,14 @@ namespace mv::scene {
             } else {
                 camera->pan(cursorPositionDifference.y > 0 ? common::Direction::Down : common::Direction::Up);
             }
+        }
+    }
+
+    void Viewport::rotate3DView() {
+        std::cout << "rotate3DView" << std::endl;
+        common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
+        if (isViewportEvent(cursorPosition)) {
+            camera->rotate(cursorPosition);
         }
     }
 

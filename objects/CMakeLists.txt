@@ -2,6 +2,7 @@ file(GLOB sources "*.cpp")
 
 add_library(objects ${sources})
 
+
 target_include_directories(
     objects
     PUBLIC

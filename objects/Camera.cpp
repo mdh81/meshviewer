@@ -313,4 +313,8 @@ void Camera::zoom(common::Direction direction) {
      }
  }
 
+ void Camera::rotate(const common::Point2D &cursorPosition) {
+
+ }
+
 }

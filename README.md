@@ -63,6 +63,4 @@ The viewer supports the following features:
 * Orbiting the camera around cardinal axes
 * Zoom
 * Gradient backgrounds
-* Built-in event handler that supports static and dynamic callbacks 
-* Arcball rotation (WIP in branch arcball)
-* Emscripten builds
+* Built-in event handler that can register member/free functions as event handlers for keyboard and mouse events

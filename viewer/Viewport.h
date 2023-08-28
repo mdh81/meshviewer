@@ -5,7 +5,7 @@
 #include "3dmath/Vector.h"
 #include "Drawable3D.h"
 #include "Camera.h"
-#include "Arcball.h"
+#include "arcball/ArcballController.h"
 #include "3dmath/Vector.h"
 #include "3dmath/Matrix.h"
 #include "Types.h"
@@ -88,13 +88,15 @@ private:
         }
         void toggleArcballDisplay() {
             showArcball = !showArcball;
+            showArcball ? arcballController->setVisualizationOn() : arcballController->setVisualizationOff();
         }
         void enableFog();
         void disableFog();
         void zoom3DView(events::EventData&&);
         void pan3DView(events::EventData&&);
+        void rotate3DView();
+
         void displayGradientBackground();
-        void displayArcball();
         [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
 
     private:
@@ -103,7 +105,7 @@ private:
                 MeshViewerObject::MeshViewerObjectEquals>;
         DrawablesSet drawables;
         std::unique_ptr<mv::objects::GradientBackground> gradientBackground;
-        std::unique_ptr<mv::objects::Arcball> arcball;
+        std::unique_ptr<mv::objects::ArcballController> arcballController;
         std::optional<Drawable::DrawableReference> activeObject;
         common::Bounds coordinates;
         common::WindowDimensions windowDimensions;

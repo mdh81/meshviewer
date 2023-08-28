@@ -37,6 +37,7 @@ class Camera : public MeshViewerObject {
         // View controls
         void zoom(common::Direction direction);
         void pan(common::Direction direction);
+        void rotate(common::Point2D const& cursorPosition);
 
         // Sets projection type
         void setProjectionType(const ProjectionType type) { projectionType = type; }
