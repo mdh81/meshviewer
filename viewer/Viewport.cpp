@@ -3,6 +3,7 @@
 #include <vector>
 #include "EventHandler.h"
 #include "Types.h"
+#include "Util.h"
 
 namespace mv::scene {
 
@@ -10,7 +11,7 @@ namespace mv::scene {
     : coordinates(coordinates)
     , showGradientBackground(true)
     , fogEnabled(false)
-    , windowDimensions{}
+    , displayDimensions{}
     , showArcball(false)
     , arcballController(std::make_unique<objects::ArcballController>()){
         MeshViewerObject::debug = true;
@@ -68,21 +69,21 @@ namespace mv::scene {
         return drawableList;
     }
 
-    void Viewport::notifyWindowResized(unsigned int const windowWidth, unsigned int const windowHeight) {
-        Renderable::notifyWindowResized(windowWidth, windowHeight);
+    void Viewport::notifyDisplayResized(common::DisplayDimensions const& displayDimensions) {
+        Renderable::notifyDisplayResized(displayDimensions);
         for (auto& drawable : drawables) {
-            drawable.get().notifyWindowResized(windowWidth, windowHeight);
+            drawable.get().notifyDisplayResized(displayDimensions);
         }
-        arcballController->notifyWindowResized(windowWidth, windowHeight);
-        windowDimensions = {windowWidth, windowHeight};
+        arcballController->notifyDisplayResized(displayDimensions);
+        this->displayDimensions = displayDimensions;
     }
 
     void Viewport::render() {
         using namespace mv::common;
-        glCallWithErrorCheck(glViewport, coordinates.x.min * windowDimensions.width,
-                             coordinates.y.min * windowDimensions.height,
-                             coordinates.x.length() * windowDimensions.width,
-                             coordinates.y.length() * windowDimensions.height);
+        glCallWithErrorCheck(glViewport, coordinates.x.min * displayDimensions.frameBufferWidth,
+                             coordinates.y.min * displayDimensions.frameBufferHeight,
+                             coordinates.x.length() * displayDimensions.frameBufferWidth,
+                             coordinates.y.length() * displayDimensions.frameBufferHeight);
 
         if (!camera) {
             // First render
@@ -93,9 +94,9 @@ namespace mv::scene {
                     drawable.get().setCamera(camera);
                 }
                 // Set the initial window size for all drawables during this first render call
-                drawable.get().notifyWindowResized(windowDimensions.width, windowDimensions.height);
+                drawable.get().notifyDisplayResized(displayDimensions);
             }
-            arcballController->notifyWindowResized(windowDimensions.width, windowDimensions.height);
+            arcballController->notifyDisplayResized(displayDimensions);
         }
 
         // Compute the view
@@ -224,18 +225,25 @@ namespace mv::scene {
     }
 
     void Viewport::rotate3DView() {
-        std::cout << "rotate3DView" << std::endl;
-        common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
-        if (isViewportEvent(cursorPosition)) {
-            camera->rotate(cursorPosition);
+        common::Point2D cursorPositionWindow = Viewer::getInstance().getCursorPosition();
+        common::Point2DUniquePointer cursorPositionViewport;
+        if ((cursorPositionViewport = isViewportEvent(cursorPositionWindow))) {
+            common::Point3D cursorPositionDevice = getViewportToDeviceTransform() * *cursorPositionViewport;
+            std::cout << "Cursor in device space " << cursorPositionDevice << std::endl;
+            camera->rotate(cursorPositionDevice, arcballController);
         }
     }
 
-    bool Viewport::isViewportEvent(const common::Point2D& cursorPosition) const {
+    common::Point2DUniquePointer Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
         auto windowToViewport = getWindowToViewportTransform();
-        common::Point3D cursorWindowPosition = { cursorPosition.x, cursorPosition.y, 1.f };
-        common::Point3D cursorViewportPosition = windowToViewport * cursorWindowPosition;
-        return coordinates.contains(cursorViewportPosition);
+        common::Point3D cursorPositionWindow = {cursorPosition.x, cursorPosition.y, 1.f };
+        std::cout << "Window to viewport: \n" << windowToViewport << std::endl;
+        common::Point3D cursorPositionViewport = windowToViewport * cursorPositionWindow;
+        if (coordinates.contains(cursorPositionViewport)) {
+            return std::make_unique<common::Point2D>(common::Point2D{cursorPositionViewport.x, cursorPositionViewport.y});
+        } else {
+            return nullptr;
+        }
     }
 
 }

@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "EventHandler.h"
 #include "ConfigurationReader.h"
+#include "arcball/ArcballController.h"
 #include "Util.h"
 #include <iostream>
 #include <exception>
@@ -24,7 +25,8 @@ using namespace events;
     , projectionTransform(glm::mat4(1.0))
     , orbitAngle(0.f)
     , zoomFactor(1.f)
-    , movementIncrement(.02f) {
+    , movementIncrement(.02f)
+    , rotation(math3d::IdentityMatrix<float, 4, 4>{}){
 
      EventHandler().registerBasicEventCallback(GLFW_KEY_O, *this, &Camera::setProjectionType,
                                                ProjectionType::Orthographic);
@@ -126,7 +128,17 @@ void Camera::buildViewTransform() {
     }
 
     // Combine the translations and orbit to produce the view transform
-    viewTransform = moveBack * pan * orbit * translateToOrigin;
+    math3d::Vector<float, 4> row0 = rotation(0);
+    math3d::Vector<float, 4> row1 = rotation(1);
+    math3d::Vector<float, 4> row2 = rotation(2);
+    math3d::Vector<float, 4> row3 = rotation(3);
+    glm::mat4 rot (row0[0], row1[0], row2[0], row3[0],
+                   row0[1], row1[1], row2[1], row3[1],
+                   row0[2], row1[2], row2[2], row3[2],
+                   row0[3], row1[3], row2[3], row3[3]);
+    cout << "Rotation matrix" << endl;
+    Util::printMatrix(rot);
+    viewTransform = moveBack * pan * orbit * rot * translateToOrigin;
 }
 
 void Camera::buildProjectionTransform() {
@@ -313,8 +325,9 @@ void Camera::zoom(common::Direction direction) {
      }
  }
 
- void Camera::rotate(const common::Point2D &cursorPosition) {
-
+ void Camera::rotate(const common::Point3D &cursorPositionDevice, mv::objects::ArcballControllerPointer& arcballController) {
+    auto arcballRotation = arcballController->getRotation(cursorPositionDevice);
+    rotation = rotation * arcballRotation;
  }
 
 }

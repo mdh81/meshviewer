@@ -252,7 +252,8 @@ void Viewer::render() {
     setColors();
 
     // Create a scene
-    scene.reset(new mv::scene::Scene(frameBufferWidth, frameBufferHeight));
+    DisplayDimensions displayDimensions{windowWidth, windowHeight, frameBufferWidth, frameBufferHeight};
+    scene::Scene scene(displayDimensions);
 
     // Add renderables to the default scene
     for (auto& renderable : drawables) {

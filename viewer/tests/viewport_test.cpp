@@ -4,13 +4,14 @@
 #include "3dmath/Vector.h"
 #include "Viewer.h"
 #include "../common/Environment.h"
+#include "Util.h"
 using namespace std;
 using namespace mv::scene;
 namespace mv::scene {
     class ViewportTest : public ::testing::Test {
     public:
         bool isViewportEvent(Viewport const &viewport, mv::common::Point2D const &cursorPosition) {
-            return viewport.isViewportEvent(cursorPosition);
+            return viewport.isViewportEvent(cursorPosition) != nullptr;
         }
 
         void SetUp() override {
@@ -57,7 +58,7 @@ namespace mv::scene {
     TEST_F(ViewportTest, IsViewportEvent) {
         auto& v = Viewer::getInstance(/*width = 1024, height = 768*/);
         Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
-        viewport.notifyWindowResized(1024, 768);
+        viewport.notifyDisplayResized({1024, 768, 1024, 768});
         ASSERT_TRUE(isViewportEvent(viewport, common::Point2D {1024.f/2.f, 768.f/2.f}))
                                     << "Cursor position at window center wrongly classified as outside the viewport";
         ASSERT_TRUE(isViewportEvent(viewport, common::Point2D {0.f, 0.f}))
@@ -85,6 +86,46 @@ namespace mv::scene {
         viewport.add(d2);
         viewport.render();
         ASSERT_EQ(d1.getCamera()->getId(), d2.getCamera()->getId());
+    }
+
+    TEST_F(ViewportTest, WindowToViewportCoordinates) {
+        auto& v = Viewer::getInstance(/*width = 1024, height = 768*/);
+        Viewport viewport({{0.f, 0.f}, {1.0f, 1.0f}});
+        viewport.notifyDisplayResized({1024, 768, 1024, 768});
+        auto windowToViewport = viewport.getWindowToViewportTransform();
+        common::Point2D windowOrigin = {0, 0};
+        auto viewportCoordinate = windowToViewport * windowOrigin;
+        ASSERT_NEAR(viewportCoordinate.x, 0.f, 1e-6) << "Window origin doesn't map to viewport top left";
+        ASSERT_NEAR(viewportCoordinate.y, 1.f, 1e-6) << "Window origin doesn't map to viewport top left";
+        common::Point2D windowLowerLeft = {0, 768};
+        viewportCoordinate = windowToViewport * windowLowerLeft;
+        ASSERT_NEAR(viewportCoordinate.x, 0.f, 1e-6) << "Window lower left corner doesn't map to viewport origin";
+        ASSERT_NEAR(viewportCoordinate.y, 0.f, 1e-6) << "Window lower left corner doesn't map to viewport origin";
+        common::Point2D windowLowerRight = {1024, 768};
+        viewportCoordinate = windowToViewport * windowLowerRight;
+        ASSERT_NEAR(viewportCoordinate.x, 1.f, 1e-6) << "Window lower left corner doesn't map to viewport origin";
+        ASSERT_NEAR(viewportCoordinate.y, 0.f, 1e-6) << "Window lower left corner doesn't map to viewport origin";
+        common::Point2D windowUpperRight = {1024, 0};
+        viewportCoordinate = windowToViewport * windowUpperRight;
+        ASSERT_NEAR(viewportCoordinate.x, 1.f, 1e-6) << "Window lower left corner doesn't map to viewport origin";
+        ASSERT_NEAR(viewportCoordinate.y, 1.f, 1e-6) << "Window lower left corner doesn't map to viewport origin";
+    }
+
+    TEST_F(ViewportTest, ViewportToDeviceCoordinates) {
+        auto& v = Viewer::getInstance(/*width = 1024, height = 768*/);
+        Viewport viewport({{0.f, 0.f}, {0.5f, 0.5f}});
+        viewport.notifyDisplayResized({1024, 768, 1024, 768});
+        auto viewportToDevice = viewport.getViewportToDeviceTransform();
+        common::Point2D viewportOrigin = {0, 0};
+        auto deviceCoordinate = viewportToDevice * viewportOrigin;
+        ASSERT_NEAR(deviceCoordinate.x, -1.f, 1e-6) << "Viewport origin doesn't map to near plane bottom left";
+        ASSERT_NEAR(deviceCoordinate.y, -1.f, 1e-6) << "Viewport origin doesn't map to near plane bottom left";
+        ASSERT_NEAR(deviceCoordinate.z, -1.f, 1e-6) << "Viewport origin doesn't map to near plane bottom left";
+        common::Point2D viewportUpperRight = {0.5f, 0.5f};
+        deviceCoordinate = viewportToDevice * viewportUpperRight;
+        ASSERT_NEAR(deviceCoordinate.x, 1.f, 1e-6) << "Viewport upper right doesn't map to near plane top right";
+        ASSERT_NEAR(deviceCoordinate.y, 1.f, 1e-6) << "Viewport upper right doesn't map to near plane top right";
+        ASSERT_NEAR(deviceCoordinate.z, -1.f, 1e-6) << "Viewport upper right doesn't map to near plane top right";
     }
 
 }

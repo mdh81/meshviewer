@@ -43,7 +43,7 @@ class Viewport : public Renderable {
         [[nodiscard]]
         float getHeight() const { return coordinates.y.max - coordinates.y.min; }
 
-        void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) override;
+        void notifyDisplayResized(const common::DisplayDimensions &displaySize) override;
 
         [[nodiscard]]
         common::Point3D getCentroid() const override;
@@ -51,12 +51,23 @@ class Viewport : public Renderable {
         [[nodiscard]]
         common::Bounds getBounds() const override;
 
+        // TODO: Add derivation to docs
         [[nodiscard]]
         math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const {
             return math3d::Matrix<float, 3, 3> {
-                    {1.f/windowDimensions.width,  0.f,                         0.f},
-                    {0.f,                        -1.f/windowDimensions.height, 1.f},
-                    {0.f,                         0.f,                         0.f}
+                {getWidth() / displayDimensions.windowWidth, 0.f,                                           0.f},
+                {0.f,                                        -getHeight() / displayDimensions.windowHeight, getHeight()},
+                {0.f,                                        0.f,                                           0.f}
+            };
+        }
+
+        // TODO: Add derivation to docs
+        [[nodiscard]]
+        math3d::Matrix<float, 3, 3> getViewportToDeviceTransform() const {
+            return math3d::Matrix<float, 3, 3> {
+                {2.f / getWidth(), 0.f,             -1.f},
+                {0.f,              2/getHeight(),   -1.f},
+                {0.f,              0.f,             -1.f}
             };
         }
 
@@ -97,7 +108,8 @@ private:
         void rotate3DView();
 
         void displayGradientBackground();
-        [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
+        [[nodiscard]]
+        common::Point2DUniquePointer isViewportEvent(common::Point2D const& cursorPosition) const;
 
     private:
         using DrawablesSet = std::unordered_set<Drawable::DrawableReference,
@@ -108,7 +120,7 @@ private:
         std::unique_ptr<mv::objects::ArcballController> arcballController;
         std::optional<Drawable::DrawableReference> activeObject;
         common::Bounds coordinates;
-        common::WindowDimensions windowDimensions;
+        common::DisplayDimensions displayDimensions;
         Camera::SharedCameraPointer camera;
         bool showGradientBackground;
         bool fogEnabled;

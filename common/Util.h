@@ -134,6 +134,26 @@ class Util {
 
             ofs.close();
         }
+
+        static common::Point3D asFloat(math3d::types::Point3D const& doublePoint) {
+            return { static_cast<float> (doublePoint.x),
+                     static_cast<float> (doublePoint.y),
+                     static_cast<float> (doublePoint.z) };
+        }
 };
+
+    template<unsigned SquareMatrixDimension>
+    inline math3d::Vector<float, SquareMatrixDimension>
+    operator*(math3d::Matrix<float, SquareMatrixDimension, SquareMatrixDimension> const& matrix,
+              math3d::Vector<float, SquareMatrixDimension-1> const& vector) {
+
+        math3d::Vector<float, SquareMatrixDimension> adjustedVector;
+        for (auto i = 0u; i < SquareMatrixDimension-1; ++i) {
+            adjustedVector[i] = vector[i];
+        }
+        adjustedVector[SquareMatrixDimension-1] = 1.f;
+
+        return matrix * adjustedVector;
+    }
 
 }

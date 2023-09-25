@@ -4,6 +4,7 @@
 #include "3dmath/primitives/Sphere.h"
 #include "3dmath/RotationMatrix.h"
 #include "ArcballVisualizationItem.h"
+#include "Types.h"
 #include <thread>
 
 namespace mv::objects {
@@ -16,7 +17,9 @@ namespace mv::objects {
     public:
         void setVisualizationOn();
         void setVisualizationOff();
-        void handleMouseMove(common::Point2D const& cursorPosition);
+
+        [[nodiscard]]
+        common::RotationMatrix getRotation(common::Point3D const& cursorPositionDevice);
 
         [[nodiscard]]
         common::Point3D getCentroid() const override {
@@ -30,21 +33,27 @@ namespace mv::objects {
 
         void render() override;
 
-        void notifyWindowResized(unsigned int windowWidth, unsigned int windowHeight) override;
+        void notifyDisplayResized(common::DisplayDimensions const& displaySize) override;
 
     private:
         void createVisualization();
+        void recordCursorPosition(common::Point3D const& cursorPositionDevice);
+        math3d::types::Point3D convertCursorToCameraCoordinates(common::Point3D const& cursorPosition);
 
     private:
         using VisualizationItem = std::unique_ptr<ArcballVisualizationItem>;
         std::vector<VisualizationItem> visualizationItems;
         math3d::Sphere sphere;
-        common::Point3D pointA;
-        common::Point3D pointB;
-        common::Vector3D rotationAxis;
+        std::unique_ptr<common::Point3D> pointA;
+        std::unique_ptr<common::Point3D> pointB;
+        std::unique_ptr<common::Vector3D> rotationAxis;
+        float theta {0.f};
         bool visualizationOn{};
-        bool active{};
         std::thread fadeOutTimer;
+        common::ProjectionMatrixPointer projectionMatrix;
+        math3d::Matrix<float, 4, 4> inverseProjectionMatrix;
     };
+
+    using ArcballControllerPointer = std::unique_ptr<ArcballController>;
 
 }

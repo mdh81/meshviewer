@@ -12,6 +12,10 @@
 #include "3dmath/SupportingTypes.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 #include "OpenGLCall.h"
+#include "GL/glew.h"
+#include "3dmath/ProjectionMatrix.h"
+#include "3dmath/RotationMatrix.h"
+
 
 // TODO: Time to split this into multiple headers.
 
@@ -29,6 +33,11 @@ namespace mv::common {
     using Lines = std::vector<Line>;
     using Points = std::vector<Point3D>;
     using Bounds = math3d::Bounds3D<float>;
+    using ProjectionMatrix = math3d::ProjectionMatrix<float>;
+    using RotationMatrix = math3d::RotationMatrix<float>;
+    using Point2DUniquePointer = std::unique_ptr<Point2D>;
+    using ProjectionMatrixPointer = std::shared_ptr<ProjectionMatrix>;
+    using Point4D = math3d::Vector<float, 4>;
     using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
     using TransformMatrix = math3d::IdentityMatrix<float, 4, 4>;
     using Vector4D = math3d::Vector4<float>;
@@ -139,38 +148,40 @@ namespace mv::common {
     using byte = char;
 
 // TODO: It makes more sense to move these definitions to specific types (e.g. Glyph)
-    enum class Axis {
-        X,
-        Y,
-        Z,
-        Arbitrary
-    };
+enum class Axis {
+    X,
+    Y,
+    Z,
+    Arbitrary
+};
 
-    struct WindowDimensions {
-        unsigned width;
-        unsigned height;
-    };
+struct DisplayDimensions {
+    unsigned windowWidth;
+    unsigned windowHeight;
+    unsigned frameBufferWidth;
+    unsigned frameBufferHeight;
+};
+
+enum class NormalLocation {
+    Face,
+    Vertex
+};
 
 #ifdef EMSCRIPTEN
     using CanvasDimensions = WindowDimensions;
 #endif
 
-    enum class NormalLocation {
-        Face,
-        Vertex
+struct GlyphDecorator {
+    enum class Style {
+        Line,
+        Arrow
     };
-
-    struct GlyphDecorator {
-        enum class Style {
-            Line,
-            Arrow
-        };
-        Style style;
-        Color color;
-        float length;
-        std::optional<float> arrowRadius;
-        std::optional<float> arrowLength;
-    };
+    Style style;
+    Color color;
+    float length;
+    std::optional<float> arrowRadius;
+    std::optional<float> arrowLength;
+};
 
     enum class GlyphAssociation {
         Undefined,

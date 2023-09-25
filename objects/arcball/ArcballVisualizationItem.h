@@ -1,8 +1,8 @@
 #pragma once
-#pragma once
 
 #include "Drawable3D.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
+#include "Types.h"
 
 namespace mv::objects {
 
@@ -23,21 +23,16 @@ namespace mv::objects {
 
         void render() override;
 
-        void notifyWindowResized(unsigned int windowWidth, unsigned int windowHeight) override;
-
-        // Set the aspect ratio explicitly. This is for supporting the deferred creation
-        // use case
-        void setInitialProjection(float aspectRatio);
-
-    private:
-        void updateProjectionMatrix();
+        void setProjectionMatrix(common::ProjectionMatrixPointer const& projectionMatrix) {
+            this->projectionMatrix = projectionMatrix;
+        }
 
     protected:
         void setTransforms() override;
         virtual void fadeOut() = 0;
 
     protected:
-        math3d::OrthographicProjectionMatrix<float> projectionMatrix;
+        common::ProjectionMatrixPointer projectionMatrix;
         unsigned numConnectivityEntries{};
         float opacity;
     };
