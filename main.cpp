@@ -24,6 +24,11 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Set up the texture path. Cannot rely on the working directory being
+    // the parent of the app's executable.
+    auto parentDirectory = std::filesystem::canonical(std::filesystem::path(argv[0])).parent_path();
+    ConfigurationReader::getInstance().append("texturePath", parentDirectory / "textures");
+
     // Create a manager to oversee lifecycle of callbacks
     CallbackManager::create();
 

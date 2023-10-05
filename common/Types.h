@@ -1,5 +1,4 @@
 #pragma once
-
 #include <vector>
 #include <limits>
 #include <type_traits>
@@ -125,7 +124,7 @@ namespace mv::common {
         // Conversion constructor to convert enumerator to iterator type
         explicit EnumIterator(const T &f) : m_val(static_cast<ULType>(f)) {}
 
-        // Default constructor that initilizes the iterator to point to the first enumerator
+        // Default constructor that initializes the iterator to point to the first enumerator
         EnumIterator() : m_val(static_cast<ULType>(beginVal)) {}
 
         // Postfix increment operator
@@ -146,6 +145,7 @@ namespace mv::common {
     };
 
     using byte = char;
+    using pixel = unsigned char;
 
 // TODO: It makes more sense to move these definitions to specific types (e.g. Glyph)
 enum class Axis {

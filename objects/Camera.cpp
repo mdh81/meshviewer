@@ -1,12 +1,10 @@
 #include "Camera.h"
-#include "Drawable.h"
 #include "Types.h"
 #include "EventHandler.h"
 #include "ConfigurationReader.h"
 #include "arcball/ArcballController.h"
 #include "Util.h"
 #include <iostream>
-#include <exception>
 #include <memory>
 #include <filesystem>
 using namespace std;
@@ -136,8 +134,8 @@ void Camera::buildViewTransform() {
                    row0[1], row1[1], row2[1], row3[1],
                    row0[2], row1[2], row2[2], row3[2],
                    row0[3], row1[3], row2[3], row3[3]);
-    cout << "Rotation matrix" << endl;
-    Util::printMatrix(rot);
+    //cout << "Rotation matrix" << endl;
+    //Util::printMatrix(rot);
     viewTransform = moveBack * pan * orbit * rot * translateToOrigin;
 }
 
@@ -325,8 +323,8 @@ void Camera::zoom(common::Direction direction) {
      }
  }
 
- void Camera::rotate(const common::Point3D &cursorPositionDevice, mv::objects::ArcballControllerPointer& arcballController) {
-    auto arcballRotation = arcballController->getRotation(cursorPositionDevice);
+ void Camera::rotate(const common::Point3D &cursorPositionADevice, common::Point3D const& cursorPositionBDevice, mv::objects::ArcballControllerPointer& arcballController) {
+    auto arcballRotation = arcballController->getRotation(cursorPositionADevice, cursorPositionBDevice);
     rotation = rotation * arcballRotation;
  }
 

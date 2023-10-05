@@ -5,7 +5,9 @@
 #include "3dmath/RotationMatrix.h"
 #include "ArcballVisualizationItem.h"
 #include "Types.h"
+#include <chrono>
 #include <thread>
+#include <memory>
 
 namespace mv::objects {
 
@@ -20,6 +22,9 @@ namespace mv::objects {
 
         [[nodiscard]]
         common::RotationMatrix getRotation(common::Point3D const& cursorPositionDevice);
+
+        [[nodiscard]]
+        common::RotationMatrix getRotation(common::Point3D const& cursorPositionADevice, common::Point3D const& cursorPositionBDevice);
 
         [[nodiscard]]
         common::Point3D getCentroid() const override {
@@ -37,21 +42,30 @@ namespace mv::objects {
 
     private:
         void createVisualization();
+        void updateVisualization();
         void recordCursorPosition(common::Point3D const& cursorPositionDevice);
         math3d::types::Point3D convertCursorToCameraCoordinates(common::Point3D const& cursorPosition);
+        void monitorInteraction();
+        std::unique_ptr<common::Point3D> getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
 
     private:
         using VisualizationItem = std::unique_ptr<ArcballVisualizationItem>;
         std::vector<VisualizationItem> visualizationItems;
         math3d::Sphere sphere;
-        std::unique_ptr<common::Point3D> pointA;
-        std::unique_ptr<common::Point3D> pointB;
+        std::unique_ptr<common::Point3D> arcStartPoint;
+        std::unique_ptr<common::Point3D> arcEndPoint;
         std::unique_ptr<common::Vector3D> rotationAxis;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartPointVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndPointVisual;
         float theta {0.f};
         bool visualizationOn{};
         std::thread fadeOutTimer;
         common::ProjectionMatrixPointer projectionMatrix;
         math3d::Matrix<float, 4, 4> inverseProjectionMatrix;
+        std::chrono::time_point<std::chrono::high_resolution_clock> previousInteractionTimePoint;
+        std::chrono::milliseconds const visualizationTTL;
+        std::unique_ptr<std::thread> interactionMonitorThread;
+        bool fadeOutVisualization {false};
     };
 
     using ArcballControllerPointer = std::unique_ptr<ArcballController>;

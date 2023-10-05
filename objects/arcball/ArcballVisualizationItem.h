@@ -27,6 +27,9 @@ namespace mv::objects {
             this->projectionMatrix = projectionMatrix;
         }
 
+        // For visualization items like points that need a model transform
+        virtual void setModelTransform(math3d::Matrix<float, 4, 4> const& transform) {}
+
     protected:
         void setTransforms() override;
         virtual void fadeOut() = 0;

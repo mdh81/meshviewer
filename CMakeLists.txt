@@ -111,6 +111,24 @@ file(
 )
 endforeach()
 
+# Copy textures to the binary directory
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/textures/)
+
+file(
+    GLOB
+    textures
+    ${CMAKE_CURRENT_SOURCE_DIR}/objects/textures/*.png
+    # Add new directories containing textures here
+)
+
+add_custom_target(
+    textureCopy
+    ${CMAKE_COMMAND} -E copy ${textures} ${CMAKE_BINARY_DIR}/textures/
+)
+
+add_dependencies(${appName} textureCopy)
+
+
 if (EMSCRIPTEN)
     #TODO: Resolve the order dependency issue between web and shaders submodules
     # Once done, move this add_subdirectory call to emscripten.cmake

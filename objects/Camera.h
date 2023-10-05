@@ -41,7 +41,7 @@ class Camera : public MeshViewerObject {
         // View controls
         void zoom(common::Direction direction);
         void pan(common::Direction direction);
-        void rotate(common::Point3D const& cursorPositionDevice, std::unique_ptr<objects::ArcballController>& arcballController);
+        void rotate(common::Point3D const& cursorPositionADevice, common::Point3D const& cursorPositionBDevice, std::unique_ptr<objects::ArcballController>& arcballController);
 
         // Sets projection type
         void setProjectionType(const ProjectionType type) { projectionType = type; }

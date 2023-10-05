@@ -65,9 +65,9 @@ class Viewport : public Renderable {
         [[nodiscard]]
         math3d::Matrix<float, 3, 3> getViewportToDeviceTransform() const {
             return math3d::Matrix<float, 3, 3> {
-                {2.f / getWidth(), 0.f,             -1.f},
-                {0.f,              2/getHeight(),   -1.f},
-                {0.f,              0.f,             -1.f}
+                {2.f / getWidth(), 0.f,                 -1.f},
+                {0.f,              2.f / getHeight(),   -1.f},
+                {0.f,              0.f,                 -1.f}
             };
         }
 
@@ -105,8 +105,7 @@ private:
         void disableFog();
         void zoom3DView(events::EventData&&);
         void pan3DView(events::EventData&&);
-        void rotate3DView();
-
+        void rotate3DViewWithScrollGesture();
         void displayGradientBackground();
         [[nodiscard]]
         common::Point2DUniquePointer isViewportEvent(common::Point2D const& cursorPosition) const;

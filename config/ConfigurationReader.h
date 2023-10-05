@@ -20,13 +20,16 @@ class ConfigurationReader {
     public:
        ~ConfigurationReader() = default;
        [[nodiscard]]
-       std::string getValue(const std::string& name) const;
+       std::string getValue(std::string const& name) const;
        [[nodiscard]]
        bool getBoolean(std::string const& name) const;
        [[nodiscard]]
        common::Color getColor(std::string const& name, bool normalize=true) const;
        [[nodiscard]]
        common::Vector3D getVector(std::string const& name) const;
+       void append(std::string const& name, std::string const& value) {
+           m_data.emplace(name, value);
+       }
 
     public:
        ConfigurationReader(ConfigurationReader const&) = delete;

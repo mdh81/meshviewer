@@ -40,7 +40,7 @@ namespace mv::scene {
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
 
         mv::events::EventHandler().registerBasicEventCallback(
-                mv::events::Event{events::EventId::Scrolled}, *this, &Viewport::rotate3DView);
+                mv::events::Event{events::EventId::Scrolled}, *this, &Viewport::rotate3DViewWithScrollGesture);
 
         mv::events::EventHandler().registerBasicEventCallback(
                 mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
@@ -224,20 +224,24 @@ namespace mv::scene {
         }
     }
 
-    void Viewport::rotate3DView() {
-        common::Point2D cursorPositionWindow = Viewer::getInstance().getCursorPosition();
-        common::Point2DUniquePointer cursorPositionViewport;
-        if ((cursorPositionViewport = isViewportEvent(cursorPositionWindow))) {
-            common::Point3D cursorPositionDevice = getViewportToDeviceTransform() * *cursorPositionViewport;
-            std::cout << "Cursor in device space " << cursorPositionDevice << std::endl;
-            camera->rotate(cursorPositionDevice, arcballController);
+    void Viewport::rotate3DViewWithScrollGesture() {
+        common::Point2D cursorPositionAWindow = Viewer::getInstance().getCursorPosition();
+        common::Point2D cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+        common::Point2DUniquePointer cursorPositionAViewport;
+        if ((cursorPositionAViewport = isViewportEvent(cursorPositionAWindow))) {
+            common::Point2D cursorPositionBWindow = cursorPositionAWindow + cursorPositionDifference;
+            common::Point2DUniquePointer cursorPositionBViewport;
+            if ((cursorPositionBViewport = isViewportEvent(cursorPositionBWindow))) {
+                common::Point3D cursorPositionADevice = getViewportToDeviceTransform() * *cursorPositionAViewport;
+                common::Point3D cursorPositionBDevice = getViewportToDeviceTransform() * *cursorPositionBViewport;
+                camera->rotate(cursorPositionADevice, cursorPositionBDevice, arcballController);
+            }
         }
     }
 
     common::Point2DUniquePointer Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
         auto windowToViewport = getWindowToViewportTransform();
         common::Point3D cursorPositionWindow = {cursorPosition.x, cursorPosition.y, 1.f };
-        std::cout << "Window to viewport: \n" << windowToViewport << std::endl;
         common::Point3D cursorPositionViewport = windowToViewport * cursorPositionWindow;
         if (coordinates.contains(cursorPositionViewport)) {
             return std::make_unique<common::Point2D>(common::Point2D{cursorPositionViewport.x, cursorPositionViewport.y});
