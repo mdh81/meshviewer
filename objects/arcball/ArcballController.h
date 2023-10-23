@@ -57,6 +57,8 @@ namespace mv::objects {
         std::unique_ptr<common::Vector3D> rotationAxis;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartPointVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndPointVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartVectorVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndVectorVisual;
         float theta {0.f};
         bool visualizationOn{};
         std::thread fadeOutTimer;
@@ -66,6 +68,7 @@ namespace mv::objects {
         std::chrono::milliseconds const visualizationTTL;
         std::unique_ptr<std::thread> interactionMonitorThread;
         bool fadeOutVisualization {false};
+        common::DisplayDimensions displayDimensions;
     };
 
     using ArcballControllerPointer = std::unique_ptr<ArcballController>;

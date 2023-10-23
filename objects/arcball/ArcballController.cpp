@@ -3,8 +3,7 @@
 #include "ArcballPoint.h"
 #include "Util.h"
 #include "3dmath/MatrixOperations.h"
-#include "3dmath/TranslationMatrix.h"
-#include "Types.h"
+#include "ArcballVector.h"
 #include <thread>
 #include <chrono>
 
@@ -76,10 +75,12 @@ namespace mv::objects {
 
     void ArcballController::updateVisualization() {
         if (arcStartPoint && arcStartPointVisual) {
-            arcStartPointVisual->get().setModelTransform(math3d::TranslationMatrix<float>(*arcStartPoint));
+            arcStartPointVisual->get().setPosition(*arcStartPoint);
+            arcStartVectorVisual->get().setPosition(*arcStartPoint);
         }
         if (arcEndPoint && arcEndPointVisual) {
-            arcEndPointVisual->get().setModelTransform(math3d::TranslationMatrix<float>(*arcEndPoint));
+            arcEndPointVisual->get().setPosition(*arcEndPoint);
+            arcEndVectorVisual->get().setPosition(*arcEndPoint);
         }
     }
 
@@ -123,9 +124,11 @@ namespace mv::objects {
 
     void ArcballController::createVisualization() {
         visualizationItems.clear();
-        visualizationItems.emplace_back(std::make_unique<ArcballSphere>());
-        arcStartPointVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballPoint>()).get()));
-        arcEndPointVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballPoint>()).get()));
+        visualizationItems.emplace_back(std::make_unique<ArcballSphere>(displayDimensions));
+        arcStartPointVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballPoint>(displayDimensions)).get()));
+        arcEndPointVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballPoint>(displayDimensions)).get()));
+        arcStartVectorVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballVector>(displayDimensions)).get()));
+        arcEndVectorVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballVector>(displayDimensions)).get()));
         for (auto& visualizationItem : visualizationItems) {
             visualizationItem->setProjectionMatrix(projectionMatrix);
         }
@@ -144,6 +147,7 @@ namespace mv::objects {
 
     void ArcballController::notifyDisplayResized(common::DisplayDimensions const& displaySize) {
         Renderable::notifyDisplayResized(displaySize);
+        displayDimensions = displaySize;
         float height = 1.f;
         float width = height * aspectRatio;
         if (!projectionMatrix) {

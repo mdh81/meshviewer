@@ -3,8 +3,7 @@
 #include "Types.h"
 #include <memory>
 #include <filesystem>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "external/stb_image.h"
 #include "ConfigurationReader.h"
 
 namespace mv::common {

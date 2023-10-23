@@ -1,6 +1,5 @@
 #include "Drawable.h"
 #include "ShaderLoader.h"
-#include "Drawable3D.h"
 
 #include <filesystem>
 #include <utility>

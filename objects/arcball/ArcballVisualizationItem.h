@@ -2,14 +2,13 @@
 
 #include "Drawable3D.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
-#include "Types.h"
 
 namespace mv::objects {
 
     class ArcballVisualizationItem : public Drawable3D {
     public:
 
-        ArcballVisualizationItem(std::string const& vertexShaderFileName, std::string const& fragmentShaderFileName);
+        ArcballVisualizationItem(common::DisplayDimensions const& displayDimensions, std::string const& vertexShaderFileName, std::string const& fragmentShaderFileName);
 
         [[nodiscard]]
         common::Point3D getCentroid() const override {
@@ -28,7 +27,16 @@ namespace mv::objects {
         }
 
         // For visualization items like points that need a model transform
-        virtual void setModelTransform(math3d::Matrix<float, 4, 4> const& transform) {}
+        virtual void setPosition(common::Point3D const& position) {}
+
+        // Notification receiver for window resize event
+        void notifyDisplayResized(common::DisplayDimensions const& displayDimensions) override {
+            Renderable::notifyDisplayResized(displayDimensions);
+            this->displayDimensions = displayDimensions;
+        };
+
+        // Convert from screen to model units
+        float getScaleFactorInCameraSpace(unsigned short sizeInPixels) const;
 
     protected:
         void setTransforms() override;
@@ -38,6 +46,7 @@ namespace mv::objects {
         common::ProjectionMatrixPointer projectionMatrix;
         unsigned numConnectivityEntries{};
         float opacity;
+        common::DisplayDimensions displayDimensions;
     };
 
 }

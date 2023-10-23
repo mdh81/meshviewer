@@ -7,7 +7,7 @@ namespace mv::objects {
 
     class ArcballSphere : public ArcballVisualizationItem {
     public:
-        ArcballSphere();
+        ArcballSphere(common::DisplayDimensions const& displayDimensions);
         void render() override;
 
     protected:

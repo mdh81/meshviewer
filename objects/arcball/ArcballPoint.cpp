@@ -1,5 +1,7 @@
 #include "ArcballPoint.h"
 #include "3dmath/primitives/Plane.h"
+#include "3dmath/TranslationMatrix.h"
+#include "3dmath/ScalingMatrix.h"
 #include "Texture.h"
 
 using namespace mv::common;
@@ -7,19 +9,16 @@ using namespace mv::common;
 namespace mv::objects {
 
     // TODO: Read colors and other immutable properties from config
-    ArcballPoint::ArcballPoint()
-    : ArcballVisualizationItem("ArcballPoint.vert", "ArcballPoint.frag")
-    , pointTransform(math3d::IdentityMatrix<float, 4, 4>{})
-    , pointSize(.025f) {
+    ArcballPoint::ArcballPoint(common::DisplayDimensions const& displayDimensions)
+    : ArcballVisualizationItem(displayDimensions, "ArcballPoint.vert", "ArcballPoint.frag")
+    , scaleFactor(1)
+    , pointSizePixels(20) {
 
-    }
-
-    void ArcballPoint::setModelTransform(math3d::Matrix<float, 4, 4> const& transform) {
-       pointTransform = transform;
     }
 
     void ArcballPoint::render() {
         if (!readyToRender) {
+            scaleFactor = getScaleFactorInCameraSpace(pointSizePixels);
             generateRenderData();
             readyToRender = true;
         }
@@ -75,8 +74,8 @@ namespace mv::objects {
         createShaderProgram();
         glCallWithErrorCheck(glUseProgram, shaderProgram);
 
-        // Create a square in camera coordinates that is 1/10th of the viewport size
-        math3d::Plane plane {{0, 0, 0}, {0, 0, 1}, pointSize};
+        // Create a unit square in camera coordinates
+        math3d::Plane plane {{0, 0, 0}, {0, 0, 1}, 1};
         plane.generateGeometry();
 
         // Create vertex array object
@@ -160,7 +159,9 @@ namespace mv::objects {
         // Allow the base class to set the orthographic projection
         ArcballVisualizationItem::setTransforms();
         GLint pointTransformId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "pointTransformMatrix");
-        // Set point location
+        math3d::Matrix<float, 4, 4> pointTransform = math3d::TranslationMatrix<float>{positionCamera} *
+                math3d::ScalingMatrix<float>{scaleFactor, scaleFactor, 1};
+        // Set point location and size
         glCallWithErrorCheck(glUniformMatrix4fv,
                              pointTransformId,
                              1,                 // num matrices,

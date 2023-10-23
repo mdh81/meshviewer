@@ -7,8 +7,8 @@ using namespace mv::common;
 namespace mv::objects {
 
     // TODO: Read colors and other immutable properties from config
-    ArcballSphere::ArcballSphere()
-    : ArcballVisualizationItem("ArcballSphere.vert", "ArcballSphere.frag")
+    ArcballSphere::ArcballSphere(common::DisplayDimensions const& displayDimensions)
+    : ArcballVisualizationItem(displayDimensions, "ArcballSphere.vert", "ArcballSphere.frag")
     , resolution(64)
     , color({0.5, 0.5, 0.5}) {
         opacity = 0.2f;

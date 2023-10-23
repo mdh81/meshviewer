@@ -6,8 +6,10 @@ namespace mv::objects {
 
     class ArcballPoint : public ArcballVisualizationItem {
     public:
-        ArcballPoint();
-        void setModelTransform(math3d::Matrix<float, 4, 4> const& transform) override;
+        ArcballPoint(common::DisplayDimensions const& displayDimensions);
+        void setPosition(common::Point3D const& position) override {
+            positionCamera = position;
+        }
         void render() override;
 
     protected:
@@ -16,11 +18,9 @@ namespace mv::objects {
         void generateColors() override;void fadeOut() override;
 
     private:
-        float calculatePointSize();
-
-    private:
-        math3d::Matrix<float, 4, 4> pointTransform;
-        float const pointSize;
+        float scaleFactor;
+        common::Point3D positionCamera;
+        unsigned const pointSizePixels;
         unsigned textureId;
     };
 

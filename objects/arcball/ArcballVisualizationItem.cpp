@@ -5,8 +5,11 @@ using namespace mv::common;
 
 namespace mv::objects {
 
-    ArcballVisualizationItem::ArcballVisualizationItem(std::string const& vertexShaderFileName, std::string const& fragmentShaderFileName)
-            : Drawable3D(vertexShaderFileName, fragmentShaderFileName) {
+    // TODO: Implement flyweight pattern to retain state common to all visualization items like display dimenions
+    //  in a flyweight object
+    ArcballVisualizationItem::ArcballVisualizationItem(common::DisplayDimensions const& displayDimensions, std::string const& vertexShaderFileName, std::string const& fragmentShaderFileName)
+    : Drawable3D(vertexShaderFileName, fragmentShaderFileName)
+    , displayDimensions(displayDimensions) {
         opacity = 1.f;
     }
 
@@ -28,5 +31,18 @@ namespace mv::objects {
                                  projectionMatrix->getData());
             setProjectionUpdated();
         }
+    }
+
+    // TODO: Add derivation to docs
+    float ArcballVisualizationItem::getScaleFactorInCameraSpace(unsigned short sizeInPixels) const {
+        return  (*projectionMatrix)(1, 1) *
+                (2*sizeInPixels)/(displayDimensions.normalizedViewportSize.y * displayDimensions.frameBufferHeight);
+
+        // OR
+
+        //return ((2*sizeInPixels)/(displayDimensions.normalizedViewportSize.x * displayDimensions.frameBufferWidth)) /
+        //       (*projectionMatrix)(0, 0);
+
+
     }
 }

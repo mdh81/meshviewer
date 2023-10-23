@@ -74,12 +74,14 @@ namespace mv::scene {
         for (auto& drawable : drawables) {
             drawable.get().notifyDisplayResized(displayDimensions);
         }
-        arcballController->notifyDisplayResized(displayDimensions);
         this->displayDimensions = displayDimensions;
+        this->displayDimensions.normalizedViewportSize = {coordinates.x.max - coordinates.x.min, coordinates.y.max - coordinates.y.min};
+        arcballController->notifyDisplayResized(this->displayDimensions);
     }
 
     void Viewport::render() {
         using namespace mv::common;
+        displayDimensions.normalizedViewportSize = {coordinates.x.max - coordinates.x.min, coordinates.y.max - coordinates.y.min};
         glCallWithErrorCheck(glViewport, coordinates.x.min * displayDimensions.frameBufferWidth,
                              coordinates.y.min * displayDimensions.frameBufferHeight,
                              coordinates.x.length() * displayDimensions.frameBufferWidth,

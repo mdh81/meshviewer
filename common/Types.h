@@ -160,6 +160,7 @@ struct DisplayDimensions {
     unsigned windowHeight;
     unsigned frameBufferWidth;
     unsigned frameBufferHeight;
+    Point2D normalizedViewportSize;
 };
 
 enum class NormalLocation {
