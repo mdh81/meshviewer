@@ -4,9 +4,9 @@
 #include "EventHandler.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 #include "Gadget.h"
+#include "Util.h"
 #include <vector>
 #include <cmath>
-#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 using namespace mv::common;
