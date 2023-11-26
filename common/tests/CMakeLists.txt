@@ -15,7 +15,8 @@ foreach(test ${allTests})
     )
 endforeach(test)
 
-# All tests link against gtest, common, and mesh 
+# All tests link against gtest, common, and mesh
+# TODO: Create mocks for all dependencies and remove reliance on glLibs
 foreach(test ${allTests})
     target_link_libraries(
         ${test}
@@ -26,6 +27,7 @@ foreach(test ${allTests})
         objects
         shaders
         events
+        ${glLibs}
     )  
 endforeach(test)
 

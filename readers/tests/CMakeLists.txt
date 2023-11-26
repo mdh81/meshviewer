@@ -21,6 +21,7 @@ foreach(source ${sources})
         shaders
         objects
         events
+        ${glLibs}
     )
     gtest_discover_tests(${testExecutable} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
 endforeach(source)

@@ -42,6 +42,7 @@ foreach(test ${allTests})
         objects
         shaders
         readers
+        ${glLibs}
     )  
 endforeach(test)
 
