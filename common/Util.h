@@ -1,19 +1,57 @@
-#ifndef UTIL_H
-#define UTIL_H
-#include "glm/glm.hpp"
+#pragma once
 
-#include <cmath>
+#include <string>
 #include <iostream>
 #include <fstream>
-#include <iomanip>
+#include "glm/glm.hpp"
+#include "GL/glew.h"
 
 namespace mv {
 
-// TODO: Move to MathLib
+static std::string getGLErrorString(GLint glError) {
+    std::string errStr;
+    switch (glError) {
+        case GL_INVALID_ENUM:
+            errStr = "Invalid enum";
+            break;
+        case GL_INVALID_VALUE:
+            errStr = "Invalid value";
+            break;
+        case GL_INVALID_OPERATION:
+            errStr = "Invalid operation";
+            break;
+        default:
+            errStr = std::to_string(glError);
+    }
+    return errStr;
+}
+
+static GLuint glError = 0;
+#ifdef DEBUG
+#define checkGLError(glFunc)                                          \
+glError = glGetError();                                               \
+if (glError) {                                                        \
+    std::cout << #glFunc << " returned " << getGLErrorString(glError) \
+         << " at line " << __LINE__ << " of "                         \
+         << __FILE__ << std::endl;                                    \
+    std::terminate();                                                 \
+}
+#else
+#define checkGLError(glFunc)
+#endif
+
+#ifndef UNIT_TESTING_IN_PROGRESS
+#define glCallWithErrorCheck(glFunc, glArgs...) \
+glFunc(glArgs);                             \
+checkGLError(glFunc)
+#else
+#define glCallWithErrorCheck(glFunc, glArgs...)
+#endif
+
 class Util {
     public:
         static bool areFloatsEqual(float a, float b) {
-            return fabs(a-b) < sm_tolerance; 
+            return fabs(a-b) < sm_tolerance;
         }
         static bool isLessOrEqual(float a, float b) {
             return (a < b || fabs(a-b) < sm_tolerance);
@@ -25,12 +63,12 @@ class Util {
 
         template<typename T>
         static void printMemory(const T* pData, const size_t numBytes, std::ostream& os) {
-            os << "Printing " << numBytes << " bytes of memory " << (size_t) pData << std::endl; 
+            os << "Printing " << numBytes << " bytes of memory " << (size_t) pData << std::endl;
             size_t numEntries = numBytes / sizeof(T);
             for (size_t i = 0; i < numEntries; ++i, ++pData) {
                 os << (size_t) pData << ": " << *pData << std::endl;
             }
-        } 
+        }
 
         static common::Bounds transformBounds(const common::Bounds& bounds, const glm::mat4& transformMatrix) {
             glm::vec4 min(bounds.x.min, bounds.y.min, bounds.z.min, 1.f);
@@ -42,7 +80,7 @@ class Util {
 
         static void printMatrix(glm::mat4& matrix) {
             using namespace std;
-            cout << setw(10) << matrix[0][0] << setw(10) << matrix[1][0] << setw(10) << matrix[2][0] << setw(10) << matrix[3][0] 
+            cout << setw(10) << matrix[0][0] << setw(10) << matrix[1][0] << setw(10) << matrix[2][0] << setw(10) << matrix[3][0]
                  << setw(10) << endl;
             cout << setw(10) << matrix[0][1] << setw(10) << matrix[1][1] << setw(10) << matrix[2][1] << setw(10) << matrix[3][1]
                  << setw(10) << endl;
@@ -67,7 +105,7 @@ class Util {
                 unsigned short dummy = 0;
                 ofs.write(reinterpret_cast<char*>(&dummy), 2);
             };
-            
+
             // Back face
             normal[0] = 0.f; normal[1] = 0.f; normal[2] = -1.f;
             v1[0] = bounds.x.min; v1[1] = bounds.y.max; v1[2] = bounds.z.min;
@@ -139,6 +177,3 @@ class Util {
 };
 
 }
-
-
-#endif

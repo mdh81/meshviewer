@@ -7,10 +7,8 @@
 #include <memory>
 #include <optional>
 #include <cstring>
-#include <glm/ext/matrix_float4x4.hpp>
 #include "3dmath/Vector.h"
 #include "3dmath/SupportingTypes.h"
-#include "GL/glew.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
@@ -26,6 +24,8 @@ using Lines = std::vector<Line>;
 using Points = std::vector<Point3D>;
 using Bounds = math3d::Bounds3D<float>;
 using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
+using TransformMatrix = math3d::Matrix<float, 4, 4>;
+using Vector4D = math3d::Vector4<float>;
 
 inline std::ostream& operator<<(std::ostream& os, const Point3D& v) {
     os << "[" << v.x << "," << v.y << "," << v.z << "]";
@@ -163,46 +163,6 @@ enum class GlyphAssociation {
     FaceNormal,
     VertexNormal
 };
-
-static std::string getGLErrorString(GLint glError) {
-    std::string errStr;
-    switch (glError) {
-        case GL_INVALID_ENUM:
-            errStr = "Invalid enum";
-            break;
-        case GL_INVALID_VALUE:
-            errStr = "Invalid value";
-            break;
-        case GL_INVALID_OPERATION:
-            errStr = "Invalid operation";
-            break;
-        default:
-            errStr = std::to_string(glError);
-    }
-    return errStr;
-}
-
-static GLuint glError = 0;
-#ifdef DEBUG
-#define checkGLError(glFunc)                                              \
-    glError = glGetError();                                               \
-    if (glError) {                                                        \
-        std::cout << #glFunc << " returned " << getGLErrorString(glError) \
-             << " at line " << __LINE__ << " of "                         \
-             << __FILE__ << std::endl;                                    \
-        std::terminate();                                                 \
-    }
-#else
-#define checkGLError(glFunc)
-#endif
-
-#ifndef UNIT_TESTING_IN_PROGRESS
-#define glCallWithErrorCheck(glFunc, glArgs...) \
-    glFunc(glArgs);                             \
-    checkGLError(glFunc)
-#else
-#define glCallWithErrorCheck(glFunc, glArgs...)
-#endif
 
 unsigned const MOUSE_WHEEL_EVENT = 1000;
 
