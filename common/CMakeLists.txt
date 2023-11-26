@@ -8,12 +8,6 @@ target_include_directories(
     PUBLIC
 )
 
-target_link_libraries(
-    common
-    glm::glm
-    GLEW::GLEW
-)
-
 if (APPLE)
     enable_testing()
     add_subdirectory(tests)

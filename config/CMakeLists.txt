@@ -14,12 +14,6 @@ target_include_directories(
     ../common
 )
 
-target_link_libraries(
-    configuration
-    PUBLIC
-    GLEW::glew
-)
-
 add_dependencies(
     configuration
     cfgFileCopy

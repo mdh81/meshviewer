@@ -19,8 +19,6 @@ target_link_libraries(
     PUBLIC
     objects
     configuration
-    glm::glm
-    GLEW::GLEW
 )
 
 if (APPLE)
