@@ -1,5 +1,4 @@
-#ifndef MESH_VIEWER_MESH_H
-#define MESH_VIEWER_MESH_H
+#pragma once
 #include <memory>
 #include <initializer_list>
 #include <array>
@@ -134,5 +133,3 @@ protected:
 };
 
 }
-
-#endif

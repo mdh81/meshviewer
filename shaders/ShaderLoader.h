@@ -1,5 +1,4 @@
-#ifndef MESH_VIEWER_SHADER_LOADER_H
-#define MESH_VIEWER_SHADER_LOADER_H
+#pragma once
 
 #include "MeshViewerObject.h"
 
@@ -22,5 +21,3 @@ namespace mv {
             const unsigned m_outputSize;
     };
 }
-
-#endif
