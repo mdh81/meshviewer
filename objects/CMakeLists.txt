@@ -1,14 +1,12 @@
-add_library(
-    objects
-    Drawable.cpp
-    Camera.cpp
-    Glyph.cpp
-    GradientBackground.cpp)
+file(GLOB sources "*.cpp")
+
+add_library(objects ${sources})
 
 target_include_directories(
     objects
     PUBLIC
     ${mathIncDir}
+    ${glIncludeDirectories}
     ../common
     ../mesh
     ../events
@@ -22,8 +20,6 @@ target_link_libraries(
     objects
     PUBLIC
     common
-    glm::glm
-    GLEW::GLEW
     writers
 )
 

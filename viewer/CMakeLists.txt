@@ -1,26 +1,20 @@
+file(GLOB sources "*.cpp")
+
 add_library(
     viewer 
-    Viewer.cpp
-    Scene.cpp
-    Viewport.cpp)
-
+    ${sources})
 
 target_include_directories(
     viewer 
     PUBLIC
     ${mathIncDir}
+    ${glIncludeDirectories}
     ../common
     ../mesh
     ../events
     ../shaders
     ../objects
     ../config
-)
-
-target_link_libraries(
-    viewer
-    glm::glm
-    GLEW::GLEW
 )
 
 if (APPLE)

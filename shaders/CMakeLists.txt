@@ -7,11 +7,7 @@ target_include_directories(
     shaders
     PUBLIC
     ../common
-)
-
-target_link_libraries(
-    shaders
-    GLEW::GLEW
+    ${glIncludeDirectories}
 )
 
 # Copy shaders to build directory

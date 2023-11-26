@@ -12,13 +12,7 @@ target_include_directories(
     ../common
     ../objects
     ${mathIncDir}
-)
-
-target_link_libraries(
-    readers
-    PUBLIC
-    GLEW::GLEW
-    glm::glm
+    ${glIncludeDirectories}
 )
 
 if (APPLE)

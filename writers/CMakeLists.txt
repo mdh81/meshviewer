@@ -9,12 +9,6 @@ target_include_directories(
     ../common
 )
 
-target_link_libraries(
-    writers
-    PUBLIC
-    GLEW::glew
-)
-
 if (APPLE)
     enable_testing()
     add_subdirectory(tests)
