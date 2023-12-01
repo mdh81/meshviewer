@@ -245,7 +245,8 @@ void Camera::writeViewConfigurationToFile() {
          if (!std::filesystem::exists(tmpDir)) {
              std::filesystem::create_directory(tmpDir);
          }
-         renderable.writeToFile(tmpDir / "viewTransformed.stl", viewTransform);
+         // TODO: Break this feature temporarily until Camera's matrices can be replaced with 3dmath
+         renderable.writeToFile(tmpDir / "viewTransformed.stl", {});
          Util::writeBounds(tmpDir / "objectBounds.stl", renderable.getBounds());
          Util::writeBounds(tmpDir / "viewBounds.stl", viewVolume);
      }
