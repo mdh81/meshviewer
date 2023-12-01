@@ -42,7 +42,9 @@ void Drawable::createShaderProgram() {
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShaderId);
     glAttachShader(shaderProgram, fragmentShaderId);
+#ifndef EMSCRIPTEN
     glBindFragDataLocation(shaderProgram, 0, "fragmentColor");
+#endif
 
     // Link program
     glLinkProgram(shaderProgram);

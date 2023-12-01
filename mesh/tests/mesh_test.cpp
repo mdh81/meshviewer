@@ -70,8 +70,8 @@ TEST(Mesh, TransformMesh) {
     m.addVertex(0, 0, 0);
     m.addVertex(5, 0, 0);
     m.addFace({0,1});
-    glm::mat4 translate(1.0f);
-    translate[3] = glm::vec4(10, 10, 10, 1.0);
+    common::TransformMatrix translate;
+    translate[3] = math3d::Vector4<float>{10, 10, 10, 1.0};
     std::unique_ptr<Mesh> m1 (std::move(m.transform(translate)));
     auto v = m1->getVertex(0);
     ASSERT_FLOAT_EQ(v.x, 10);
@@ -84,7 +84,6 @@ TEST(Mesh, TransformMesh) {
     auto faces1 = m1->getConnectivity();
     ASSERT_EQ(faces1.at(0).at(0), 0);
     ASSERT_EQ(faces1.at(0).at(1), 1);
-
 }
 
 TEST_F(MeshFixture, WriteSTL) {

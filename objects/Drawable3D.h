@@ -14,7 +14,7 @@ public:
     [[nodiscard]]
     bool is3D() const override { return true; }
 
-    virtual void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
+    virtual void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const override {
         std::cerr << std::string(__PRETTY_FUNCTION__) + " is not implemented" << std::endl;
     }
 

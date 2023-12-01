@@ -2,7 +2,6 @@
 
 #include "MeshViewerObject.h"
 #include "Types.h"
-#include "glm/glm.hpp"
 
 namespace mv {
 
@@ -35,7 +34,7 @@ public:
         readyToRender = false;
     }
 
-    virtual void writeToFile(std::string const& fileName, glm::mat4 const& transform) const {
+    virtual void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const {
         std::cerr << __PRETTY_FUNCTION__ << " is not implemented" << std::endl;
     }
 

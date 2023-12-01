@@ -56,9 +56,11 @@ void GradientBackground::render() {
     glCallWithErrorCheck(glUseProgram, shaderProgram);
     glCallWithErrorCheck(glBindVertexArray, vertexArrayObject);
     glCallWithErrorCheck(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+#ifndef EMSCRIPTEN
     if (m_debugOn) {
         glCallWithErrorCheck(glPolygonMode,GL_FRONT_AND_BACK, GL_LINE);
     }
+#endif
     glCallWithErrorCheck(glDrawElements, GL_TRIANGLES, m_numberOfConnectivityEntries, GL_UNSIGNED_INT, nullptr);
     glCallWithErrorCheck(glEnable, GL_DEPTH_TEST);
 }

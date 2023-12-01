@@ -57,7 +57,7 @@ class Viewport : public Renderable {
             };
         }
 
-        void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
+        void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const override {
             for (auto& drawable : drawables) {
                 if (drawable.get().is3D()) {
                     auto& drawable3D = dynamic_cast<Drawable3D&>(drawable.get());

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Renderable.h"
-#include "GL/glew.h"
 #include "glm/glm.hpp"
 #include "Camera.h"
 #include <string>

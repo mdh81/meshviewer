@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Types.h"
 #include <string>
 #include <iostream>
 #include <fstream>
 #include "glm/glm.hpp"
-#include "GL/glew.h"
 
 namespace mv {
 

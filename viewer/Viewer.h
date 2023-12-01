@@ -1,10 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include "Camera.h"
-#include "MeshViewerObject.h"
 #include "Drawable.h"
-
-#include "GL/glew.h"
 #include <memory>
 
 class GLFWwindow;

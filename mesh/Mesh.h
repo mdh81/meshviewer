@@ -10,7 +10,6 @@
 #include "Octree.h"
 #include "Vertex.h"
 #include "Face.h"
-#include "glm/glm.hpp"
 
 namespace mv {
 
@@ -89,7 +88,7 @@ class Mesh : public Drawable3D {
         void getConnectivityData(size_t& numBytes, unsigned*& connData) const;
 
         // Transforms a copy of this mesh and returns the copy
-        [[nodiscard]] std::unique_ptr<Mesh> transform(const glm::mat4& transformMatrix) const;
+        [[nodiscard]] std::unique_ptr<Mesh> transform(common::TransformMatrix const& transformMatrix) const;
 
         // Writes this mesh to a STL file
         void writeToSTL(const std::string& stlFile) const;
@@ -97,7 +96,7 @@ class Mesh : public Drawable3D {
         // Gets normals
         [[nodiscard]] NormalData getNormals(common::NormalLocation) const;
 
-        void writeToFile(std::string const& fileName, glm::mat4 const& transform) const override {
+        void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const override {
             std::filesystem::path filePath = fileName;
             if (filePath.extension() == ".STL" || filePath.extension() == ".stl") {
                 this->transform(transform)->writeToSTL(fileName);

@@ -1,10 +1,9 @@
 #pragma once
 
+#include "Types.h"
 #include "MeshViewerObject.h"
-
 #include <string>
 #include <tuple>
-#include "GL/glew.h"
 
 namespace mv {
 

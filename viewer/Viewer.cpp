@@ -77,11 +77,13 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     });
     glfwMakeContextCurrent(m_window);
 
+#ifndef EMSCRIPTEN
     // Initialize GLEW
     glewExperimental = true;
     if (glewInit() != GLEW_OK) {
         throw std::runtime_error("Unable to initialize GLEW");
     }
+#endif
 
     // Keep track of cursor position to handle various interaction gestures
     glfwSetCursorPosCallback(m_window,[](GLFWwindow* window, double x, double y) {
@@ -199,9 +201,17 @@ void Viewer::prepareOffscreenRender() {
     GLuint renderBufferObject;
     glCallWithErrorCheck(glGenRenderbuffers, 1, &renderBufferObject);
     glCallWithErrorCheck(glBindRenderbuffer, GL_RENDERBUFFER, renderBufferObject);
+#ifndef EMSCRIPTEN
     glCallWithErrorCheck(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_windowWidth, m_windowHeight);
+#else
+    glCallWithErrorCheck(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_windowWidth, m_windowHeight);
+#endif
     glCallWithErrorCheck(glBindRenderbuffer, GL_RENDERBUFFER, 0);
+#ifndef EMSCRIPTEN
     glCallWithErrorCheck(glFramebufferRenderbuffer, GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
+#else
+    glCallWithErrorCheck(glFramebufferRenderbuffer, GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
+#endif
 
     // Check framebuffer status
     auto fboStatus = glCallWithErrorCheck(glCheckFramebufferStatus, GL_FRAMEBUFFER);

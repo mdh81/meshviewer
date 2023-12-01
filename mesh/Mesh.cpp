@@ -174,13 +174,12 @@ void Mesh::getConnectivityData(size_t& numBytes, unsigned*& pConnData) const {
     pConnData = m_connectivity.get();
 }
 
-// TODO: Replace with 3dmath
-std::unique_ptr<Mesh> Mesh::transform(glm::mat4 const& transformMatrix) const {
+std::unique_ptr<Mesh> Mesh::transform(common::TransformMatrix const& transformMatrix) const {
     std::unique_ptr<Mesh> transformedMesh(new Mesh(*this));
     auto& vertices = transformedMesh->getVertices();
     for (auto& vertex : vertices) {
         auto& v = const_cast<Vertex&>(vertex);
-        glm::vec4 transformedVertex = transformMatrix * glm::vec4(vertex.x, vertex.y, vertex.z, 1.0f);
+        auto transformedVertex = transformMatrix * math3d::Vector4<float>{vertex.x, vertex.y, vertex.z, 1.0f};
         v.x = transformedVertex.x;
         v.y = transformedVertex.y;
         v.z = transformedVertex.z;
@@ -358,8 +357,9 @@ void Mesh::render() {
 
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-
+#ifndef EMSCRIPTEN
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
     glDrawElements(GL_TRIANGLES,
                    static_cast<int>(m_numFaces*3),              // Number of entries in the connectivity array
                    GL_UNSIGNED_INT,                              // Type of element buffer data
