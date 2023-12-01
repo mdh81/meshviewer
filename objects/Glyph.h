@@ -1,5 +1,4 @@
-#ifndef GLYPH_H
-#define GLYPH_H
+#pragma once
 
 #include "Types.h"
 #include "Drawable3D.h"
@@ -38,4 +37,3 @@ protected:
 };
 
 }
-#endif
