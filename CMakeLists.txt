@@ -61,12 +61,18 @@ endif()
 if (EMSCRIPTEN)
     # set preprocessor flag
     add_compile_options(-DEMSCRIPTEN)
-    # linker options
+    # compile and link options
+    add_compile_options(
+        --no-heap-copy
+        -fexceptions
+    )
     add_link_options(
+        -fexceptions
         -sMIN_WEBGL_VERSION=2
         -sMAX_WEBGL_VERSION=2
         -sUSE_GLFW=3
         -sFULL_ES2
+        "SHELL:-sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sSTACK_SIZE=5MB"
     )
     # TODO: Remove this when glm is replaced with 3dmath
     list(APPEND glIncludeDirectories /opt/homebrew/include)
@@ -115,6 +121,15 @@ add_subdirectory(writers)
 add_executable(
     meshviewerapp
     main.cpp)
+
+if (EMSCRIPTEN)
+    set_target_properties(
+        meshviewerapp
+        PROPERTIES
+        LINK_FLAGS
+        "--shell-file web/shell.html"
+    )
+endif()
 
 target_include_directories(
     meshviewerapp
