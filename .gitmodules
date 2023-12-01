@@ -1,0 +1,3 @@
+[submodule "3dmath"]
+	path = 3dmath
+	url = ssh://git@github.com:443/mdh81/3dmath.git
