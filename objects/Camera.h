@@ -1,9 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "GL/glew.h"
 #include "Renderable.h"
-#include "Types.h"
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <iostream>
