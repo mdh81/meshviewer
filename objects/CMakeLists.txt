@@ -23,7 +23,7 @@ target_link_libraries(
     writers
 )
 
-if (APPLE)
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()

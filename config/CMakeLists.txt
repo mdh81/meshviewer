@@ -14,12 +14,18 @@ target_include_directories(
     ../common
 )
 
+target_link_libraries(
+    configuration
+    PUBLIC
+    common
+)
+
 add_dependencies(
     configuration
     cfgFileCopy
 )
 
-if (APPLE)
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()

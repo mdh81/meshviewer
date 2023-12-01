@@ -9,7 +9,13 @@ target_include_directories(
     ../common
 )
 
-if (APPLE)
+target_link_libraries(
+    writers
+    PUBLIC
+    common
+)
+
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()

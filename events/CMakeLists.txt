@@ -15,9 +15,8 @@ target_link_libraries(
     common
 )
 
-# TODO: There is some weird linker error with gtest in callback tests.
-# There is no use case to run tests on linux right now
-if (APPLE)
+if (enableTesting)
+    message(STATUS "Enabling testing for events")
     enable_testing()
     add_subdirectory(tests)
 endif()

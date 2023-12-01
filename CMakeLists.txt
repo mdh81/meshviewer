@@ -14,6 +14,7 @@ project(MeshViewer VERSION 1.0.0)
 
 if (APPLE)
     add_compile_options(-DOSX)
+    set(enableTesting ON)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -36,6 +37,7 @@ if (DEFINED ENV{DEV_CONTAINER})
     add_library(GLEW::GLEW ALIAS GLEW::glew)
     find_package(OpenGL REQUIRED)
     set(OPENGL_LIBRARIES OpenGL::GL)
+    set(enableTesting OFF)
 elseif(NOT EMSCRIPTEN)
     find_package(GLEW REQUIRED)
     find_package(GLFW3 REQUIRED)
@@ -54,6 +56,24 @@ elseif(NOT EMSCRIPTEN)
         ${glfwIncludeDirectory}
         ${OPENGL_INCLUDE_DIR}
         ${glmIncludeDirectory})
+endif()
+
+if (EMSCRIPTEN)
+    # set preprocessor flag
+    add_compile_options(-DEMSCRIPTEN)
+    # linker options
+    add_link_options(
+        -sMIN_WEBGL_VERSION=2
+        -sMAX_WEBGL_VERSION=2
+        -sUSE_GLFW=3
+        -sFULL_ES2
+    )
+    # TODO: Remove this when glm is replaced with 3dmath
+    list(APPEND glIncludeDirectories /opt/homebrew/include)
+    # Disable building tests, they are not relevant for web target
+    set(enableTesting OFF)
+    # Build html output
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 
 # get gtest

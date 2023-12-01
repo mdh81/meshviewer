@@ -5,10 +5,11 @@ add_library(
 
 target_include_directories(
     common 
-    PUBLIC
+    INTERFACE
+    ${glIncludeDirectories}
 )
 
-if (APPLE)
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()

@@ -15,7 +15,7 @@ target_include_directories(
     ${glIncludeDirectories}
 )
 
-if (APPLE)
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()

@@ -17,7 +17,7 @@ target_include_directories(
     ../config
 )
 
-if (APPLE)
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()

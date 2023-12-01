@@ -21,7 +21,7 @@ target_link_libraries(
     configuration
 )
 
-if (APPLE)
+if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()
