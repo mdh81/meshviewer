@@ -91,14 +91,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-# get 3dmath
-FetchContent_Declare(
-    3dmath
-    GIT_REPOSITORY https://github.com/mdh81/3dmath.git
-)
-FetchContent_MakeAvailable(3dmath)
-include_directories(${3dmath_SOURCE_DIR}/include)
-
 # Set default build type to debug
 set(CMAKE_BUILD_TYPE Debug)
 
