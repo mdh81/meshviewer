@@ -99,7 +99,10 @@ if (NOT EMSCRIPTEN)
     set(glLibs ${OPENGL_LIBRARIES} GLEW::GLEW glfw)
 endif()
 
-# Sub-modules
+# Every submodule is dependent on 3dmath
+include_directories(3dmath/include)
+
+# Submodules
 add_subdirectory(3dmath)
 add_subdirectory(events)
 add_subdirectory(mesh)
