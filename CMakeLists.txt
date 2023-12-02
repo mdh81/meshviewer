@@ -100,6 +100,7 @@ if (NOT EMSCRIPTEN)
 endif()
 
 # Sub-modules
+add_subdirectory(3dmath)
 add_subdirectory(events)
 add_subdirectory(mesh)
 add_subdirectory(objects)
