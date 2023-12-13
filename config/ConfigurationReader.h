@@ -35,8 +35,8 @@ class ConfigurationReader {
        ConfigurationReader& operator=(ConfigurationReader&&) = delete;
 
     private:
-       std::unordered_map<std::string, std::string> m_data;
-       std::string m_fileName;
+       std::unordered_map<std::string, std::string> data;
+       std::string fileName;
        friend class ConfigurationReaderTest;
 };
 

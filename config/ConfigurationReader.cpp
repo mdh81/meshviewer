@@ -7,9 +7,9 @@ using namespace mv::common;
 
 namespace mv::config {
 
-        ConfigurationReader::ConfigurationReader(const std::string &fileName) : m_fileName(fileName) {
+        ConfigurationReader::ConfigurationReader(const std::string &fileName) : fileName(fileName) {
 
-            ifstream ifs(m_fileName);
+            ifstream ifs(fileName);
             if (!ifs)
                 throw runtime_error("Unable to open config file " + fileName);
 
@@ -21,14 +21,14 @@ namespace mv::config {
                 auto tokEnd = config.find('=');
                 if (tokEnd == string::npos)
                     throw runtime_error("Invalid config entry: " + config);
-                m_data.emplace(config.substr(0, tokEnd), config.substr(tokEnd + 1));
+                data.emplace(config.substr(0, tokEnd), config.substr(tokEnd + 1));
             }
             ifs.close();
         }
 
         std::string ConfigurationReader::getValue(const std::string &name) const {
-            auto itr = m_data.find(name);
-            if (itr != m_data.end()) {
+            auto itr = data.find(name);
+            if (itr != data.end()) {
                 return itr->second;
             } else {
                 throw runtime_error("No configuration found for " + name);
