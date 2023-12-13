@@ -93,8 +93,7 @@ void GradientBackground::generateRenderData() {
     // Specify layout of vertex data
     // The vertex and color data are interleaved in the buffer whose stride is 6 with
     // the vertex coordinates taking the first three values and the color components taking
-    // the next three
-    // Coordinates
+    // the next three coordinates
     auto positionAttrib = glCallWithErrorCheck(glGetAttribLocation, shaderProgram, "vertexCameraIn");
     glCallWithErrorCheck(glEnableVertexAttribArray, positionAttrib);
     glCallWithErrorCheck(glVertexAttribPointer, positionAttrib,
