@@ -40,12 +40,17 @@ if (glError) {                                                        \
 #define checkGLError(glFunc)
 #endif
 
-#ifndef UNIT_TESTING_IN_PROGRESS
-#define glCallWithErrorCheck(glFunc, glArgs...) \
-glFunc(glArgs);                             \
-checkGLError(glFunc)
-#else
+#ifdef UNIT_TESTING_IN_PROGRESS
 #define glCallWithErrorCheck(glFunc, glArgs...)
+#endif
+
+#if defined(EMSCRIPTEN) || !defined(DEBUG)
+#define glCallWithErrorCheck(glFunc, glArgs...) \
+glFunc(glArgs);
+#else
+#define glCallWithErrorCheck(glFunc, glArgs...) \
+glFunc(glArgs);                                 \
+checkGLError(glFunc)
 #endif
 
 class Util {
