@@ -68,11 +68,14 @@ if (EMSCRIPTEN)
     )
     add_link_options(
         -fexceptions
+        -sUSE_WEBGL2=1
         -sMIN_WEBGL_VERSION=2
         -sMAX_WEBGL_VERSION=2
         -sUSE_GLFW=3
         -sFULL_ES2
-        "SHELL:-sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sSTACK_SIZE=5MB"
+        -sEXPORTED_RUNTIME_METHODS=allocate
+        "SHELL:-sWASM=1 -sUSE_WEBGL2=1 -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sSTACK_SIZE=5MB"
+        --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/config/defaults.cfg@config/defaults.cfg
     )
     # TODO: Remove this when glm is replaced with 3dmath
     list(APPEND glIncludeDirectories /opt/homebrew/include)
@@ -80,6 +83,11 @@ if (EMSCRIPTEN)
     set(enableTesting OFF)
     # Build html output
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    # Enable debug
+    if (DEBUG)
+        add_compile_options(-g)
+    endif()
+
 endif()
 
 # get gtest
@@ -102,6 +110,9 @@ endif()
 # Every submodule is dependent on 3dmath
 include_directories(3dmath/include)
 
+# Define app name as a variable so submodules can set target properties for the app
+set(appName meshViewer)
+
 # Submodules
 add_subdirectory(3dmath)
 add_subdirectory(events)
@@ -115,20 +126,11 @@ add_subdirectory(config)
 add_subdirectory(writers)
 
 add_executable(
-    meshviewerapp
+    ${appName}
     main.cpp)
 
-if (EMSCRIPTEN)
-    set_target_properties(
-        meshviewerapp
-        PROPERTIES
-        LINK_FLAGS
-        "--shell-file web/shell.html"
-    )
-endif()
-
 target_include_directories(
-    meshviewerapp
+    ${appName}
     PUBLIC
     common
     events
@@ -140,7 +142,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-    meshviewerapp
+    ${appName}
     PUBLIC
     common
     events
@@ -168,3 +170,7 @@ add_custom_target(
     testFiles ALL
     ${CMAKE_COMMAND} -E copy ${models} ${CMAKE_BINARY_DIR}/testfiles/
 )
+
+if (EMSCRIPTEN)
+    add_subdirectory(web)
+endif()
