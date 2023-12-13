@@ -2,13 +2,15 @@
 #include <fstream>
 #include <string>
 #include <exception>
+#include <filesystem>
 using namespace std;
 
 namespace mv {
 
 void ShaderLoader::loadShader(const std::string& fileName, std::string& fileContents) {
+
     // Open file and seek to the end
-    ifstream ifs(fileName, ios_base::ate /*seek to end of the file*/);
+    ifstream ifs(shaderDirectory/fileName, ios_base::ate /*seek to end of the file*/);
     if (!ifs) {
         throw std::runtime_error("Unable to read shader file: " + fileName);
     }
@@ -29,20 +31,20 @@ GLuint ShaderLoader::compileShader(const GLuint shaderId, std::string& compilerO
     glCompileShader(shaderId);
     GLint status;
     glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status);
-    compilerOutput.resize(m_outputSize);
-    glGetShaderInfoLog(shaderId, m_outputSize, nullptr /*length as output*/, &compilerOutput.at(0));
+    compilerOutput.resize(outputSize);
+    glGetShaderInfoLog(shaderId, outputSize, nullptr /*length as output*/, &compilerOutput.at(0));
     return status;
 }
 
 tuple<bool, GLuint> ShaderLoader::loadVertexShader(const std::string& fileName, std::string& compilerOutput) {
 
     // Load vertex shader file contents into memory
-    string vshaderStr;
-    loadShader(fileName, vshaderStr);
+    string vertexShaderContents;
+    loadShader(fileName, vertexShaderContents);
 
     // Create shader
     GLuint shaderId = glCreateShader(GL_VERTEX_SHADER);
-    const char* shaderSrc = vshaderStr.data();
+    const char* shaderSrc = vertexShaderContents.data();
     glShaderSource(shaderId, 1 /*number of shaders in the next string argument*/,
                    &shaderSrc /* double-pointer to array of strings*/,
                    nullptr /* array of string lengths, can be null*/);
@@ -53,13 +55,13 @@ tuple<bool, GLuint> ShaderLoader::loadVertexShader(const std::string& fileName, 
 
 tuple<bool, GLuint> ShaderLoader::loadFragmentShader(const std::string& fileName, std::string& compilerOutput) {
 
-    // Load vertex shader file contents into memory
-    string fshaderStr;
-    loadShader(fileName, fshaderStr);
+    // Load fragment shader file contents into memory
+    string fragmentShaderContents;
+    loadShader(fileName, fragmentShaderContents);
 
     // Create shader
     GLuint shaderId = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* shaderSrc = fshaderStr.data();
+    const char* shaderSrc = fragmentShaderContents.data();
     glShaderSource(shaderId, 1 /*number of shaders in the next string argument*/,
                    &shaderSrc /* double-pointer to array of strings*/,
                    nullptr /* array of string lengths, can be null*/);
