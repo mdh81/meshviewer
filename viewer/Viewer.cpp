@@ -17,6 +17,11 @@
 
 #include "GLFW/glfw3.h"
 
+#ifdef EMSCRIPTEN
+#include "emscripten.h"
+#include "emscripten/html5.h"
+#endif
+
 #include <filesystem>
 #include <string>
 using namespace std;
@@ -25,22 +30,25 @@ namespace mv {
 using namespace common;
 using namespace events;
 
+Viewer* Viewer::RenderLoop::viewer = nullptr;
+
 Viewer& Viewer::getInstance() {
     static Viewer instance;
     return instance;
 }
 
 Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
-    : m_windowWidth(windowWidth)
-    , m_windowHeight(windowHeight)
-    , m_frameBufferWidth(windowWidth)
-    , m_frameBufferHeight(windowHeight)
-    , m_renderToImage(false)
-    , m_frameBufferId(0)
-    , m_imageTextureId(0)
-    , m_windowResized(false)
-    , m_renderMode(RenderMode::Shaded)
-    , m_showNormals(false) {
+    : windowWidth(windowWidth)
+    , windowHeight(windowHeight)
+    , frameBufferWidth(windowWidth)
+    , frameBufferHeight(windowHeight)
+    , renderToImage{}
+    , frameBufferId(0)
+    , imageTextureId(0)
+    , windowResized{}
+    , renderMode(RenderMode::Shaded)
+    , showNormals{}
+    , printGLInfoOnStartup{true} {
 
     // Initialize GLFW
     if (!glfwInit())
@@ -48,34 +56,39 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
 
     // Create GLFW window
     glfwWindowHint(GLFW_SAMPLES, 4);
+#ifndef EMSCRIPTEN
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+#else
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+#endif
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    m_window = glfwCreateWindow(static_cast<int>(m_windowWidth),
-                                static_cast<int>(m_windowHeight),
-                                "MeshViewer", nullptr, nullptr);
-    if(!m_window) {
+    window = glfwCreateWindow(static_cast<int>(windowWidth),
+                              static_cast<int>(windowHeight),
+                              "MeshViewer", nullptr, nullptr);
+    if(!window) {
         glfwTerminate();
         throw std::runtime_error("Unable to create GLFW Window");
     }
 
     // Get initial framebuffer size
     int width, height;
-    glfwGetFramebufferSize(m_window, &width, &height);
-    m_frameBufferWidth = static_cast<unsigned>(width);
-    m_frameBufferHeight = static_cast<unsigned>(height);
+    glfwGetFramebufferSize(window, &width, &height);
+    frameBufferWidth = static_cast<unsigned>(width);
+    frameBufferHeight = static_cast<unsigned>(height);
 
     // Get notified when window size changes
-    glfwSetWindowUserPointer(m_window, this);
-    glfwSetFramebufferSizeCallback(m_window,
-                              [](GLFWwindow *window, int width, int height) {
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window,
+                                   [](GLFWwindow *window, int width, int height) {
           auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
-          viewer->m_frameBufferWidth = width;
-          viewer->m_frameBufferHeight = height;
-          viewer->m_windowResized = true;
+          viewer->frameBufferWidth = width;
+          viewer->frameBufferHeight = height;
+          viewer->windowResized = true;
     });
-    glfwMakeContextCurrent(m_window);
+    glfwMakeContextCurrent(window);
 
 #ifndef EMSCRIPTEN
     // Initialize GLEW
@@ -85,14 +98,21 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     }
 #endif
 
+    if (printGLInfoOnStartup) {
+        auto glVersion = glCallWithErrorCheck(glGetString, GL_VERSION);
+        auto glslVersion = glCallWithErrorCheck(glGetString, GL_SHADING_LANGUAGE_VERSION);
+        std::cout << "OpenGL Version: " << glVersion << std::endl;
+        std::cout << "GLSL Version:  "  << glslVersion << std::endl;
+    }
+
     // Keep track of cursor position to handle various interaction gestures
-    glfwSetCursorPosCallback(m_window,[](GLFWwindow* window, double x, double y) {
+    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
         auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
         common::Point2D currentCursorPosition {static_cast<float>(x), static_cast<float>(y)};
         viewer->cursorPositionDifference = currentCursorPosition - viewer->cursorPosition;
         viewer->cursorPosition = currentCursorPosition;
     });
-    glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xOffset, double yOffset) {
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
         auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
         viewer->cursorPositionDifference = {static_cast<float>(xOffset), static_cast<float>(yOffset)};
         unsigned modifierKeys = 0;
@@ -111,13 +131,14 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
                     (*this, &Viewer::saveSnapshot));
 
     // Start handling events
-    EventHandler().start(m_window);
+    EventHandler().start(window);
+
+    Viewer::RenderLoop::viewer = this;
 }
 
 void Viewer::setColors() {
 	// Dark grey background
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-
 }
 
 void Viewer::add(Drawable::Drawables const& newDrawables) {
@@ -127,73 +148,115 @@ void Viewer::add(Drawable::Drawables const& newDrawables) {
     }
 }
 
+#ifdef EMSCRIPTEN
+bool Viewer::isCanvasResized() const {
+    double deviceWidth, deviceHeight;
+    int canvasWidth, canvasHeight;
+    emscripten_get_canvas_element_size("#canvas", &canvasWidth, &canvasHeight);
+    emscripten_get_element_css_size("#canvas", &deviceWidth, &deviceHeight);
+    double pixelRatio = emscripten_get_device_pixel_ratio();
+    //if (canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
+    // canvasHeight != static_cast<int>(deviceHeight * pixelRatio)) {
+        /*std::cout << "Emscripten Canvas Resized: "
+                  << "Canvas width = " << canvasWidth << ' '
+                  << "Canvas height = " << canvasHeight << ' '
+                  << "CSS width = " << deviceWidth << ' '
+                  << "CSS height = " << deviceHeight << ' '
+                  << "Pixel ratio = " << pixelRatio << std::endl;*/
+        canvasWidth = static_cast<int> (deviceWidth * pixelRatio);
+        canvasHeight = static_cast<int> (deviceHeight * pixelRatio);
+        emscripten_set_canvas_element_size("#canvas", canvasWidth, canvasHeight);
+        return true;
+    //} else {
+    //return false;
+    //}
+}
+#endif
+
+void Viewer::RenderLoop::draw() {
+#ifndef EMSCRIPTEN
+    do {
+#endif
+
+#ifdef EMSCRIPTEN
+        viewer->windowResized = viewer->isCanvasResized();
+#endif
+
+        if (viewer->windowResized) {
+            viewer->scene->notifyWindowResized(viewer->frameBufferWidth, viewer->frameBufferHeight);
+            viewer->windowResized = false;
+        }
+
+        if (viewer->renderToImage) {
+            viewer->prepareOffscreenRender();
+            glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, viewer->frameBufferId);
+        }
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        viewer->scene->render();
+
+        if (viewer->renderToImage) {
+            viewer->saveAsImage();
+        }
+
+        // Swap buffers
+        glfwSwapBuffers(viewer->window);
+        glfwPollEvents();
+
+#ifndef EMSCRIPTEN // Check if the ESC key was pressed or the window was closed
+    }
+    while (glfwGetKey(viewer->window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+           glfwWindowShouldClose(viewer->window) == 0);
+#endif
+}
+
 void Viewer::render() {
 
-    if (!m_window)
+    if (!window)
         throw std::runtime_error("Unexpected program state");
 
     // Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     // Define colors
     setColors();
 
     // Create a scene
-    scene::Scene scene(m_frameBufferWidth, m_frameBufferHeight);
+    scene.reset(new mv::scene::Scene(frameBufferWidth, frameBufferHeight));
 
     // Add renderables to the default scene
     for (auto& renderable : drawables) {
-        scene.add(*renderable);
+        scene->add(*renderable);
     }
 
     glEnable(GL_DEPTH_TEST);
-    m_windowResized = true;
-    // Rendering loop
-	do {
+    windowResized = true;
 
-        if (m_windowResized) {
-            scene.notifyWindowResized(m_frameBufferWidth, m_frameBufferHeight);
-            m_windowResized = false;
-        }
-
-        if (m_renderToImage) {
-            prepareOffscreenRender();
-            glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, m_frameBufferId);
-        }
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        scene.render();
-
-        if (m_renderToImage) {
-            saveAsImage();
-        }
-
-        // Swap buffers
-		glfwSwapBuffers(m_window);
-		glfwPollEvents();
-
-	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(m_window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(m_window) == 0 );
+#ifndef EMSCRIPTEN
+    RenderLoop().draw();
+#else
+    std::cerr << "Setting RenderLoop::draw() as emscripten main loop" << std::endl;
+    emscripten_set_main_loop(RenderLoop::draw, 0, 1);
+#endif
 }
 
 void Viewer::prepareOffscreenRender() {
 
     // Set viewport for the off-screen render
-    glCallWithErrorCheck(glViewport, 0, 0, m_frameBufferWidth, m_frameBufferHeight);
+    glCallWithErrorCheck(glViewport, 0, 0, frameBufferWidth, frameBufferHeight);
 
     // Create frame buffer object
-    glCallWithErrorCheck(glGenFramebuffers, 1, &m_frameBufferId);
-    glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, m_frameBufferId);
+    glCallWithErrorCheck(glGenFramebuffers, 1, &frameBufferId);
+    glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, frameBufferId);
 
     // Create color attachment point that binds to a texture
-    glCallWithErrorCheck(glGenTextures, 1, &m_imageTextureId);
-    glCallWithErrorCheck(glBindTexture, GL_TEXTURE_2D, m_imageTextureId);
-    glCallWithErrorCheck(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGB, m_windowWidth, m_windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glCallWithErrorCheck(glGenTextures, 1, &imageTextureId);
+    glCallWithErrorCheck(glBindTexture, GL_TEXTURE_2D, imageTextureId);
+    glCallWithErrorCheck(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glCallWithErrorCheck(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glCallWithErrorCheck(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glCallWithErrorCheck(glFramebufferTexture2D, GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_imageTextureId, 0);
+    glCallWithErrorCheck(glFramebufferTexture2D, GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, imageTextureId, 0);
     glCallWithErrorCheck(glBindTexture, GL_TEXTURE_2D, 0);
 
     // The rendering for the image should have depth test enabled. Since depth buffer won't be sampled, we can
@@ -202,9 +265,9 @@ void Viewer::prepareOffscreenRender() {
     glCallWithErrorCheck(glGenRenderbuffers, 1, &renderBufferObject);
     glCallWithErrorCheck(glBindRenderbuffer, GL_RENDERBUFFER, renderBufferObject);
 #ifndef EMSCRIPTEN
-    glCallWithErrorCheck(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_windowWidth, m_windowHeight);
+    glCallWithErrorCheck(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, windowWidth, windowHeight);
 #else
-    glCallWithErrorCheck(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_windowWidth, m_windowHeight);
+    glCallWithErrorCheck(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
 #endif
     glCallWithErrorCheck(glBindRenderbuffer, GL_RENDERBUFFER, 0);
 #ifndef EMSCRIPTEN
@@ -251,8 +314,8 @@ void Viewer::saveAsImage() {
             filesystem::path(snapshotPrefix + to_string(numericSuffix) + ".jpg");
 
     // Read rgb pixels from the framebuffer
-    unique_ptr<GLubyte[]> rgbData(new GLubyte[m_windowWidth * m_windowHeight * 3]);
-    glCallWithErrorCheck(glReadPixels, 0, 0, m_windowWidth, m_windowHeight, GL_RGB, GL_UNSIGNED_BYTE, rgbData.get());
+    unique_ptr<GLubyte[]> rgbData(new GLubyte[windowWidth * windowHeight * 3]);
+    glCallWithErrorCheck(glReadPixels, 0, 0, windowWidth, windowHeight, GL_RGB, GL_UNSIGNED_BYTE, rgbData.get());
 
     // Write to image. Flip the data because the viewport coordinate system's origin is on
     // bottom left for OpenGL. Most window systems have top-right corner as the origin so
@@ -260,20 +323,20 @@ void Viewer::saveAsImage() {
     // windowing systems perspective
     stbi_flip_vertically_on_write(1);
     auto status = stbi_write_jpg(imageFileName.string().data(),
-                                 static_cast<int>(m_windowWidth),
-                                 static_cast<int>(m_windowHeight), 3, rgbData.get(), 100);
+                                 static_cast<int>(windowWidth),
+                                 static_cast<int>(windowHeight), 3, rgbData.get(), 100);
 
     // Unbind frame buffer, so the next draw call goes to the default frame buffer
     glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, 0);
 
     // Delete frame buffer and reset state variables
-    glCallWithErrorCheck(glDeleteFramebuffers, 1, &m_frameBufferId);
-    m_frameBufferId = 0;
-    m_renderToImage = false;
+    glCallWithErrorCheck(glDeleteFramebuffers, 1, &frameBufferId);
+    frameBufferId = 0;
+    renderToImage = false;
     // Reset viewport size to frame buffer size. This is important on osx with retina displays
     // where the resolution is twice the window size
     int frameBufferWidth, frameBufferHeight;
-    glfwGetFramebufferSize(m_window, &frameBufferWidth, &frameBufferHeight);
+    glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
     glViewport(0, 0, frameBufferWidth, frameBufferHeight);
 
     if (status) {
@@ -291,8 +354,8 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
     // formula:
     // window.x = viewport.x * windowWidth + 0;
     // window.y = -viewport.y * windowHeight + windowHeight
-    float windowWidth = static_cast<float>(m_windowWidth);
-    float windowHeight = static_cast<float>(m_windowHeight);
+    float windowWidth = static_cast<float>(windowWidth);
+    float windowHeight = static_cast<float>(windowHeight);
     return math3d::Matrix<float, 3, 3> {
             {windowWidth,   0.f,            0.f},
             {0.f,           -windowHeight,  windowHeight},
