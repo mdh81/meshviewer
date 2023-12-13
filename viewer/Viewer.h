@@ -8,6 +8,10 @@ class GLFWwindow;
 
 namespace mv {
 
+namespace scene {
+    class Scene;
+}
+
 // A viewer is a collection of scenes
 class Viewer : public MeshViewerObject {
     public:
@@ -19,15 +23,15 @@ class Viewer : public MeshViewerObject {
         void add(Drawable::Drawables const& newDrawables);
         // Render scenes, viewports, and renderables
         void render();
-        [[nodiscard]] unsigned getWidth() const { return m_windowWidth; }
-        [[nodiscard]] unsigned getHeight() const { return m_windowHeight; }
-        [[nodiscard]] bool isDisplayingNormals() const { return m_showNormals; }
+        [[nodiscard]] unsigned getWidth() const { return windowWidth; }
+        [[nodiscard]] unsigned getHeight() const { return windowHeight; }
+        [[nodiscard]] bool isDisplayingNormals() const { return showNormals; }
         enum class RenderMode {
             Wireframe,
             Shaded,
             ShadedWithEdges
         };
-        [[nodiscard]] RenderMode getRenderMode() const { return m_renderMode; }
+        [[nodiscard]] RenderMode getRenderMode() const { return renderMode; }
         [[nodiscard]] common::Point2D getCursorPosition() const { return cursorPosition; };
         [[nodiscard]] common::Point2D getCursorPositionDifference() const { return cursorPositionDifference; }
         [[nodiscard]] math3d::Matrix<float, 3, 3> getViewportToWindowTransform() const;
@@ -37,6 +41,19 @@ class Viewer : public MeshViewerObject {
 
     private:
         explicit Viewer(unsigned winWidth=1024, unsigned winHeight=768);
+        class RenderLoop {
+            public:
+                RenderLoop() {}
+                static void draw();
+            private:
+                static mv::Viewer* viewer;
+                friend class mv::Viewer;
+        };
+
+#ifdef EMSCRIPTEN
+        bool isCanvasResized() const;
+#endif
+
     public:
         Viewer(const Viewer&) = delete;
         Viewer(Viewer&&) = delete;
@@ -45,28 +62,30 @@ class Viewer : public MeshViewerObject {
 
     // Member data
     private:
-        unsigned m_windowWidth;
-        unsigned m_windowHeight;
-        unsigned m_frameBufferWidth;
-        unsigned m_frameBufferHeight;
-        GLFWwindow* m_window;
-        bool m_showNormals;
-        RenderMode m_renderMode;
-        bool m_renderToImage;
-        GLuint m_frameBufferId;
-        GLuint m_imageTextureId;
-        bool m_windowResized;
+        unsigned windowWidth;
+        unsigned windowHeight;
+        unsigned frameBufferWidth;
+        unsigned frameBufferHeight;
+        GLFWwindow* window;
+        bool showNormals;
+        RenderMode renderMode;
+        bool renderToImage;
+        GLuint frameBufferId;
+        GLuint imageTextureId;
+        bool windowResized;
         Drawable::Drawables drawables;
         Drawable::Drawables activeObjects;
         common::Point2D cursorPosition;
         common::Point2D cursorPositionDifference;
+        std::unique_ptr<mv::scene::Scene> scene;
+        bool printGLInfoOnStartup;
 
     // Member functions
     private:
         static void setColors();
 
         void saveSnapshot() {
-            m_renderToImage = true;
+            renderToImage = true;
         }
 
         void prepareOffscreenRender();
