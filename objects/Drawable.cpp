@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <utility>
+#include "ShaderLoaderFactory.h"
 using namespace std;
 
 namespace mv {
@@ -21,18 +22,16 @@ Drawable::Drawable(std::string  vertexShaderFileName, std::string fragmentShader
 
 void Drawable::createShaderProgram() {
 
-    filesystem::path shaderDir = "./shaders";
-
     // Vertex Shader
     string compilerOut;
-    auto status = mv::ShaderLoader().loadVertexShader(shaderDir / vertexShaderFileName, compilerOut);
+    auto status = ShaderLoaderFactory::getInstance().getShaderLoader().loadVertexShader(vertexShaderFileName, compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }
     GLuint vertexShaderId = get<1>(status);
 
     // Fragment Shader
-    status = mv::ShaderLoader().loadFragmentShader(shaderDir / fragmentShaderFileName, compilerOut);
+    status = ShaderLoaderFactory::getInstance().getShaderLoader().loadFragmentShader(fragmentShaderFileName, compilerOut);
     if (!get<0>(status)) {
         throw std::runtime_error(compilerOut.data());
     }
@@ -49,16 +48,23 @@ void Drawable::createShaderProgram() {
     // Link program
     glLinkProgram(shaderProgram);
 
-    // Check the program
+    // Check the program status
     GLint result;
     int infoLogLength;
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
 	glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
-	if ( infoLogLength > 0 ){
-		std::unique_ptr<char> pProgramErrorMessage {new char[infoLogLength+1]};
-		glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, pProgramErrorMessage.get());
-		cerr << pProgramErrorMessage.get();
-        throw std::runtime_error("Failed to load shaders " + std::string(pProgramErrorMessage.get()));
+	if ( result == GL_FALSE ) {
+        std::unique_ptr<char> errorMessage;
+        if (infoLogLength > 0) {
+            errorMessage.reset(new char[infoLogLength + 1]);
+            glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, errorMessage.get());
+        }
+		std::cerr << "Failed to create shader program for "
+             << vertexShaderFileName << " and " << fragmentShaderFileName << ". ";
+        if (errorMessage) {
+            std::cerr << "glLinkProgram returned " << errorMessage.get() << endl;
+        }
+        throw std::runtime_error("Failed to load shaders ");
 	}
 }
 
