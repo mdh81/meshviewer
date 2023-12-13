@@ -1,6 +1,12 @@
+file (
+    GLOB
+    shaderSources
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+)
+
 add_library(
     shaders 
-    ShaderLoader.cpp
+    ${shaderSources}
 )
 
 target_include_directories(
@@ -18,7 +24,7 @@ file(
 )
 
 add_custom_target(
-    shadercopy ALL
+    shaderCopy ALL
     ${CMAKE_COMMAND} -E copy ${shaders} ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
