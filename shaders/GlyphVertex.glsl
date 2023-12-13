@@ -1,5 +1,7 @@
 #version 410 core
 
+precision highp float;
+
 in vec3 vertexWorld;
 uniform vec3 lineColor;
 uniform mat4 modelViewTransform;
