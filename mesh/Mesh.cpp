@@ -265,7 +265,8 @@ void Mesh::generateRenderData() {
 
     // Push vertex data to graphics card
     const auto vertexData = getVertexData();
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexData.getDataSize()), vertexData.getData(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexData.getDataSize()), vertexData.getData(),
+                 GL_STATIC_DRAW);
 
     // Define layout of vertex data
     GLint posAttrib = glGetAttribLocation(shaderProgram, "vertexModel");
@@ -274,9 +275,9 @@ void Mesh::generateRenderData() {
                           3,                    //number of values for this attribute
                           GL_FLOAT,             //data type
                           GL_FALSE,             //data normalization status
-                          3*sizeof(float),      //stride--each vertex has 3 float entries
+                          3 * sizeof(float),      //stride--each vertex has 3 float entries
                           nullptr               //offset into the array
-                         );
+    );
 
     // Create VBO for normals
     GLuint meshNormalsVbo;
@@ -296,9 +297,9 @@ void Mesh::generateRenderData() {
                           3,                    //number of values for this attribute
                           GL_FLOAT,             //data type
                           GL_FALSE,             //data normalization status
-                          3*sizeof(float),      //stride--each normal has 3 float entries
+                          3 * sizeof(float),      //stride--each normal has 3 float entries
                           nullptr                     //offset into the array
-                         );
+    );
 
     // Define element data
     // Create element buffer object
@@ -307,7 +308,7 @@ void Mesh::generateRenderData() {
 
     // Upload connectivity data to element buffer object
     size_t numBytes;
-    GLuint* faceData;
+    GLuint *faceData;
     getConnectivityData(numBytes, faceData);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(numBytes), faceData, GL_STATIC_DRAW);
 
