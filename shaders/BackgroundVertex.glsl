@@ -1,5 +1,7 @@
 #version 410 core
 
+precision highp float;
+
 in vec3 vertexCameraIn;
 in vec3 vertexColorIn;
 out vec3 vertexColor;

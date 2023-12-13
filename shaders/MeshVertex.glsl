@@ -1,5 +1,7 @@
 #version 410 core
 
+precision highp float;
+
 in vec3 vertexModel;
 in vec3 vertexNormalModel;
 uniform mat4 projectionTransform;

@@ -1,4 +1,5 @@
 #version 410 core
+precision highp float;
 in vec3 vertexCamera;
 uniform struct {
     float minimumDistance;
