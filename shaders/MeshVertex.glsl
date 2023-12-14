@@ -9,7 +9,7 @@ uniform mat4 modelViewTransform;
 out vec3 vertexColor;
 out vec3 vertexCamera;
 
-uniform struct {
+uniform struct Material {
     vec3 ambientColor;
     vec3 diffuseColor;
     vec3 specularColor;
@@ -18,7 +18,7 @@ uniform struct {
 
 // NOTE: Light position is assumed to be in view coordinates
 // TODO: Support light position in world coordinates
-uniform struct {
+uniform struct Light {
     vec3 position;
     vec3 color;
 } light;
@@ -51,7 +51,7 @@ vec3 diffuseShading() {
     vec3 lightDirection = normalize(vec3(light.position - vertexLocation));
     vec3 vertexToCamera = -vertexLocation;
     vec3 diffuseColor;
-    if (dot(vertexToCamera, normalDirection) < 0) {
+    if (dot(vertexToCamera, normalDirection) < 0.0) {
         diffuseColor = material.diffuseColor * light.color * max(dot(-normalDirection, lightDirection), 0.0);
     } else {
         diffuseColor = material.diffuseColor * light.color * max(dot(normalDirection, lightDirection), 0.0);
@@ -67,7 +67,7 @@ vec3 phongShading() {
     vec3 vertexToLight = normalize(light.position - vertexView);
     vec3 parallelToNormal = dot(vertexToLight, vertexNormalCamera) * vertexNormalCamera;
     vec3 perpendicularToNormal = vertexToLight - parallelToNormal;
-    vec3 perfectReflection = 2*parallelToNormal - vertexToLight;
+    vec3 perfectReflection = 2.0*parallelToNormal - vertexToLight;
     vec3 vertexToCamera = -normalize(vertexView);
     float specularPower = pow(max(dot(perfectReflection, vertexToCamera), 0.0), material.shininess);
     vec3 specularLight = light.color * material.specularColor * specularReflectivity * specularPower;

@@ -1,7 +1,7 @@
 #version 410 core
 precision highp float;
 in vec3 vertexCamera;
-uniform struct {
+uniform struct Fog {
     float minimumDistance;
     float maximumDistance;
     vec3 color;
