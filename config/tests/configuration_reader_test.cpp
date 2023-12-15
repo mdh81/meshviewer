@@ -31,7 +31,7 @@ namespace mv { namespace config {
         }
         static unsigned getNumberOfKeysStartingWith(char c, ConfigurationReader& cfgReader) {
             unsigned result = 0;
-            for (auto& key : cfgReader.m_data) {
+            for (auto& key : cfgReader.data) {
                 result += key.first.starts_with(c);
             }
             return result;
