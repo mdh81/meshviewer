@@ -151,6 +151,10 @@ struct WindowDimensions {
     unsigned height;
 };
 
+#ifdef EMSCRIPTEN
+using CanvasDimensions = WindowDimensions;
+#endif
+
 enum class NormalLocation {
     Face,
     Vertex
