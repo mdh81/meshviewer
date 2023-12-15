@@ -50,8 +50,10 @@ class Viewer : public MeshViewerObject {
                 friend class mv::Viewer;
         };
 
+        void createWindow();
+
 #ifdef EMSCRIPTEN
-        bool isCanvasResized() const;
+        bool isCanvasResized(common::CanvasDimensions& canvasDimensions) const;
 #endif
 
     public:

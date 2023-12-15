@@ -50,9 +50,33 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , showNormals{}
     , printGLInfoOnStartup{true} {
 
+    // Register event handlers
+    EventHandler().registerCallback(
+            Event(GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT),
+            CallbackFactory::getInstance().registerCallback
+                    (*this, &Viewer::saveSnapshot));
+
+    Viewer::RenderLoop::viewer = this;
+}
+
+void Viewer::createWindow() {
+
+    if (window) {
+        std::cerr << "Ignoring request to create window. Window was already created" << std::endl;
+        return;
+    }
+
     // Initialize GLFW
     if (!glfwInit())
         throw std::runtime_error("Failed to initialize GLFW");
+
+    int width = static_cast<int>(windowWidth);
+    int height = static_cast<int>(windowHeight);
+
+#ifdef EMSCRIPTEN
+    emscripten_get_canvas_element_size("#canvas", &width, &height);
+    std::cerr << "Canvas element size = " << width << ", " << height << std::endl;
+#endif
 
     // Create GLFW window
     glfwWindowHint(GLFW_SAMPLES, 4);
@@ -65,29 +89,11 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(static_cast<int>(windowWidth),
-                              static_cast<int>(windowHeight),
-                              "MeshViewer", nullptr, nullptr);
-    if(!window) {
+    window = glfwCreateWindow(width, height, "Mesh Viewer", nullptr, nullptr);
+    if (!window) {
         glfwTerminate();
         throw std::runtime_error("Unable to create GLFW Window");
     }
-
-    // Get initial framebuffer size
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-    frameBufferWidth = static_cast<unsigned>(width);
-    frameBufferHeight = static_cast<unsigned>(height);
-
-    // Get notified when window size changes
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window,
-                                   [](GLFWwindow *window, int width, int height) {
-          auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
-          viewer->frameBufferWidth = width;
-          viewer->frameBufferHeight = height;
-          viewer->windowResized = true;
-    });
     glfwMakeContextCurrent(window);
 
 #ifndef EMSCRIPTEN
@@ -104,6 +110,22 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
         std::cout << "OpenGL Version: " << glVersion << std::endl;
         std::cout << "GLSL Version:  "  << glslVersion << std::endl;
     }
+
+    // Get initial framebuffer size
+    glfwGetFramebufferSize(window, &width, &height);
+    frameBufferWidth = static_cast<unsigned>(width);
+    frameBufferHeight = static_cast<unsigned>(height);
+
+    // Get notified when window size changes
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window,
+                                   [](GLFWwindow *window, int width, int height) {
+                                       auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
+                                       viewer->frameBufferWidth = width;
+                                       viewer->frameBufferHeight = height;
+                                       viewer->windowResized = true;
+                                   });
+
 
     // Keep track of cursor position to handle various interaction gestures
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
@@ -124,16 +146,10 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
         }
         EventHandler().raiseEvent(Event(MOUSE_WHEEL_EVENT, modifierKeys));
     });
-    // Register event handlers
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT),
-            CallbackFactory::getInstance().registerCallback
-                    (*this, &Viewer::saveSnapshot));
 
     // Start handling events
     EventHandler().start(window);
 
-    Viewer::RenderLoop::viewer = this;
 }
 
 void Viewer::setColors() {
@@ -149,27 +165,29 @@ void Viewer::add(Drawable::Drawables const& newDrawables) {
 }
 
 #ifdef EMSCRIPTEN
-bool Viewer::isCanvasResized() const {
+bool Viewer::isCanvasResized(CanvasDimensions& canvasDimensions) const {
     double deviceWidth, deviceHeight;
     int canvasWidth, canvasHeight;
     emscripten_get_canvas_element_size("#canvas", &canvasWidth, &canvasHeight);
     emscripten_get_element_css_size("#canvas", &deviceWidth, &deviceHeight);
     double pixelRatio = emscripten_get_device_pixel_ratio();
-    //if (canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
-    // canvasHeight != static_cast<int>(deviceHeight * pixelRatio)) {
-        /*std::cout << "Emscripten Canvas Resized: "
+    if (canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
+     canvasHeight != static_cast<int>(deviceHeight * pixelRatio)) {
+        std::cout << "Emscripten Canvas Resized: "
                   << "Canvas width = " << canvasWidth << ' '
                   << "Canvas height = " << canvasHeight << ' '
                   << "CSS width = " << deviceWidth << ' '
                   << "CSS height = " << deviceHeight << ' '
-                  << "Pixel ratio = " << pixelRatio << std::endl;*/
+                  << "Pixel ratio = " << pixelRatio << std::endl;
         canvasWidth = static_cast<int> (deviceWidth * pixelRatio);
         canvasHeight = static_cast<int> (deviceHeight * pixelRatio);
         emscripten_set_canvas_element_size("#canvas", canvasWidth, canvasHeight);
+        canvasDimensions.width = canvasWidth;
+        canvasDimensions.height = canvasHeight;
         return true;
-    //} else {
-    //return false;
-    //}
+    } else {
+        return false;
+    }
 }
 #endif
 
@@ -179,7 +197,10 @@ void Viewer::RenderLoop::draw() {
 #endif
 
 #ifdef EMSCRIPTEN
-        viewer->windowResized = viewer->isCanvasResized();
+        CanvasDimensions canvasDimensions;
+        if ((viewer->windowResized = viewer->isCanvasResized(canvasDimensions))) {
+            glfwSetWindowSize(viewer->window, canvasDimensions.width, canvasDimensions.height);
+        }
 #endif
 
         if (viewer->windowResized) {
@@ -214,7 +235,7 @@ void Viewer::RenderLoop::draw() {
 void Viewer::render() {
 
     if (!window)
-        throw std::runtime_error("Unexpected program state");
+        createWindow();
 
     // Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
