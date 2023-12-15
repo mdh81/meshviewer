@@ -12,6 +12,8 @@ endif()
 
 project(MeshViewer VERSION 1.0.0)
 
+include(common/testsupport/TestSupport.cmake)
+
 if (APPLE)
     add_compile_options(-DOSX)
     set(enableTesting ON)
@@ -100,7 +102,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # Set default build type to debug
-set(CMAKE_BUILD_TYPE Debug)
+if (NOT DEFINED CMAKE_BUILD_TYPE)
+    message(STATUS "No build type specified. Setting build type to debug")
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
 
 # List of opengl libraries
 if (NOT EMSCRIPTEN)
@@ -173,4 +178,18 @@ add_custom_target(
 
 if (EMSCRIPTEN)
     add_subdirectory(web)
+endif()
+
+if (enableTesting)
+    add_custom_target(
+        createTestRunner
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/common/testsupport/createTestRunner.sh ${CMAKE_BINARY_DIR}
+    )
+    add_custom_command(
+        TARGET ${appName}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target createTestRunner
+    )
+    # TODO: Add a custom target and command to automatically run tests when build is complete
+
 endif()
