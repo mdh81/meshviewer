@@ -1,21 +1,12 @@
-add_executable(
-    viewer_test
-    viewer_test.cpp
-)
+# Rely on common/testsupport/TestSupport.cmake to populate allTests
+addTestSources()
 
-add_executable(
-    scene_test
-    scene_test.cpp
-)
-
-add_executable(
-    viewport_test
-    viewport_test.cpp
-)
-
-set(allTests viewer_test scene_test viewport_test)
+include(GoogleTest)
 
 foreach(test ${allTests})
+
+    add_executable(${test} ${test}.cpp)
+
     target_include_directories(
         ${test} 
         PUBLIC
@@ -45,4 +36,5 @@ foreach(test ${allTests})
         configuration
         gmock
     )
+    gtest_discover_tests(${test})
 endforeach(test)

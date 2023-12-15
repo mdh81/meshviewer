@@ -16,7 +16,6 @@ target_link_libraries(
 )
 
 if (enableTesting)
-    message(STATUS "Enabling testing for events")
     enable_testing()
     add_subdirectory(tests)
 endif()

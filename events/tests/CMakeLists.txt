@@ -1,26 +1,17 @@
-add_executable(
-    callback_factory_test 
-    callback_factory_test.cpp)
+# Rely on common/testsupport/TestSupport.cmake to populate allTests
+addTestSources()
 
-add_executable(
-    event_handler_test 
-    event_handler_test.cpp
-)
+include(GoogleTest)
 
-# Convenience variables
-set(allTests callback_factory_test event_handler_test)
 
-# All tests include headers from the source directory 
-foreach(test ${allTests})
+foreach (test ${allTests})
+    add_executable(${test} ${test}.cpp)
     target_include_directories(
         ${test} 
         PUBLIC
         ../
     )
-endforeach(test)
-
-# All tests link against gtest, events, and gl libraries 
-foreach(test ${allTests})
+    # All tests link against gtest, events, and gl libraries
     target_link_libraries(
         ${test}
         PUBLIC
@@ -29,10 +20,5 @@ foreach(test ${allTests})
         gtest_main
         events
     )  
-endforeach(test)
-
-# Enable test discovery for each test
-include(GoogleTest)
-foreach(test ${allTests})
     gtest_discover_tests(${test})
 endforeach(test)

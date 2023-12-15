@@ -1,19 +1,23 @@
-add_executable(
-    configuration_reader_test
-    configuration_reader_test.cpp
-)
+# Rely on common/testsupport/TestSupport.cmake to populate allTests
+addTestSources()
 
-target_include_directories(
-    configuration_reader_test
-    PUBLIC
-    ../
-    ../../
-)
+include(GoogleTest)
 
-target_link_libraries(
-    configuration_reader_test
-    PUBLIC
-    gtest_main
-    configuration
-    common
-)
+foreach (test ${allTests})
+    add_executable(${test} ${test}.cpp)
+    target_include_directories(
+        ${test}
+        PUBLIC
+        ../
+        ../../
+    )
+    target_link_libraries(
+        ${test}
+        PUBLIC
+        gtest_main
+        configuration
+        common
+    )
+
+    gtest_discover_tests(${test})
+endforeach(test)

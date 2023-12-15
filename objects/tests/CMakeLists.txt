@@ -1,23 +1,19 @@
-add_executable(
-    glyph_test 
-    glyph_test.cpp)
+# Rely on common/testsupport/TestSupport.cmake to populate allTests
+addTestSources()
 
-# Add test coverage for gradient background
+include(GoogleTest)
 
-# Convenience variables
-set(allTests glyph_test)
+foreach (test ${allTests})
 
-# All tests include headers from the source directory
-foreach(test ${allTests})
+    add_executable(${test} ${test}.cpp)
+
     target_include_directories(
         ${test} 
         PUBLIC
         ../
     )
-endforeach(test)
 
-# All tests link against gtest
-foreach(test ${allTests})
+    # All tests link against gtest
     target_link_libraries(
         ${test}
         PUBLIC
@@ -28,10 +24,5 @@ foreach(test ${allTests})
         events
         configuration
     )
-endforeach(test)
-
-# Enable test discovery for each test
-include(GoogleTest)
-foreach(test ${allTests})
     gtest_discover_tests(${test} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
 endforeach(test)

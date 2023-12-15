@@ -1,18 +1,19 @@
-include(GoogleTest)
-file(GLOB sources "*.cpp")
+# Rely on common/testsupport/TestSupport.cmake to populate allTests
+addTestSources()
 
-foreach(source ${sources})
-    get_filename_component(testExecutable ${source} NAME_WE)
-    add_executable(${testExecutable} ${source})
+include(GoogleTest)
+
+foreach (test ${allTests})
+    add_executable(${test} ${test}.cpp)
     target_include_directories(
-        ${testExecutable}
+        ${test}
         PUBLIC
         ../
         ../../mesh
     )
     # TODO: Create mocks for all dependencies. Reader tests should link only against reader library
     target_link_libraries(
-        ${testExecutable}
+        ${test}
         PUBLIC
         gtest_main
         readers
@@ -23,5 +24,5 @@ foreach(source ${sources})
         events
         ${glLibs}
     )
-    gtest_discover_tests(${testExecutable} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
-endforeach(source)
+    gtest_discover_tests(${test} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
+endforeach(test)
