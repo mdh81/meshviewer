@@ -269,7 +269,6 @@ void Camera::toggleOrbit(const common::Axis& axis) {
      // cross-origin opener policies via http headers. This is too much work at
      // this point, and as per the dit might impede loading other resources
      // Reference: https://developer.chrome.com/blog/coep-credentialless-origin-trial/
-#ifndef EMSCRIPTEN
     if (!orbitAxis) {
         // If the orbit axis hasn't been set yet, set it and start orbiting around it
         orbitAxis = axis;
@@ -293,7 +292,6 @@ void Camera::toggleOrbit(const common::Axis& axis) {
         }
         timerThread = std::make_unique<std::thread>(&Camera::orbitLoop, this);
     }
-#endif
 }
 
 // TODO: Implement zoom to cursor location
