@@ -39,7 +39,7 @@ TEST(PointerTypes, Hashing) {
     ASSERT_EQ(SmartPointerHasher{}(f), reinterpret_cast<size_t>(f.get()));
 }
 
-TEST(PointerTypes, Comparision) {
+TEST(PointerTypes, Comparison) {
     SharedPointer<Foo> f1 = std::make_shared<Foo>(10, 11.11f, 'x');
     SharedPointer<Foo> f2 = f1;
     ASSERT_TRUE(SmartPointerComparator{}(f1, f2));
