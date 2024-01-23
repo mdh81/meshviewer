@@ -4,8 +4,11 @@
 
 namespace mv::common {
 
+    // Dummy base class to enforce smart pointer only constraint in the hasher and comparator
+    // Also useful in contexts where app code doesn't care about pointer type, which occurs frequently
     struct SmartPointer {};
 
+    // A shared pointer
     template<typename T>
     struct SharedPointer : SmartPointer, std::shared_ptr<T> {
         // Emplace support constructor
