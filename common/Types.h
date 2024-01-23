@@ -215,4 +215,3 @@ std::ostream& operator<<(std::ostream& os, Direction const direction) {
     }
     return os;
 }
-}

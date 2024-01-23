@@ -2,7 +2,7 @@
 #include "GLFW/glfw3.h"
 #include "gtest/gtest.h"
 #include "EventHandler.h"
-#include "CallbackFactory.h"
+#include "CallbackFactory_Old.h"
 #include <string>
 #include <iostream>
 
@@ -33,13 +33,13 @@ TEST(EventHandler, Callback) {
     EventHandler eh;
     Listener t;
     eh.registerCallback(Event{GLFW_KEY_O},
-                        CallbackFactory::getInstance().registerCallback(t, &Listener::handleOKey)); 
+                        CallbackFactory_Old::getInstance().registerCallback(t, &Listener::handleOKey));
     eh.registerCallback(Event{GLFW_KEY_P},
-                        CallbackFactory::getInstance().registerCallback(t, &Listener::handlePKey));
+                        CallbackFactory_Old::getInstance().registerCallback(t, &Listener::handlePKey));
     eh.registerCallback(Event {GLFW_MOUSE_BUTTON_LEFT},
-                        CallbackFactory::getInstance().registerCallback(t, &Listener::handleLeftMouse));
+                        CallbackFactory_Old::getInstance().registerCallback(t, &Listener::handleLeftMouse));
     eh.registerCallback(Event {GLFW_MOUSE_BUTTON_MIDDLE, GLFW_MOD_SHIFT},
-                        CallbackFactory::getInstance().registerCallback(t, &Listener::handleMiddleMouseWithShiftDown));
+                        CallbackFactory_Old::getInstance().registerCallback(t, &Listener::handleMiddleMouseWithShiftDown));
     testing::internal::CaptureStdout();
     EventHandlerTest().simulateKeyPress(GLFW_KEY_O);
     ASSERT_EQ(testing::internal::GetCapturedStdout(), "O was pressed");

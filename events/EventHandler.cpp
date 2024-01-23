@@ -34,7 +34,7 @@ void EventHandler::handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifier
     }
 }
 
-void EventHandler::registerCallback(const Event& event, const Callback& callback) {
+void EventHandler::registerCallback(const Event& event, const Callback_Old& callback) {
     eventCallbackMap.emplace(event, std::ref(callback));
 }
 
@@ -49,8 +49,8 @@ void EventHandler::start(GLFWwindow* window) {
     }
 }
 
-Callback const* EventHandler::getEventHandler(int const glfwKeyOrButton, int const mods) {
-    Callback const* callback = nullptr;
+Callback_Old const* EventHandler::getEventHandler(int const glfwKeyOrButton, int const mods) {
+    Callback_Old const* callback = nullptr;
     auto lookupRes = eventCallbackMap.find(Event(glfwKeyOrButton, mods));
     if (lookupRes != eventCallbackMap.end()) {
         callback = &(lookupRes->second.get());

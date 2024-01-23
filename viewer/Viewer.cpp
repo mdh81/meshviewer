@@ -4,7 +4,7 @@
 #include "Mesh.h"
 #include "ShaderLoader.h"
 #include "EventHandler.h"
-#include "CallbackFactory.h"
+#include "CallbackFactory_Old.h"
 #include "ConfigurationReader.h"
 
 #ifdef OSX
@@ -53,7 +53,7 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     // Register event handlers
     EventHandler().registerCallback(
             Event(GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT),
-            CallbackFactory::getInstance().registerCallback
+            CallbackFactory_Old::getInstance().registerCallback
                     (*this, &Viewer::saveSnapshot));
 
     Viewer::RenderLoop::viewer = this;

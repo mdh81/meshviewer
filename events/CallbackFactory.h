@@ -1,56 +1,41 @@
-#ifndef MESH_VIEWER_CALLBACK_FACTORY_H
-#define MESH_VIEWER_CALLBACK_FACTORY_H
+#pragma once
 
-#include "Callback.h"
-#include "NonMemberFunctionCallback.h"
-#include "MemberFunctionCallback.h"
+#include "Callbacks.h"
+#include "MeshViewerObject.h"
+#include "PointerTypes.h"
+#include <unordered_set>
 
-#include <memory>
-
-namespace mv { namespace events {
+namespace mv::events {
 
 class CallbackFactory {
 
-    public:
-        static CallbackFactory& getInstance() {
-            static CallbackFactory cb;
-            return cb;
+public:
+    template<typename InstanceType, typename FunctionPointerType, typename... ArgumentTypes>
+    BasicEventCallback::Pointer const& createCallback(InstanceType& instance, FunctionPointerType functionPointer, ArgumentTypes&&... arguments) {
+        if (sizeof...(ArgumentTypes)) {
+            return createBasicEventCallback(instance, functionPointer, std::forward<ArgumentTypes>(arguments)...);
         }
+    }
 
-        template<typename FunctionPtrT, typename... CallbackArgsT>
-        Callback& registerCallback(FunctionPtrT* functionPtr, const CallbackArgsT&... args) {
+    void removeCallback(BasicEventCallback::Pointer const& basicEventCallback) {
+        basicEventCallbacks.erase(basicEventCallbacks.find(basicEventCallback));
+    }
 
-            m_callbackFunctions.push_back(
-                    std::unique_ptr<Callback>(
-                        new NonMemberFunctionCallback<FunctionPtrT, CallbackArgsT...>(functionPtr, args...))); 
+private:
+    template<typename InstanceType, typename FunctionPointerType, typename... ArgumentTypes>
+    BasicEventCallback::Pointer const& createBasicEventCallback(InstanceType& instance, FunctionPointerType functionPointer, ArgumentTypes&&... arguments) {
+        auto [itr, status] = basicEventCallbacks.emplace(new BasicEventCallbackImpl(instance, functionPointer, std::forward<ArgumentTypes>(arguments)...));
+        return *itr;
+    }
 
-            return *m_callbackFunctions.back().get();
-        }
-        
-        template<typename InstanceT, typename FunctionPtrT, typename... CallbackArgsT>
-        Callback& registerCallback(InstanceT& instance, FunctionPtrT funcPtr, const CallbackArgsT&... args) {
-
-            m_callbackFunctions.push_back(std::unique_ptr<Callback>(
-                new MemberFunctionCallback<InstanceT, FunctionPtrT, CallbackArgsT...>(instance, funcPtr, args...)));
-            return *m_callbackFunctions.back().get();
-        }
-
-    private:
-        CallbackFactory() = default;
-        ~CallbackFactory() = default;
-        CallbackFactory(const CallbackFactory&) = delete;
-        CallbackFactory(CallbackFactory&&) = delete;
-        void operator=(const CallbackFactory&) = delete;
-        void operator=(CallbackFactory&&) = delete;
-
-    private:
-        using CallbackPointerT = std::unique_ptr<Callback>; 
-        std::vector<CallbackPointerT> m_callbackFunctions;
+private:
+    static inline
+    std::unordered_set<
+            BasicEventCallback::Pointer,
+            common::SmartPointerHasher,
+            common::SmartPointerComparator> basicEventCallbacks{};
 
     friend class CallbackFactoryTester;
-
 };
 
-} }
-
-#endif
+}

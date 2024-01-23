@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "CallbackFactory.h"
+#include "CallbackFactory_Old.h"
 #include <memory>
 using namespace mv::events;
 using namespace std;
@@ -9,11 +9,11 @@ using namespace std;
 namespace mv { namespace events {
 class CallbackFactoryTester {
     public:
-        CallbackFactoryTester(CallbackFactory& cbf) : m_cbf(cbf) { }
+        CallbackFactoryTester(CallbackFactory_Old& cbf) : m_cbf(cbf) { }
         size_t getNumberOfCallbacks() const { return m_cbf.m_callbackFunctions.size(); } 
         void callFunction() { m_cbf.m_callbackFunctions.front()->call(); }
     private:
-        CallbackFactory& m_cbf;
+        CallbackFactory_Old& m_cbf;
 };
 } }
 
@@ -30,36 +30,36 @@ class TestClass {
 };
 
 
-TEST(CallbackFactory, Singleton) {
-    CallbackFactory& cb1 = CallbackFactory::getInstance(); 
-    CallbackFactory& cb2 = CallbackFactory::getInstance(); 
+TEST(CallbackFactory_Old, Singleton) {
+    CallbackFactory_Old& cb1 = CallbackFactory_Old::getInstance();
+    CallbackFactory_Old& cb2 = CallbackFactory_Old::getInstance();
     ASSERT_EQ(&cb1, &cb2) << "CallbackFactory::getInstance() is not returning a singleton" << std::endl;
 }
 
-TEST(CallbackFactory, RegisterFreeFunction) {
-    CallbackFactory::getInstance().registerCallback(&freeFunction, 5, 2.3f, 'x'); 
-    ASSERT_TRUE(CallbackFactoryTester(CallbackFactory::getInstance()).getNumberOfCallbacks() == 1);
+TEST(CallbackFactory_Old, RegisterFreeFunction) {
+    CallbackFactory_Old::getInstance().registerCallback(&freeFunction, 5, 2.3f, 'x');
+    ASSERT_TRUE(CallbackFactoryTester(CallbackFactory_Old::getInstance()).getNumberOfCallbacks() == 1);
     testing::internal::CaptureStdout();
-    CallbackFactoryTester(CallbackFactory::getInstance()).callFunction();
+    CallbackFactoryTester(CallbackFactory_Old::getInstance()).callFunction();
     ASSERT_EQ(testing::internal::GetCapturedStdout(), 
               "freeFunction called with parameters 5 2.3 x") << "Free function not called as expected" << endl;
 }
 
-TEST(CallbackFactory, RegisterMemberFunction) {
+TEST(CallbackFactory_Old, RegisterMemberFunction) {
     TestClass t;
-    CallbackFactory::getInstance().registerCallback(t, &TestClass::memberFunction, 15, 12.3f, 'y');
+    CallbackFactory_Old::getInstance().registerCallback(t, &TestClass::memberFunction, 15, 12.3f, 'y');
     testing::internal::CaptureStdout();
-    CallbackFactoryTester(CallbackFactory::getInstance()).callFunction();
+    CallbackFactoryTester(CallbackFactory_Old::getInstance()).callFunction();
     ASSERT_EQ(testing::internal::GetCapturedStdout(), 
               "TestClass::memberFunction called with parameters 15 12.3 y") << "Member function not called as expected" << endl;
 }
 
-TEST(CallbackFactory, InstanceLifeCycleManagement) {
+TEST(CallbackFactory_Old, InstanceLifeCycleManagement) {
     
     TestClass t; 
-    CallbackFactory::getInstance().registerCallback(t, &TestClass::memberFunction, 25, 22.3f, 'z');
+    CallbackFactory_Old::getInstance().registerCallback(t, &TestClass::memberFunction, 25, 22.3f, 'z');
     testing::internal::CaptureStdout();
-    CallbackFactoryTester(CallbackFactory::getInstance()).callFunction();
+    CallbackFactoryTester(CallbackFactory_Old::getInstance()).callFunction();
     ASSERT_EQ(testing::internal::GetCapturedStdout(), 
               "TestClass::memberFunction called with parameters 25 22.3 z") << "Member function not called as expected" << endl;
 }

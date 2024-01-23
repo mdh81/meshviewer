@@ -1,13 +1,13 @@
 #ifndef MESH_VIEWER_NMFUNC_CALLBACK_H
 #define MESH_VIEWER_NMFUNC_CALLBACK_H
 
-#include "Callback.h"
+#include "Callback_Old.h"
 #include <tuple>
 
 namespace mv { namespace events {
 
 template<typename FunctionPtrT, typename... FunctionArgsT>
-class NonMemberFunctionCallback : public Callback {
+class NonMemberFunctionCallback : public Callback_Old {
     public:
         NonMemberFunctionCallback(FunctionPtrT* funcPtr, const FunctionArgsT&... args) 
             : m_functionPointer(funcPtr) {

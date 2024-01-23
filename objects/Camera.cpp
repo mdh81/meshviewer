@@ -2,7 +2,7 @@
 #include "Drawable.h"
 #include "Types.h"
 #include "EventHandler.h"
-#include "CallbackFactory.h"
+#include "CallbackFactory_Old.h"
 #include "ConfigurationReader.h"
 #include "Util.h"
 #include <iostream>
@@ -28,25 +28,25 @@ using namespace events;
     , movementIncrement(.02f) {
     // Register event handlers for switching between perspective and orthographic
     EventHandler().registerCallback(Event(GLFW_KEY_O),
-        CallbackFactory::getInstance().registerCallback(
+                                    CallbackFactory_Old::getInstance().registerCallback(
             *this, &Camera::setProjectionType, ProjectionType::Orthographic));
 
     EventHandler().registerCallback(Event(GLFW_KEY_P),
-        CallbackFactory::getInstance().registerCallback(
+                                    CallbackFactory_Old::getInstance().registerCallback(
             *this, &Camera::setProjectionType, ProjectionType::Perspective));
 
     EventHandler().registerCallback(Event(GLFW_KEY_X),
-        CallbackFactory::getInstance().registerCallback(
+                                    CallbackFactory_Old::getInstance().registerCallback(
             *this, &Camera::toggleOrbit, common::Axis::X));
 
 
     EventHandler().registerCallback(Event(GLFW_KEY_Y),
-        CallbackFactory::getInstance().registerCallback(
+                                    CallbackFactory_Old::getInstance().registerCallback(
             *this, &Camera::toggleOrbit, common::Axis::Y));
 
 
     EventHandler().registerCallback(Event(GLFW_KEY_Z),
-        CallbackFactory::getInstance().registerCallback(
+                                    CallbackFactory_Old::getInstance().registerCallback(
             *this, &Camera::toggleOrbit, common::Axis::Z));
 
 }

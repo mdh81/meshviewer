@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Callback.h" 
+#include "Callback_Old.h"
 #include "Event.h"
 #include "MeshViewerObject.h"
 #include "GLFW/glfw3.h"
@@ -30,7 +30,7 @@ namespace mv {
             void start(GLFWwindow* window);
 
             // Register a callback for the specified event
-            void registerCallback(Event const&, Callback const& callback);
+            void registerCallback(Event const&, Callback_Old const& callback);
 
             // Raise an event
             void raiseEvent(Event const& event);
@@ -48,8 +48,8 @@ namespace mv {
             EventHandler& operator==(EventHandler&&) = delete;
 
         private:
-            using CallbackRef = std::reference_wrapper<const Callback>;
-            using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHash, Event::EventEquals>;
+            using CallbackRef = std::reference_wrapper<const Callback_Old>;
+            using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHasher, Event::EventComparator>;
             static EventCallbackMap eventCallbackMap;
             static bool started;
             static unsigned modifierKeys;
@@ -64,7 +64,7 @@ namespace mv {
             static void handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifiers);
 
             // Find the Event object to handle the GLFW mouse or keyboard event
-            static Callback const* getEventHandler(int eventIdentifier, int mods);
+            static Callback_Old const* getEventHandler(int eventIdentifier, int mods);
 
         friend class EventHandlerTest;
         friend class mv::viewer::ViewerTest;

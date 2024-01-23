@@ -4,7 +4,7 @@
 #include <vector>
 #include "Viewer.h"
 #include "EventHandler.h"
-#include "CallbackFactory.h"
+#include "CallbackFactory_Old.h"
 #include "Types.h"
 
 namespace mv::scene {
@@ -22,27 +22,27 @@ namespace mv::scene {
 
         mv::events::EventHandler().registerCallback(
                 mv::events::Event(GLFW_KEY_N),
-                mv::events::CallbackFactory::getInstance().registerCallback
+                mv::events::CallbackFactory_Old::getInstance().registerCallback
                         (*this, &Viewport::toggleGlyphsDisplay));
 
         mv::events::EventHandler().registerCallback(
                 mv::events::Event(GLFW_KEY_G),
-                mv::events::CallbackFactory::getInstance().registerCallback
+                mv::events::CallbackFactory_Old::getInstance().registerCallback
                         (*this, &Viewport::toggleGradientBackgroundDisplay));
 
         mv::events::EventHandler().registerCallback(
                 mv::events::Event(GLFW_KEY_F),
-                mv::events::CallbackFactory::getInstance().registerCallback
+                mv::events::CallbackFactory_Old::getInstance().registerCallback
                         (*this, &Viewport::toggleFog));
 
         mv::events::EventHandler().registerCallback(
                 mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_CONTROL),
-                mv::events::CallbackFactory::getInstance().registerCallback(
+                mv::events::CallbackFactory_Old::getInstance().registerCallback(
                         *this, &Viewport::zoom3DView));
 
         mv::events::EventHandler().registerCallback(
                 mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_SHIFT),
-                mv::events::CallbackFactory::getInstance().registerCallback(
+                mv::events::CallbackFactory_Old::getInstance().registerCallback(
                         *this, &Viewport::pan3DView));
     }
 

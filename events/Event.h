@@ -22,14 +22,14 @@ class Event {
         Event& operator=(Event const&) = delete;
         Event& operator=(Event&& other) = delete;
 
-        struct EventEquals {
+        struct EventComparator {
             bool operator()(Event const& eventA, Event const& eventB) const {
                 return eventA.m_id == eventB.m_id &&
                     eventA.m_modifier == eventB.m_modifier;
             }
         };
 
-        struct EventHash {
+        struct EventHasher {
             size_t operator()(Event const& event) const  {
                 return event.m_id;
             }

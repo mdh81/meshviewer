@@ -1,6 +1,6 @@
 #include "GradientBackground.h"
 #include "ConfigurationReader.h"
-#include "CallbackFactory.h"
+#include "CallbackFactory_Old.h"
 #include "EventHandler.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 #include "Gadget.h"
@@ -25,17 +25,17 @@ GradientBackground::GradientBackground(GradientType const type, GradientDirectio
 , m_numberOfConnectivityEntries (0) {
     EventHandler().registerCallback(
             Event(GLFW_KEY_H),
-    CallbackFactory::getInstance().registerCallback
+            CallbackFactory_Old::getInstance().registerCallback
                 (*this, &GradientBackground::setGradientDirection, GradientDirection::Horizontal));
 
     EventHandler().registerCallback(
             Event(GLFW_KEY_V),
-    CallbackFactory::getInstance().registerCallback
+            CallbackFactory_Old::getInstance().registerCallback
                 (*this, &GradientBackground::setGradientDirection, GradientDirection::Vertical));
 
     EventHandler().registerCallback(
             Event(GLFW_KEY_G, GLFW_MOD_ALT),
-    CallbackFactory::getInstance().registerCallback
+            CallbackFactory_Old::getInstance().registerCallback
                 (*this, &GradientBackground::toggleGradientType));
 
     // TODO: Remove after aspect ratio problem is sorted out
