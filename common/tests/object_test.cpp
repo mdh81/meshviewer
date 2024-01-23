@@ -1,13 +1,14 @@
 #include "gtest/gtest.h"
 #include "MeshViewerObject.h"
-#include "Mesh.h"
-#include "Octree.h"
 using namespace std;
 using namespace mv;
 
+class Mesh : public MeshViewerObject {};
+class Octree : public MeshViewerObject {};
+
 TEST(Object, TestIdentifier) {
     Mesh m;
-    Octree o(m);
+    Octree o;
     ASSERT_NE(m.getId(), o.getId()) << "Two different identifiers were expected" << std::endl;
     ASSERT_EQ(2, o.getId()) << "Wrong identifier" << std::endl;
     ASSERT_EQ(1, m.getId()) << "Wrong identifier" << std::endl;
