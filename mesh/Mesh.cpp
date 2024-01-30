@@ -98,7 +98,7 @@ unsigned Mesh::removeDuplicateVertices() {
             if (duplicateVertices.find(neighbors.at(ni)) == duplicateVertices.end() &&
                 neighbors.at(ni) != i &&
                 getVertex(neighbors.at(ni)) == getVertex(i)) {
-                m_outputStream << "Vertex at " << i << ' ' << getVertex(i)
+                cout << "Vertex at " << i << ' ' << getVertex(i)
                                << " has a duplicate vertex at index " << neighbors.at(ni) << endl;
                 duplicateVertices.insert(i);
                 duplicateVertices.insert(neighbors.at(ni));
@@ -126,8 +126,8 @@ unsigned Mesh::removeDuplicateVertices() {
     for (auto& remapEntry : remapEntries) {
         // TODO: Complete implementation of remap
     }
-    if (m_debugOn)
-        m_outputStream << "Removed " << numDuplicates << " duplicate vertices" << endl;
+    if (debug)
+        cout << "Removed " << numDuplicates << " duplicate vertices" << endl;
     return duplicateVertices.size();
 }
 

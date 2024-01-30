@@ -122,10 +122,10 @@ void Camera::buildViewTransform() {
     viewVolume = Util::transformBounds(Bounds(viewBounds.length()), moveBack);
 
     static bool printed = false;
-    if (!printed && m_debugOn) {
-        m_outputStream << "Renderable Centroid: " << centroid << endl;
-        m_outputStream << "Renderable Bounds: " << renderable.getBounds() << endl;
-        m_outputStream << "Moving the renderable back along Z by " << renderable.getBounds().length() << endl;
+    if (!printed && debug) {
+        cout << "Renderable Centroid: " << centroid << endl;
+        cout << "Renderable Bounds: " << renderable.getBounds() << endl;
+        cout << "Moving the renderable back along Z by " << renderable.getBounds().length() << endl;
         cout << "Translate To Origin" << endl;
         Util::printMatrix(translateToOrigin);
         cout << "Orbit" << endl;
@@ -168,16 +168,16 @@ void Camera::buildOrthographicProjectionTransform() {
                                      nearDist, farDist);
 
     static bool printed = false;
-    if (!printed && m_debugOn) {
+    if (!printed && debug) {
         auto bounds = renderable.getBounds();
         Util::printMatrix(viewTransform);
-        m_outputStream << "Mesh Bounds " << bounds << endl;
-        m_outputStream << "View Volume " << viewVolume << endl;
-        m_outputStream << "Left: " << viewMinX << " Right: " << viewMaxX
-                        << " Bottom: " << viewMinY << " Top: " << viewMaxY
-                        << " Near: " << nearDist
-                        << " Far: " << farDist
-                        << endl;
+        cout << "Mesh Bounds " << bounds << endl;
+        cout << "View Volume " << viewVolume << endl;
+        cout << "Left: " << viewMinX << " Right: " << viewMaxX
+                         << " Bottom: " << viewMinY << " Top: " << viewMaxY
+                         << " Near: " << nearDist
+                         << " Far: " << farDist
+                         << endl;
         printed = true;
     }
     writeViewConfigurationToFile();
@@ -228,17 +228,17 @@ void Camera::buildPerspectiveProjectionTransform() {
                          AC, viewVolume.z.min);
 
     static bool printed = false;
-    if (!printed && m_debugOn) {
-        m_outputStream << "AC = " << AC << endl;
-        m_outputStream << "BC = " << BC << endl;
-        m_outputStream << "Fov = " << glm::degrees(fieldOfView) << endl;
+    if (!printed && debug) {
+        cout << "AC = " << AC << endl;
+        cout << "BC = " << BC << endl;
+        cout << "Fov = " << glm::degrees(fieldOfView) << endl;
         printed = true;
     }
     writeViewConfigurationToFile();
 }
 
 void Camera::writeViewConfigurationToFile() {
-     if (m_debugOn) {
+     if (debug) {
          auto bounds = renderable.getBounds();
          config::ConfigurationReader &cfgReader = config::ConfigurationReader::getInstance();
          std::filesystem::path tmpDir(cfgReader.getValue("temporaryFilesDirectory"));

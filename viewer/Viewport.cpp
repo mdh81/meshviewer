@@ -14,7 +14,7 @@ namespace mv::scene {
     , showGradientBackground(true)
     , fogEnabled(false)
     , windowDimensions{} {
-        MeshViewerObject::m_debugOn = true;
+        MeshViewerObject::debug = true;
         registerEventHandlers();
     }
 
@@ -183,21 +183,21 @@ namespace mv::scene {
     }
 
     void Viewport::zoom3DView() {
-        m_debugOn = false;
+        debug = false;
         common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
         common::Point2D cursorPositionDifference;
         if (isViewportEvent(cursorPosition)) {
             cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
             cursorPositionDifference.y > 0 ? camera->zoom(common::Direction::Forward) :
                                              camera->zoom(common::Direction::Backward);
-            if (m_debugOn) {
+            if (debug) {
                 std::cerr << "Zooming 3D view" << std::endl;
                 std::cerr << "Is viewport event: " << isViewportEvent(cursorPosition);
                 if (isViewportEvent(cursorPosition)) {
                     std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
                 }
             }
-        } else if (m_debugOn) {
+        } else if (debug) {
             std::cerr << "Is not viewport event: " << cursorPosition << std::endl;
         }
     }
