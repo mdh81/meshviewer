@@ -1,6 +1,7 @@
 add_library(
     events 
     EventHandler.cpp
+    CallbackManager.cpp
 )
 
 target_include_directories(
