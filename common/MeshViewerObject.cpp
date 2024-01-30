@@ -1,22 +1,43 @@
 #include "MeshViewerObject.h"
+#include "ObjectRegistry.h"
 #include <iostream>
-using namespace std;
 
 namespace mv {
 
-size_t MeshViewerObject::sm_instanceCount = 0;
+size_t MeshViewerObject::instanceCount = 0;
     
-MeshViewerObject::MeshViewerObject(ostream& os) : m_outputStream(os) {
-    m_id = ++sm_instanceCount;
-    m_debugOn = false;
+MeshViewerObject::MeshViewerObject()
+    : id(++instanceCount) {
+    ObjectRegistry{}.registerObject(*this);
+}
+
+MeshViewerObject::~MeshViewerObject() {
+    ObjectRegistry{}.unRegisterObject(*this);
+}
+
+MeshViewerObject::MeshViewerObject(MeshViewerObject const& another)
+    : id(++instanceCount) {
+
+}
+
+MeshViewerObject::MeshViewerObject(MeshViewerObject&& another)
+    : id(another.id) {
+}
+
+MeshViewerObject& MeshViewerObject::operator=(MeshViewerObject const&) {
+    return *this;
+}
+
+MeshViewerObject& MeshViewerObject::operator=(MeshViewerObject&& another) {
+    id = another.id;
+    return *this;
 }
 
 bool MeshViewerObject::operator==(const MeshViewerObject& another) const {
-    if (m_debugOn) {
-        m_outputStream << 
-            "Comparing object with id " << m_id << " to another object with id " << another.m_id << endl;
+    if (isDebugOn()) {
+        std::cout << "Comparing object with id " << id << " to another object with id " << another.id << std::endl;
     }
-    return m_id == another.m_id;
+    return id == another.id;
 }
 
 }

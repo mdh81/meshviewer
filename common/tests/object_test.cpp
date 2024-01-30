@@ -29,3 +29,29 @@ TEST(Object, DebugFlag) {
     ASSERT_EQ(m1.isDebugOn(), false) << "Debug flag not unset after calling debugOff" << std::endl;
 }
 
+TEST(Object, CopyConstruction) {
+    Mesh m1;
+    Mesh m2(m1);
+    ASSERT_TRUE(m1.getId() != m2.getId()) << "Copy constructor failed to create unique id for the new object" << std::endl;
+}
+
+TEST(Object, CopyAssignment) {
+    Mesh m1;
+    Mesh m2;
+    m2 = m1;
+    ASSERT_TRUE(m1.getId() != m2.getId()) << "Copy assignment changed the id of the assigned object" << std::endl;
+}
+
+TEST(Object, MoveConstruction) {
+    Mesh m1;
+    Mesh m2(std::move(m1));
+    ASSERT_TRUE(m1.getId() == m2.getId()) << "Move constructor failed to reuse id of the moved object" << std::endl;
+}
+
+TEST(Object, MoveAssignment) {
+    Mesh m1;
+    Mesh m2;
+    m2 = std::move(m1);
+    ASSERT_TRUE(m1.getId() == m2.getId()) << "Move assignment failed to reuse id of the moved object" << std::endl;
+}
+

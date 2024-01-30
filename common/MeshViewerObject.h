@@ -9,18 +9,22 @@ namespace mv {
 // by its identifier 
 class MeshViewerObject {
     public:
-        // TODO: Experiment with creation semantics
-        explicit MeshViewerObject(std::ostream& os=std::cerr);
+        MeshViewerObject();
+        ~MeshViewerObject();
+        MeshViewerObject(MeshViewerObject const&);
+        MeshViewerObject(MeshViewerObject&&);
+        MeshViewerObject& operator=(MeshViewerObject const&);
+        MeshViewerObject& operator=(MeshViewerObject&&);
 
         // Compares object identifiers
-        bool operator==(const MeshViewerObject& another) const;
+        bool operator==(MeshViewerObject const& another) const;
 
         // Turns debug on or off
-        void debugOn() { std::cout<<"Turning debug on" << std::endl; m_debugOn = true; }
-        void debugOff() { m_debugOn = false; }
-        [[nodiscard]] bool isDebugOn() const { return m_debugOn; }
+        void debugOn() { debug = true; }
+        void debugOff() { debug = false; }
+        [[nodiscard]] bool isDebugOn() const { return debug; }
 
-        [[nodiscard]] size_t getId() const { return m_id; }
+        [[nodiscard]] size_t getId() const { return id; }
 
         struct MeshViewerObjectHash {
             size_t operator()(MeshViewerObject const& meshViewerObject) const {
@@ -36,13 +40,13 @@ class MeshViewerObject {
         };
 
     using MeshViewerObjectReference = std::reference_wrapper<MeshViewerObject>;
+    using MeshViewerObjectConstReference = std::reference_wrapper<const MeshViewerObject>;
 
     private:
-        size_t m_id;
-        static size_t sm_instanceCount;
+        size_t id;
+        static size_t instanceCount;
     protected:
-        bool m_debugOn;
-        std::ostream& m_outputStream; 
+        bool debug{};
 };
 
 }
