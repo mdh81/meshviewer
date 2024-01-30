@@ -11,12 +11,10 @@ foreach (test ${allTests})
         PUBLIC
         ../
     )
-    # All tests link against gtest, events, and gl libraries
+    # All tests link against gtest and events
     target_link_libraries(
         ${test}
         PUBLIC
-        ${glLibs}
-        "-framework OpenGL"
         gtest_main
         events
     )  
