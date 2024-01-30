@@ -2,6 +2,7 @@
 #include "Viewer.h"
 #include "ReaderFactory.h"
 #include "ConfigurationReader.h"
+#include "CallbackManager.h"
 #include <iostream>
 #include <string>
 using namespace std;
@@ -23,6 +24,10 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Create a manager to oversee lifecycle of callbacks
+    CallbackManager::create();
+
+    // Create drawable for the mesh
     Drawable::Drawables drawables;
     drawables.reserve(argc - 1);
     for (unsigned i = 1; i < argc; ++i) {
@@ -31,6 +36,9 @@ int main(int argc, char** argv) {
         drawables.push_back(std::move(spMesh));
     }
     Viewer::getInstance().add(drawables);
+
+    // Render loop
     Viewer::getInstance().render();
+
     return 0;
 }
