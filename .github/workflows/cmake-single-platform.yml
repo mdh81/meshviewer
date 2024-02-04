@@ -15,8 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: mdh81/mvlinux
+      options: --entrypoint /bin/sh
 
     steps:
+    - name: Prepare container
+      run: |
+          tail -f /dev/null &
+      
     - uses: actions/checkout@v3
 
     - name: Configure CMake
