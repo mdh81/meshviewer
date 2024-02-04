@@ -13,7 +13,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: mdh81/linux-vnc-base:latest
+    container: 
+      image: mdh81/linux-vnc-base:latest
+      options: --entrypoint "/bin/bash"
+      env:
+        DEV_CONTAINER: "true"
 
     steps:
     - uses: actions/checkout@v3
