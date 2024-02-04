@@ -13,6 +13,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: mdh81/linux-vnc-base:latest
 
     steps:
     - uses: actions/checkout@v3
