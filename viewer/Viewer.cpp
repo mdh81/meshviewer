@@ -45,8 +45,6 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , frameBufferId(0)
     , imageTextureId(0)
     , windowResized{}
-    , renderMode(RenderMode::Shaded)
-    , showNormals{}
     , printGLInfoOnStartup{true} {
 
     // Register event handlers
@@ -374,8 +372,8 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
     // formula:
     // window.x = viewport.x * windowWidth + 0;
     // window.y = -viewport.y * windowHeight + windowHeight
-    float windowWidth = static_cast<float>(windowWidth);
-    float windowHeight = static_cast<float>(windowHeight);
+    float windowWidth = static_cast<float>(this->windowWidth);
+    float windowHeight = static_cast<float>(this->windowHeight);
     return math3d::Matrix<float, 3, 3> {
             {windowWidth,   0.f,            0.f},
             {0.f,           -windowHeight,  windowHeight},

@@ -25,13 +25,6 @@ class Viewer : public MeshViewerObject {
         void render();
         [[nodiscard]] unsigned getWidth() const { return windowWidth; }
         [[nodiscard]] unsigned getHeight() const { return windowHeight; }
-        [[nodiscard]] bool isDisplayingNormals() const { return showNormals; }
-        enum class RenderMode {
-            Wireframe,
-            Shaded,
-            ShadedWithEdges
-        };
-        [[nodiscard]] RenderMode getRenderMode() const { return renderMode; }
         [[nodiscard]] common::Point2D getCursorPosition() const { return cursorPosition; };
         [[nodiscard]] common::Point2D getCursorPositionDifference() const { return cursorPositionDifference; }
         [[nodiscard]] math3d::Matrix<float, 3, 3> getViewportToWindowTransform() const;
@@ -69,8 +62,6 @@ class Viewer : public MeshViewerObject {
         unsigned frameBufferWidth;
         unsigned frameBufferHeight;
         GLFWwindow* window;
-        bool showNormals;
-        RenderMode renderMode;
         bool renderToImage;
         GLuint frameBufferId;
         GLuint imageTextureId;
