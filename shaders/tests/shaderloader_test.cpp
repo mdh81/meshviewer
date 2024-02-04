@@ -12,9 +12,11 @@ class ShaderFixture : public testing::Test {
 
     protected:
         void SetUp() override {
+            // Create a subdirectory named shaders to match the structure the runtime expects
+            std::filesystem::create_directory("./shaders");
             // Write vertex shader to file
-            ofstream ofs("./vertex.shader");
-            if (!ofs) throw std::runtime_error("Unable to open ./vertex.shader");
+            ofstream ofs("./shaders/vertex.shader");
+            if (!ofs) throw std::runtime_error("Unable to open ./shaders/vertex.shader");
             ofs << "#version 410 core" << endl;
             ofs << "in vec2 position;" << endl;
             ofs << "void main() {" << endl;
@@ -23,8 +25,8 @@ class ShaderFixture : public testing::Test {
             ofs.close();
             
             // Write fragment shader to file
-            ofs.open("./fragment.shader");
-            if (!ofs) throw std::runtime_error("Unable to open ./fragment.shader");
+            ofs.open("./shaders/fragment.shader");
+            if (!ofs) throw std::runtime_error("Unable to open ./shaders/fragment.shader");
             ofs << "#version 410 core" << endl;
             ofs << "out vec4 color;" << endl;
             ofs << "void main() {" << endl;
@@ -60,7 +62,7 @@ class ShaderFixture : public testing::Test {
 
 TEST_F(ShaderFixture, TestLoadVertexShader) {
     string compilerOut;
-    ASSERT_TRUE(get<0>(ShaderLoader().loadVertexShader("./vertex.shader", compilerOut)));
+    ASSERT_TRUE(get<0>(ShaderLoader().loadVertexShader("vertex.shader", compilerOut)));
     ofstream ofs("vertexShader.compilerOut");
     ofs << compilerOut << endl;
     ofs.close();
@@ -68,7 +70,7 @@ TEST_F(ShaderFixture, TestLoadVertexShader) {
 
 TEST_F(ShaderFixture, TestLoadFragmentShader) {
     string compilerOut;
-    ASSERT_TRUE(get<0>(ShaderLoader().loadFragmentShader("./fragment.shader", compilerOut)));
+    ASSERT_TRUE(get<0>(ShaderLoader().loadFragmentShader("fragment.shader", compilerOut)));
     ofstream ofs("fragmentShader.compilerOut");
     ofs << compilerOut << endl;
     ofs.close();
