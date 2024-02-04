@@ -1,6 +1,5 @@
 #include "GradientBackground.h"
 #include "ConfigurationReader.h"
-#include "CallbackFactory_Old.h"
 #include "EventHandler.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 #include "Gadget.h"

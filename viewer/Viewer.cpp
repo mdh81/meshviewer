@@ -4,7 +4,6 @@
 #include "Mesh.h"
 #include "ShaderLoader.h"
 #include "EventHandler.h"
-#include "CallbackFactory_Old.h"
 #include "ConfigurationReader.h"
 
 #ifdef OSX

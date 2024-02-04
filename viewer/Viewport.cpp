@@ -4,7 +4,6 @@
 #include <vector>
 #include "Viewer.h"
 #include "EventHandler.h"
-#include "CallbackFactory_Old.h"
 #include "Types.h"
 
 namespace mv::scene {
