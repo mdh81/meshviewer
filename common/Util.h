@@ -8,63 +8,18 @@
 
 namespace mv {
 
-static std::string getGLErrorString(GLint glError) {
-    std::string errStr;
-    switch (glError) {
-        case GL_INVALID_ENUM:
-            errStr = "Invalid enum";
-            break;
-        case GL_INVALID_VALUE:
-            errStr = "Invalid value";
-            break;
-        case GL_INVALID_OPERATION:
-            errStr = "Invalid operation";
-            break;
-        default:
-            errStr = std::to_string(glError);
-    }
-    return errStr;
-}
-
-static GLuint glError = 0;
-#ifdef DEBUG
-#define checkGLError(glFunc)                                          \
-glError = glGetError();                                               \
-if (glError) {                                                        \
-    std::cout << #glFunc << " returned " << getGLErrorString(glError) \
-         << " at line " << __LINE__ << " of "                         \
-         << __FILE__ << std::endl;                                    \
-    std::terminate();                                                 \
-}
-#else
-#define checkGLError(glFunc)
-#endif
-
-#ifdef UNIT_TESTING_IN_PROGRESS
-#define glCallWithErrorCheck(glFunc, glArgs...)
-#endif
-
-#if defined(EMSCRIPTEN) || !defined(DEBUG)
-#define glCallWithErrorCheck(glFunc, glArgs...) \
-glFunc(glArgs);
-#else
-#define glCallWithErrorCheck(glFunc, glArgs...) \
-glFunc(glArgs);                                 \
-checkGLError(glFunc)
-#endif
-
 class Util {
     public:
         static bool areFloatsEqual(float a, float b) {
-            return fabs(a-b) < sm_tolerance;
+            return fabs(a-b) < tolerance;
         }
         static bool isLessOrEqual(float a, float b) {
-            return (a < b || fabs(a-b) < sm_tolerance);
+            return (a < b || fabs(a-b) < tolerance);
         }
         static bool isGreaterOrEqual(float a, float b) {
-            return (a > b || fabs(a-b) < sm_tolerance);
+            return (a > b || fabs(a-b) < tolerance);
         }
-        static constexpr float sm_tolerance = 1e-6;
+        static constexpr float tolerance = 1e-6;
 
         template<typename T>
         static void printMemory(const T* pData, const size_t numBytes, std::ostream& os) {
