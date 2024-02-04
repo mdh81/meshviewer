@@ -17,11 +17,13 @@ MeshViewerObject::~MeshViewerObject() {
 
 MeshViewerObject::MeshViewerObject(MeshViewerObject const& another)
     : id(++instanceCount) {
-
+    ObjectRegistry{}.registerObject(*this);
 }
 
 MeshViewerObject::MeshViewerObject(MeshViewerObject&& another)
     : id(another.id) {
+    ObjectRegistry{}.registerObject(*this);
+    another.moved = true;
 }
 
 MeshViewerObject& MeshViewerObject::operator=(MeshViewerObject const&) {
@@ -30,6 +32,7 @@ MeshViewerObject& MeshViewerObject::operator=(MeshViewerObject const&) {
 
 MeshViewerObject& MeshViewerObject::operator=(MeshViewerObject&& another) {
     id = another.id;
+    another.moved = true;
     return *this;
 }
 

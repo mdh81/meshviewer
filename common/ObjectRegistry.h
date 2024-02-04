@@ -19,12 +19,15 @@ namespace mv {
         }
 
         void unRegisterObject(MeshViewerObject const& object) {
-            // Remove from registry
-            auto iterator = getIterator(object);
-            if (iterator == registeredObjects.end()) {
-                throw std::runtime_error("Object with id " + std::to_string(object.getId()) + " was not registered");
+            // Remove from registry if the object wasn't moved from
+            if (!object.wasMoved()) {
+                auto iterator = getIterator(object);
+                if (iterator == registeredObjects.end()) {
+                    throw std::runtime_error(
+                            "Object with id " + std::to_string(object.getId()) + " was not registered");
+                }
+                registeredObjects.erase(iterator);
             }
-            registeredObjects.erase(iterator);
 
             // Notify observers
             for (auto& deletionObserver : deletionObservers) {

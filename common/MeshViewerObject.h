@@ -26,6 +26,8 @@ class MeshViewerObject {
 
         [[nodiscard]] size_t getId() const { return id; }
 
+        [[nodiscard]] bool wasMoved() const { return moved; }
+
         struct MeshViewerObjectHash {
             size_t operator()(MeshViewerObject const& meshViewerObject) const {
                 return meshViewerObject.getId();
@@ -45,6 +47,7 @@ class MeshViewerObject {
     private:
         size_t id;
         static size_t instanceCount;
+        bool moved{};
     protected:
         bool debug{};
 };
