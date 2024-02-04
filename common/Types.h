@@ -20,6 +20,7 @@
 #include "3dmath/Vector.h"
 #include "3dmath/SupportingTypes.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
+#include "OpenGLCall.h"
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
@@ -34,7 +35,7 @@ namespace mv::common {
     using Points = std::vector<Point3D>;
     using Bounds = math3d::Bounds3D<float>;
     using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
-    using TransformMatrix = math3d::Matrix<float, 4, 4>;
+    using TransformMatrix = math3d::IdentityMatrix<float, 4, 4>;
     using Vector4D = math3d::Vector4<float>;
 
     inline std::ostream &operator<<(std::ostream &os, const Point3D &v) {
