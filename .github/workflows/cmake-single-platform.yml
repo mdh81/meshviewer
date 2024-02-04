@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: mdh81/linux-vnc-base:latest
-      options: --entrypoint "/bin/bash -c 'tail -f /dev/null'"
+      options: --entrypoint "/bin/bash" mdh81/linux-vnc-base:latest -c "tail -f /dev/null"
       env:
         DEV_CONTAINER: "true"
 
