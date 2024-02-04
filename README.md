@@ -10,6 +10,15 @@ $ git clone --recurse-submodules ssh://git@github.com:443/mdh81/meshviewer.git m
 
 ## Desktop
 
+### Dependencies
+
+Install these dependencies before attempting to build the app 
+
+* GLFW
+* GLEW
+* OpenGL
+* GLM (Soon to be replaced)
+
 ```shell
 # Configure desktop build
 $ cd meshviewer
@@ -50,7 +59,7 @@ The viewer supports the following features:
 * Orbiting the camera around cardinal axes
 * Zoom
 * Gradient backgrounds
-* Built-in event handler that can register member/free functions as event handlers for keyboard and mouse events
+* Built-in event handler that supports static and dynamic callbacks 
 * Arcball rotation (WIP in branch arcball)
 * Emscripten builds
 
