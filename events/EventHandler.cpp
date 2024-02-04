@@ -2,64 +2,74 @@
 #include <iostream>
 #include <exception>
 #include <unordered_map>
+#include <sstream>
 
 namespace mv::events {
 
-// init static variables
-bool EventHandler::started = false;
-EventHandler::EventCallbackMap EventHandler::eventCallbackMap;
-unsigned EventHandler::modifierKeys = 0;
-MeshViewerObject* EventHandler::self = nullptr;
+namespace {
+    auto keyPressHandler = [](GLFWwindow* window, int key, int scancode, int action, int modifiers) {
+        EventHandler{}.raiseEvent(Event(key, modifiers));
+    };
 
-void EventHandler::handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
-    if (action == GLFW_PRESS) {
-        handleKeyOrMouseEvent(key, modifiers);
-    }
-    modifierKeys = modifiers;
-}
-
-void EventHandler::handleMouseEvent(GLFWwindow* window, int button, int action, int modifiers) {
-    if (action == GLFW_PRESS) {
-        handleKeyOrMouseEvent(button, modifiers);
-    }
-    modifierKeys = modifiers;
-}
-
-void EventHandler::handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifiers) {
-    auto callback = getEventHandler(keyOrButtonIdentifier, modifiers);
-    if (callback) {
-        callback->call();
-    } else if (self->isDebugOn()){
-        std::cerr << "No callback associated with " << keyOrButtonIdentifier << " and modifier " << modifiers << std::endl;
-    }
-}
-
-void EventHandler::registerCallback(const Event& event, const Callback_Old& callback) {
-    eventCallbackMap.emplace(event, std::ref(callback));
+    auto mouseClickHandler = [](GLFWwindow* window, int button, int action, int modifiers) {
+        EventHandler{}.raiseEvent(Event(button, modifiers));
+    };
 }
 
 void EventHandler::start(GLFWwindow* window) {
     if (!started) {
-        glfwSetKeyCallback(window, &handleKeyPress);
-        glfwSetMouseButtonCallback(window, &handleMouseEvent);
+        glfwSetKeyCallback(window, keyPressHandler);
+        glfwSetMouseButtonCallback(window, mouseClickHandler);
         started = true;
-        self = this;
     } else {
         std::runtime_error("Event handler already initialized");
     }
 }
 
-Callback_Old const* EventHandler::getEventHandler(int const glfwKeyOrButton, int const mods) {
-    Callback_Old const* callback = nullptr;
-    auto lookupRes = eventCallbackMap.find(Event(glfwKeyOrButton, mods));
-    if (lookupRes != eventCallbackMap.end()) {
-        callback = &(lookupRes->second.get());
+Callback::ObservingPointer EventHandler::getEventHandler(Event const& event) const {
+    Callback::ObservingPointer callback;
+    auto lookupRes = callbackMap.find(event);
+    if (lookupRes != callbackMap.end()) {
+        callback = lookupRes->second;
     }
     return callback;
 }
 
-void EventHandler::raiseEvent(const Event &event) {
-    handleKeyOrMouseEvent(event.getId(), event.getModifier());
+std::string EventHandler::executeBasicEventCallback(Callback::ObservingPointer callback) const {
+    bool isCompatible;
+    auto basicEventCallback = std::dynamic_pointer_cast<BasicEventCallback>(callback.lock());
+    if ((isCompatible = (basicEventCallback != nullptr))) {
+        basicEventCallback->call();
+    }
+    return !isCompatible ? "Basic event callbacks cannot be executed with dynamic data" : std::string{};
+}
+
+std::string EventHandler::executeDataEventCallback(Callback::ObservingPointer callback, DynamicEventData&& eventData) const {
+    bool isCompatible;
+    auto dataEventCallback = std::dynamic_pointer_cast<DataEventCallback>(callback.lock());
+    if ((isCompatible = (dataEventCallback != nullptr))) {
+        dataEventCallback->call(std::move(eventData));
+    }
+    return !isCompatible ? "Data event callbacks cannot be executed without event data" : std::string{};
+}
+
+std::string EventHandler::executeCallback(Callback::ObservingPointer callback, DynamicEventData&& eventData) const {
+    return eventData.empty() ? executeBasicEventCallback(callback) :
+                               executeDataEventCallback(callback, std::move(eventData));
+}
+
+void EventHandler::raiseEvent(Event const& event, DynamicEventData&& eventData) {
+    auto callback = getEventHandler(event);
+    if (!callback.expired()) {
+        std::string error = executeCallback(callback, std::move(eventData));
+        if (!error.empty()) {
+            std::stringstream ss;
+            ss << event;
+            throw std::runtime_error("Incompatible event data " + ss.str() + ' ' + error);
+        }
+    } else if (isDebugOn()) {
+        std::cerr << "No callback associated with " << event << std::endl;
+    }
 }
 
 }

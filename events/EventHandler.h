@@ -1,15 +1,17 @@
 #pragma once
 
 #include "Callback_Old.h"
+#include "Callbacks.h"
+#include "CallbackFactory.h"
 #include "Event.h"
 #include "MeshViewerObject.h"
 #include "GLFW/glfw3.h"
 #include <unordered_map>
-#include <functional>
+#include <vector>
+#include <any>
 
 class GLFWwindow;
 
-//TODO: Unify namespace name. mv and meshviewer are used interchangeably in a few places
 namespace mv {
 
     namespace viewer {
@@ -29,11 +31,23 @@ namespace mv {
             // Start listening for events in the specified window
             void start(GLFWwindow* window);
 
-            // Register a callback for the specified event
-            void registerCallback(Event const&, Callback_Old const& callback);
+            template<typename InstanceType, typename FunctionPointerType, typename... ArgumentTypes>
+            void registerBasicEventCallback(Event&& event, InstanceType& instance, FunctionPointerType functionPointer,
+                                            ArgumentTypes&&... callbackArguments) {
+                callbackMap.emplace(std::move(event),
+                                    CallbackFactory{}.
+                                    createBasicEventCallback(instance,
+                                                            functionPointer,
+                                                            std::forward<ArgumentTypes>(callbackArguments)...));
+            }
 
-            // Raise an event
-            void raiseEvent(Event const& event);
+            template<typename InstanceType, typename FunctionPointerType>
+            void registerDataEventCallback(Event&& event, InstanceType& instance, FunctionPointerType functionPointer) {
+                callbackMap.emplace(std::move(event),
+                                    CallbackFactory{}.createDataEventCallback(instance, functionPointer));
+            }
+
+            void raiseEvent(Event const& event, std::vector<std::any>&& eventData = {});
 
             // Check if modifier key is currently pressed
             bool isModifierKeyPressed(unsigned int modifierKey) {
@@ -48,23 +62,20 @@ namespace mv {
             EventHandler& operator==(EventHandler&&) = delete;
 
         private:
-            using CallbackRef = std::reference_wrapper<const Callback_Old>;
-            using EventCallbackMap = std::unordered_map<const Event, CallbackRef, Event::EventHasher, Event::EventComparator>;
-            static EventCallbackMap eventCallbackMap;
-            static bool started;
-            static unsigned modifierKeys;
-            static MeshViewerObject* self;
+            using EventCallbackMap =
+                    std::unordered_map<const Event, Callback::ObservingPointer,
+                                       Event::EventHasher, Event::EventComparator>;
+            using DynamicEventData = std::vector<std::any>;
+            inline static EventCallbackMap callbackMap{};
+            inline static bool started{};
+            inline static int modifierKeys{};
 
-            // These methods are declared static so a regular function pointer can be created from these
-            // methods and passed to glfw functions. These old C APIs don't support member function pointers
-            static void handleKeyPress(GLFWwindow* window, int key, int scancode, int action, int modifiers);
-            static void handleMouseEvent(GLFWwindow* window, int button, int action, int modifiers);
-
-            // Handle mouse or keyboard event
-            static void handleKeyOrMouseEvent(int keyOrButtonIdentifier, int modifiers);
-
-            // Find the Event object to handle the GLFW mouse or keyboard event
-            static Callback_Old const* getEventHandler(int eventIdentifier, int mods);
+            // Get callback for the specified event
+            Callback::ObservingPointer getEventHandler(Event const&) const;
+            // Execute callbacks
+            std::string executeCallback(Callback::ObservingPointer, DynamicEventData&&) const;
+            std::string executeBasicEventCallback(Callback::ObservingPointer) const;
+            std::string executeDataEventCallback(Callback::ObservingPointer, DynamicEventData&&) const;
 
         friend class EventHandlerTest;
         friend class mv::viewer::ViewerTest;
