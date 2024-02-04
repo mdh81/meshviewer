@@ -1,6 +1,7 @@
 add_library(
     common 
     MeshViewerObject.cpp
+    Environment.cpp
 )
 
 target_include_directories(
