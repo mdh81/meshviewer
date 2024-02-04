@@ -1,9 +1,5 @@
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 #include "gtest/gtest.h"
 #include "EventHandler.h"
-#include "CallbackFactory_Old.h"
-#include <string>
 #include <iostream>
 
 using namespace mv::events;
