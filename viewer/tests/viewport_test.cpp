@@ -3,6 +3,7 @@
 #include "../Viewport.h"
 #include "3dmath/Vector.h"
 #include "Viewer.h"
+#include "../common/Environment.h"
 using namespace std;
 using namespace mv::scene;
 namespace mv::scene {
@@ -10,6 +11,10 @@ namespace mv::scene {
     public:
         bool isViewportEvent(Viewport const &viewport, mv::common::Point2D const &cursorPosition) {
             return viewport.isViewportEvent(cursorPosition);
+        }
+
+        void SetUp() override {
+            setenv("mv_UNIT_TESTING_IN_PROGRESS", "true", 1);
         }
 
     };
@@ -68,7 +73,10 @@ namespace mv::scene {
                                     << "Cursor position outside window is wrongly classified as inside the viewport";
     }
 
+
     TEST_F(ViewportTest, SharedCamera) {
+        mv::common::Environment env{};
+        ASSERT_TRUE(env.isUnitTestingInProgress());
         auto& v = Viewer::getInstance(/*width = 1024, height = 768*/);
         Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
         viewport.enableGradientBackground(false);
