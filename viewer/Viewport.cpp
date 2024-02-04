@@ -20,30 +20,20 @@ namespace mv::scene {
 
     void Viewport::registerEventHandlers() {
 
-        mv::events::EventHandler().registerCallback(
-                mv::events::Event(GLFW_KEY_N),
-                mv::events::CallbackFactory_Old::getInstance().registerCallback
-                        (*this, &Viewport::toggleGlyphsDisplay));
+        mv::events::EventHandler{}.registerBasicEventCallback(
+                GLFW_KEY_N, *this, &Viewport::toggleGlyphsDisplay);
 
-        mv::events::EventHandler().registerCallback(
-                mv::events::Event(GLFW_KEY_G),
-                mv::events::CallbackFactory_Old::getInstance().registerCallback
-                        (*this, &Viewport::toggleGradientBackgroundDisplay));
+        mv::events::EventHandler().registerBasicEventCallback(
+                GLFW_KEY_G, *this, &Viewport::toggleGradientBackgroundDisplay);
 
-        mv::events::EventHandler().registerCallback(
-                mv::events::Event(GLFW_KEY_F),
-                mv::events::CallbackFactory_Old::getInstance().registerCallback
-                        (*this, &Viewport::toggleFog));
+        mv::events::EventHandler().registerBasicEventCallback(
+                GLFW_KEY_F, *this, &Viewport::toggleFog);
 
-        mv::events::EventHandler().registerCallback(
-                mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_CONTROL),
-                mv::events::CallbackFactory_Old::getInstance().registerCallback(
-                        *this, &Viewport::zoom3DView));
+        mv::events::EventHandler().registerBasicEventCallback(
+                mv::events::Event{common::MOUSE_WHEEL_EVENT, GLFW_MOD_CONTROL}, *this, &Viewport::zoom3DView);
 
-        mv::events::EventHandler().registerCallback(
-                mv::events::Event(common::MOUSE_WHEEL_EVENT, GLFW_MOD_SHIFT),
-                mv::events::CallbackFactory_Old::getInstance().registerCallback(
-                        *this, &Viewport::pan3DView));
+        mv::events::EventHandler().registerBasicEventCallback(
+                mv::events::Event{common::MOUSE_WHEEL_EVENT, GLFW_MOD_SHIFT}, *this, &Viewport::pan3DView);
     }
 
     void Viewport::add(mv::Drawable& drawable) {

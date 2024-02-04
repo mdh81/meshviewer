@@ -26,29 +26,18 @@ using namespace events;
     , orbitAngle(0.f)
     , zoomFactor(1.f)
     , movementIncrement(.02f) {
-    // Register event handlers for switching between perspective and orthographic
-    EventHandler().registerCallback(Event(GLFW_KEY_O),
-                                    CallbackFactory_Old::getInstance().registerCallback(
-            *this, &Camera::setProjectionType, ProjectionType::Orthographic));
 
-    EventHandler().registerCallback(Event(GLFW_KEY_P),
-                                    CallbackFactory_Old::getInstance().registerCallback(
-            *this, &Camera::setProjectionType, ProjectionType::Perspective));
+     EventHandler().registerBasicEventCallback(GLFW_KEY_O, *this, &Camera::setProjectionType,
+                                               ProjectionType::Orthographic);
 
-    EventHandler().registerCallback(Event(GLFW_KEY_X),
-                                    CallbackFactory_Old::getInstance().registerCallback(
-            *this, &Camera::toggleOrbit, common::Axis::X));
+     EventHandler().registerBasicEventCallback(GLFW_KEY_P, *this, &Camera::setProjectionType,
+                                               ProjectionType::Perspective);
 
+     EventHandler().registerBasicEventCallback(GLFW_KEY_X, *this, &Camera::toggleOrbit, common::Axis::X);
 
-    EventHandler().registerCallback(Event(GLFW_KEY_Y),
-                                    CallbackFactory_Old::getInstance().registerCallback(
-            *this, &Camera::toggleOrbit, common::Axis::Y));
+     EventHandler().registerBasicEventCallback(GLFW_KEY_Y, *this, &Camera::toggleOrbit, common::Axis::Y);
 
-
-    EventHandler().registerCallback(Event(GLFW_KEY_Z),
-                                    CallbackFactory_Old::getInstance().registerCallback(
-            *this, &Camera::toggleOrbit, common::Axis::Z));
-
+     EventHandler().registerBasicEventCallback(GLFW_KEY_Z, *this, &Camera::toggleOrbit, common::Axis::Z);
 }
 
 void Camera::apply() {

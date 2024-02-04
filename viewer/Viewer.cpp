@@ -51,10 +51,8 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , printGLInfoOnStartup{true} {
 
     // Register event handlers
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT),
-            CallbackFactory_Old::getInstance().registerCallback
-                    (*this, &Viewer::saveSnapshot));
+    EventHandler{}.registerBasicEventCallback(
+            Event{GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT}, *this, &Viewer::saveSnapshot);
 
     Viewer::RenderLoop::viewer = this;
 }
@@ -134,17 +132,19 @@ void Viewer::createWindow() {
         viewer->cursorPositionDifference = currentCursorPosition - viewer->cursorPosition;
         viewer->cursorPosition = currentCursorPosition;
     });
+
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
         auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
         viewer->cursorPositionDifference = {static_cast<float>(xOffset), static_cast<float>(yOffset)};
         unsigned modifierKeys = 0;
-        if (EventHandler().isModifierKeyPressed(GLFW_MOD_SHIFT)) {
+        EventHandler eh;
+        if (eh.isModifierKeyPressed(GLFW_MOD_SHIFT)) {
             modifierKeys |= GLFW_MOD_SHIFT;
         }
-        if (EventHandler().isModifierKeyPressed(GLFW_MOD_CONTROL)) {
+        if (eh.isModifierKeyPressed(GLFW_MOD_CONTROL)) {
             modifierKeys |= GLFW_MOD_CONTROL;
         }
-        EventHandler().raiseEvent(Event(MOUSE_WHEEL_EVENT, modifierKeys));
+        eh.raiseEvent(Event{MOUSE_WHEEL_EVENT, modifierKeys});
     });
 
     // Start handling events

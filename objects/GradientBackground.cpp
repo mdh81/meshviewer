@@ -23,23 +23,14 @@ GradientBackground::GradientBackground(GradientType const type, GradientDirectio
 , m_type(type)
 , m_numberOfStops (3)
 , m_numberOfConnectivityEntries (0) {
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_H),
-            CallbackFactory_Old::getInstance().registerCallback
-                (*this, &GradientBackground::setGradientDirection, GradientDirection::Horizontal));
+    EventHandler{}.registerBasicEventCallback(
+            GLFW_KEY_H, *this, &GradientBackground::setGradientDirection, GradientDirection::Horizontal);
 
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_V),
-            CallbackFactory_Old::getInstance().registerCallback
-                (*this, &GradientBackground::setGradientDirection, GradientDirection::Vertical));
+    EventHandler{}.registerBasicEventCallback(
+            GLFW_KEY_V, *this, &GradientBackground::setGradientDirection, GradientDirection::Vertical);
 
-    EventHandler().registerCallback(
-            Event(GLFW_KEY_G, GLFW_MOD_ALT),
-            CallbackFactory_Old::getInstance().registerCallback
-                (*this, &GradientBackground::toggleGradientType));
-
-    // TODO: Remove after aspect ratio problem is sorted out
-    //m_debugOn = true;
+    EventHandler{}.registerBasicEventCallback(
+            Event{GLFW_KEY_G, GLFW_MOD_ALT}, *this, &GradientBackground::toggleGradientType);
 }
 
 void GradientBackground::render() {
