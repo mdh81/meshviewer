@@ -14,9 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: 
-      image: mdh81/linux-vnc-base:latest
-      env:
-        DEV_CONTAINER: "true"
+      image: mdh81/mvlinux
 
     steps:
     - uses: actions/checkout@v3

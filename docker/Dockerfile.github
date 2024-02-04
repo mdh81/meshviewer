@@ -1,0 +1,18 @@
+FROM alpine:latest
+
+LABEL maintainer="dhanakoti.murali@gmail.com"
+LABEL description="Alpine based linux image with dev tools to build MeshViewer in Github CI workflow"
+
+RUN apk update
+
+RUN apk add --no-cache \
+    build-base \
+    git \
+    bash \
+    vim \
+    g++ \
+    make \
+    cmake \
+    glfw-dev \
+    glm-dev \
+    glew-dev \

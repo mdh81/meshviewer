@@ -17,10 +17,16 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(-DDEBUG)
 endif()
 
-# The linux dev environment container uses debian, which doesn't install dependencies with 
-# cmake configuration files. Set up the dependencies manually as imported/interface libraries
-if (DEFINED ENV{DEV_CONTAINER})
-    set(LIBRARY_PATH /usr/lib/aarch64-linux-gnu/)
+# The linux dev environment that have been tested and in use are via containers running linux
+# The container that's used with VNC to troubleshoot visual issues is running a 64-bit debian
+# The container used for CI on github uses an alpine distro. The section below sets up the build
+# for these two linux dev environments.
+if (LINUX)
+    if (EXISTS /usr/lib/aarch64-linux-gnu)
+        set(LIBRARY_PATH /usr/lib/aarch64-linux-gnu/)
+    else()
+        set(LIBRARY_PATH /usr/lib)
+    endif()
     add_library(GLEW::glew SHARED IMPORTED GLOBAL)
     set_target_properties(GLEW::glew PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libGLEW.so)
     target_include_directories(GLEW::glew INTERFACE /usr/include)
