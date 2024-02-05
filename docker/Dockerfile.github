@@ -15,4 +15,8 @@ RUN apk add --no-cache \
     cmake \
     glfw-dev \
     glm-dev \
-    glew-dev \
+    glew-dev
+
+COPY ./entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
