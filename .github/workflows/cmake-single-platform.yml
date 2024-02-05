@@ -12,11 +12,15 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: mdh81/mvlinux
 
     steps:
+      - name: Checkout meshviewer
       - uses: actions/checkout@v3
+
+      - name: Install Dependencies
+      - run: |
+          sudo apt-get install libglew-dev libglm-dev
+          sudo apt-get install libglfw3-dev
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
