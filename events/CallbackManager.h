@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include "ObjectRegistry.h"
 #include "Callback.h"
 #include "MeshViewerObject.h"
