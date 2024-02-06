@@ -8,6 +8,10 @@ namespace mv::events {
         auto getNumCallbacks() {
             return mv::events::CallbackFactory{}.callbacks.size();
         }
+        void clear() {
+            mv::events::CallbackFactory{}.callbacks.clear();
+            mv::events::CallbackFactory{}.callbackCreationObservers.clear();
+        }
     };
 }
 
@@ -20,21 +24,29 @@ struct TestClass : public mv::MeshViewerObject {
 
 };
 
-TEST(CallbackFactory, BasicEventCallbackCreation) {
+class CallbackFactory : public ::testing::Test {
+public:
+    void TearDown() override {
+        cbfTester.clear();
+    }
+protected:
+    mv::events::CallbackFactoryTester cbfTester;
+};
+
+TEST_F(CallbackFactory, BasicEventCallbackCreation) {
     TestClass testObject;
     mv::events::CallbackFactory{}.createBasicEventCallback(testObject, &TestClass::basicEventCallback, 10, 12.5, 100);
-    mv::events::CallbackFactoryTester tester;
-    ASSERT_EQ(tester.getNumCallbacks(), 1);
+    ASSERT_EQ(cbfTester.getNumCallbacks(), 1);
 }
 
-TEST(CallbackFactory, DataEventCallbackCreation) {
+TEST_F(CallbackFactory, DataEventCallbackCreation) {
     TestClass testObject;
     mv::events::CallbackFactory{}.createDataEventCallback(testObject, &TestClass::dataEventCallback);
     mv::events::CallbackFactoryTester tester;
     ASSERT_EQ(tester.getNumCallbacks(), 1);
 }
 
-TEST(CallbackFactory, BasicEventCallbackRemoval) {
+TEST_F(CallbackFactory, BasicEventCallbackRemoval) {
     TestClass testObject;
     auto callbackPointer = mv::events::CallbackFactory{}.createBasicEventCallback(testObject,
                                                                                   &TestClass::basicEventCallback, 10,
@@ -44,7 +56,7 @@ TEST(CallbackFactory, BasicEventCallbackRemoval) {
     ASSERT_EQ(tester.getNumCallbacks(), 0);
 }
 
-TEST(CallbackFactory, DataEventCallbackRemoval) {
+TEST_F(CallbackFactory, DataEventCallbackRemoval) {
     TestClass testObject;
     auto callbackPointer = mv::events::CallbackFactory{}.createDataEventCallback(testObject, &TestClass::dataEventCallback);
     mv::events::CallbackFactory{}.removeCallback(callbackPointer);
