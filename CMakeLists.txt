@@ -11,6 +11,7 @@ include(common/testsupport/TestSupport.cmake)
 if (APPLE)
     add_compile_options(-DOSX)
     set(enableTesting ON)
+    enable_testing()
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -184,18 +185,4 @@ add_custom_target(
 
 if (EMSCRIPTEN)
     add_subdirectory(web)
-endif()
-
-if (enableTesting)
-    add_custom_target(
-        createTestRunner
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/common/testsupport/createTestRunner.sh ${CMAKE_BINARY_DIR}
-    )
-    add_custom_command(
-        TARGET ${appName}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target createTestRunner
-    )
-    # TODO: Add a custom target and command to automatically run tests when build is complete
-
 endif()
