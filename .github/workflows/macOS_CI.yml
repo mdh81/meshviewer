@@ -12,6 +12,8 @@ env:
 jobs:
   build:
     runs-on: macos-latest
+    env: 
+      mv_CI: "true"
 
     steps:
       - name: Checkout meshviewer
