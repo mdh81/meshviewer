@@ -7,7 +7,7 @@ using namespace std;
 
 namespace mv {
 
-void ShaderLoader::loadShader(const std::string& fileName, std::string& fileContents) {
+void ShaderLoader::loadShader(std::string const& fileName, std::string& fileContents) {
 
     // Open file and seek to the end
     ifstream ifs(shaderDirectory/fileName, ios_base::ate /*seek to end of the file*/);
@@ -25,50 +25,39 @@ void ShaderLoader::loadShader(const std::string& fileName, std::string& fileCont
     ifs.close();
 }
 
-GLuint ShaderLoader::compileShader(const GLuint shaderId, std::string& compilerOutput) {
+GLuint ShaderLoader::compileShader(GLuint const shaderId, std::string& compilerOutput) {
 
     // Compile shader and return compilation status
-    glCompileShader(shaderId);
+    glCallWithErrorCheck(glCompileShader, shaderId);
     GLint status;
-    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status);
+    glCallWithErrorCheck(glGetShaderiv, shaderId, GL_COMPILE_STATUS, &status);
     compilerOutput.resize(outputSize);
-    glGetShaderInfoLog(shaderId, outputSize, nullptr /*length as output*/, &compilerOutput.at(0));
+    glCallWithErrorCheck(glGetShaderInfoLog, shaderId, outputSize, nullptr /*length as output*/, &compilerOutput.at(0));
     return status;
 }
 
-tuple<bool, GLuint> ShaderLoader::loadVertexShader(const std::string& fileName, std::string& compilerOutput) {
 
-    // Load vertex shader file contents into memory
-    string vertexShaderContents;
-    loadShader(fileName, vertexShaderContents);
+std::tuple<bool, GLuint> ShaderLoader::createShader(std::string const& fileName, std::string& compilerOutput, bool const isVertexShader) {
+    string shaderContents;
+    loadShader(fileName, shaderContents);
 
     // Create shader
-    GLuint shaderId = glCreateShader(GL_VERTEX_SHADER);
-    const char* shaderSrc = vertexShaderContents.data();
-    glShaderSource(shaderId, 1 /*number of shaders in the next string argument*/,
-                   &shaderSrc /* double-pointer to array of strings*/,
-                   nullptr /* array of string lengths, can be null*/);
+    GLuint shaderId = glCreateShader(isVertexShader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+    const char* shaderSrc = shaderContents.data();
+    glCallWithErrorCheck(glShaderSource, shaderId, 1 /*number of shaders in the next string argument*/,
+                         &shaderSrc /* double-pointer to array of strings*/,
+                         nullptr /* array of string lengths, can be null*/);
 
     // Compile and return status
     return make_tuple(compileShader(shaderId, compilerOutput) == GL_TRUE, shaderId);
 }
 
-tuple<bool, GLuint> ShaderLoader::loadFragmentShader(const std::string& fileName, std::string& compilerOutput) {
+tuple<bool, GLuint> ShaderLoader::loadVertexShader(std::string const& fileName, std::string& compilerOutput) {
+    return createShader(fileName, compilerOutput, true);
+}
 
-    // Load fragment shader file contents into memory
-    string fragmentShaderContents;
-    loadShader(fileName, fragmentShaderContents);
-
-    // Create shader
-    GLuint shaderId = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* shaderSrc = fragmentShaderContents.data();
-    glShaderSource(shaderId, 1 /*number of shaders in the next string argument*/,
-                   &shaderSrc /* double-pointer to array of strings*/,
-                   nullptr /* array of string lengths, can be null*/);
-
-
-    // Compile and return status
-    return make_tuple(compileShader(shaderId, compilerOutput) == GL_TRUE, shaderId);
+tuple<bool, GLuint> ShaderLoader::loadFragmentShader(std::string const& fileName, std::string& compilerOutput) {
+    return createShader(fileName, compilerOutput, false);
 }
 
 }
