@@ -17,11 +17,8 @@ foreach(test ${allTests})
         PUBLIC
         gtest_main
         shaders
-        mesh
-        events
         common
-        ${glLibs}
-        "-framework OpenGL"
+        GLEW::GLEW
     )
     gtest_discover_tests(${test})
 endforeach(test)

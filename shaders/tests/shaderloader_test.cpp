@@ -2,9 +2,6 @@
 #include "ShaderLoader.h"
 #include <fstream>
 
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
-
 using namespace std;
 using namespace mv;
 
@@ -12,6 +9,9 @@ class ShaderFixture : public testing::Test {
 
     protected:
         void SetUp() override {
+
+            setenv("mv_UNIT_TESTING_IN_PROGRESS", "true", 1);
+
             // Create a subdirectory named shaders to match the structure the runtime expects
             std::filesystem::create_directory("./shaders");
             // Write vertex shader to file
@@ -33,46 +33,15 @@ class ShaderFixture : public testing::Test {
             ofs << "color = vec4(1.0, 1.0, 1.0, 1.0);" << endl;
             ofs << "}" << endl;
             ofs.close();
-
-            // Create a GL context so the GL calls below would succeed
-            // Initialize GLFW
-            if (!glfwInit())
-                throw std::runtime_error("Failed to initialize GLFW");
-            
-            // Create GLFW window
-            glfwWindowHint(GLFW_SAMPLES, 4); 
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-            auto* window = glfwCreateWindow(100, 100, "TestWindow", nullptr, nullptr);
-            if(!window) {
-                glfwTerminate();
-                throw std::runtime_error("Unable to create GLFW Window");
-            }
-            glfwMakeContextCurrent(window);
-
-            // Initialize GLEW 
-            glewExperimental = true;
-            if (glewInit() != GLEW_OK) {
-                throw std::runtime_error("Unable to initialize GLEW");
-            }
         }
 };
 
 TEST_F(ShaderFixture, TestLoadVertexShader) {
     string compilerOut;
     ASSERT_TRUE(get<0>(ShaderLoader().loadVertexShader("vertex.shader", compilerOut)));
-    ofstream ofs("vertexShader.compilerOut");
-    ofs << compilerOut << endl;
-    ofs.close();
 }
 
 TEST_F(ShaderFixture, TestLoadFragmentShader) {
     string compilerOut;
     ASSERT_TRUE(get<0>(ShaderLoader().loadFragmentShader("fragment.shader", compilerOut)));
-    ofstream ofs("fragmentShader.compilerOut");
-    ofs << compilerOut << endl;
-    ofs.close();
 }

@@ -3,6 +3,7 @@
 #include <string>
 #include <exception>
 #include <filesystem>
+#include "GL/glew.h"
 using namespace std;
 
 namespace mv {
@@ -29,7 +30,7 @@ GLuint ShaderLoader::compileShader(GLuint const shaderId, std::string& compilerO
 
     // Compile shader and return compilation status
     glCallWithErrorCheck(glCompileShader, shaderId);
-    GLint status;
+    GLint status{GL_TRUE};
     glCallWithErrorCheck(glGetShaderiv, shaderId, GL_COMPILE_STATUS, &status);
     compilerOutput.resize(outputSize);
     glCallWithErrorCheck(glGetShaderInfoLog, shaderId, outputSize, nullptr /*length as output*/, &compilerOutput.at(0));
@@ -42,7 +43,7 @@ std::tuple<bool, GLuint> ShaderLoader::createShader(std::string const& fileName,
     loadShader(fileName, shaderContents);
 
     // Create shader
-    GLuint shaderId = glCreateShader(isVertexShader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+    GLuint shaderId = glCallWithErrorCheck(glCreateShader, isVertexShader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
     const char* shaderSrc = shaderContents.data();
     glCallWithErrorCheck(glShaderSource, shaderId, 1 /*number of shaders in the next string argument*/,
                          &shaderSrc /* double-pointer to array of strings*/,
