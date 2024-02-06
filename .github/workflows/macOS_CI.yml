@@ -31,3 +31,11 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}}
+
+      - name: Test failure troubleshooting
+        working-directory: ${{github.workspace}}/build
+        run: |
+          ls shaders/
+          cat shaders/vertex.shader
+          cat shaders/fragment.shader
+          
