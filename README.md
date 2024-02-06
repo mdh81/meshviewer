@@ -1,6 +1,8 @@
 # MeshViewer
 A 3D viewer application written in C++ using OpenGL. All math support is provided by my other project [3dmath](https://github.com/mdh81/3dmath)
 
+<img width="1021" alt="Screenshot 2023-06-03 at 7 34 25 PM" src="https://github.com/mdh81/meshviewer/assets/73474502/db2c053d-deea-44f6-bd8d-eb2c4fc23540">
+
 # Build & Run
 
 ```shell
@@ -62,5 +64,3 @@ The viewer supports the following features:
 * Built-in event handler that supports static and dynamic callbacks 
 * Arcball rotation (WIP in branch arcball)
 * Emscripten builds
-
-<img width="1021" alt="Screenshot 2023-06-03 at 7 34 25 PM" src="https://github.com/mdh81/meshviewer/assets/73474502/db2c053d-deea-44f6-bd8d-eb2c4fc23540">
