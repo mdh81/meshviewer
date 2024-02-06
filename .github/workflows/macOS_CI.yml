@@ -12,8 +12,6 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-    env: 
-      mv_CI: "true"
 
     steps:
       - name: Checkout meshviewer
@@ -38,11 +36,3 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
-
-      - name: Test failure troubleshooting
-        working-directory: ${{github.workspace}}/build
-        run: |
-          ls shaders/
-          cat shaders/vertex.shader
-          cat shaders/fragment.shader
-          
