@@ -24,18 +24,15 @@ jobs:
         with:
           submodules: recursive
 
+      # Each step in a job is run independently with its own environment, which requires emsdk environment to be initialized
+      # for each step separately. To avoid this hassle, just combine the install, configure and build stages into a single step
+      # TODO: Use a docker container with emscripten environment to get a cleaner solution 
       - name: Install Emscripten and Build
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-          echo "EMSDK=$(pwd)" >> $GITHUB_ENV
-          echo "EM_CONFIG=${{github.workspace}}/emsdk/.emscripten" >> $GITHUB_ENV
-          echo "$(./emsdk construct_env)" >> $GITHUB_ENV
-
-      - name: Configure Emscripten Build
-        run: emcmake cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DEMSCRIPTEN=On
-
-      - name: Build With Emscripten Compiler
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+          source ./emsdk_env.sh
+          emcmake cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DEMSCRIPTEN=On      
+          cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
