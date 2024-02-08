@@ -1,11 +1,13 @@
 name: Emscripten Build
 
 on:
+  push:
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
   workflow_run:
     workflows: [ "Build & Quality Checks" ]
-    branches: [ main ]
+    branches: [ "master" ]
     types:
       - completed
 
