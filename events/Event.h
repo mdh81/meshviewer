@@ -2,12 +2,15 @@
 #define MESH_VIEWER_EVENT_H
 
 #include <iostream>
+#include "EventTypes.h"
 
 namespace mv { namespace events {
 
 class Event { 
     public:
-        Event(unsigned const id, unsigned const modifier = 0) : id(id), modifier(modifier) {}
+        Event(unsigned id, unsigned modifier = 0) : id(id), modifier(modifier) {}
+        Event(EventId eventId) : id (static_cast<unsigned>(eventId)), modifier(0) {}
+        Event(EventId eventId, unsigned modifier) : id (static_cast<unsigned>(eventId)), modifier(modifier) {}
         ~Event() = default;
         unsigned getId() const { return id; }
         unsigned getModifier() const { return modifier; }
