@@ -1,14 +1,5 @@
 #pragma once
-#ifdef EMSCRIPTEN
-#include "GLES2/gl2.h"
-#define GL_GLEXT_PROTOTYPES
-#include "GLES2/gl2ext.h"
-#define glBindVertexArray       glBindVertexArrayOES
-#define glGenVertexArrays       glGenVertexArraysOES
-#define glDeleteVertexArrays    glDeleteVertexArraysOES
-#else
-#include "GL/glew.h"
-#endif
+
 #include <vector>
 #include <limits>
 #include <type_traits>
@@ -21,6 +12,8 @@
 #include "3dmath/SupportingTypes.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 #include "OpenGLCall.h"
+
+// TODO: Time to split this into multiple headers.
 
 // Definitions of types that are common among various pieces of the meshviewer application
 namespace mv::common {
@@ -182,8 +175,6 @@ namespace mv::common {
         FaceNormal,
         VertexNormal
     };
-
-    unsigned const MOUSE_WHEEL_EVENT = 1000;
 
     enum class Direction {
         Left,
