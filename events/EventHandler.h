@@ -3,7 +3,9 @@
 #include "Callbacks.h"
 #include "CallbackFactory.h"
 #include "Event.h"
+#include "EventTypes.h"
 #include "MeshViewerObject.h"
+#include "Types.h"
 #include "GLFW/glfw3.h"
 #include <unordered_map>
 #include <vector>
@@ -49,8 +51,16 @@ namespace mv {
             void raiseEvent(Event const& event, std::vector<std::any>&& eventData = {});
 
             // Check if modifier key is currently pressed
-            bool isModifierKeyPressed(unsigned int modifierKey) {
+            bool isModifierKeyPressed(unsigned modifierKey) const {
                 return modifierKeys & modifierKey;
+            }
+
+            void notifyModifierKeyPressed(unsigned modifierKey) {
+                modifierKeys |= modifierKey;
+            }
+
+            void notifyModifierKeyReleased(unsigned modifierKey) {
+                modifierKeys &= ~modifierKey;
             }
 
             // Disallow copies as copying is not a meaningful operation
@@ -64,17 +74,17 @@ namespace mv {
             using EventCallbackMap =
                     std::unordered_map<const Event, Callback::ObservingPointer,
                                        Event::EventHasher, Event::EventComparator>;
-            using DynamicEventData = std::vector<std::any>;
             inline static EventCallbackMap callbackMap{};
             inline static bool started{};
             inline static int modifierKeys{};
 
+
             // Get callback for the specified event
             Callback::ObservingPointer getEventHandler(Event const&) const;
             // Execute callbacks
-            std::string executeCallback(Callback::ObservingPointer, DynamicEventData&&) const;
+            std::string executeCallback(Callback::ObservingPointer, EventData&&) const;
             std::string executeBasicEventCallback(Callback::ObservingPointer) const;
-            std::string executeDataEventCallback(Callback::ObservingPointer, DynamicEventData&&) const;
+            std::string executeDataEventCallback(Callback::ObservingPointer, EventData&&) const;
 
         friend class EventHandlerTest;
         friend class mv::viewer::ViewerTest;

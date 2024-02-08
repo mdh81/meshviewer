@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Drawable.h"
+#include "EventTypes.h"
 #include <memory>
 
 class GLFWwindow;
@@ -28,6 +29,9 @@ class Viewer : public MeshViewerObject {
         [[nodiscard]] common::Point2D getCursorPosition() const { return cursorPosition; };
         [[nodiscard]] common::Point2D getCursorPositionDifference() const { return cursorPositionDifference; }
         [[nodiscard]] math3d::Matrix<float, 3, 3> getViewportToWindowTransform() const;
+        void notifyFrameBufferResized(events::EventData&&);
+        void notifyCursorMoved(events::EventData&&);
+        void notifyMouseWheelOrTouchPadScrolled(events::EventData&&);
 
         // Creation Semantics
         static Viewer& getInstance();

@@ -48,8 +48,18 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     , printGLInfoOnStartup{true} {
 
     // Register event handlers
-    EventHandler{}.registerBasicEventCallback(
+    EventHandler eventHandler{};
+    eventHandler.registerBasicEventCallback(
             Event{GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT}, *this, &Viewer::saveSnapshot);
+
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::FrameBufferResized}, *this, &Viewer::notifyFrameBufferResized);
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::CursorMoved}, *this, &Viewer::notifyCursorMoved);
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
 
     Viewer::RenderLoop::viewer = this;
 }
@@ -111,42 +121,43 @@ void Viewer::createWindow() {
     frameBufferWidth = static_cast<unsigned>(width);
     frameBufferHeight = static_cast<unsigned>(height);
 
-    // Get notified when window size changes
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window,
-                                   [](GLFWwindow *window, int width, int height) {
-                                       auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
-                                       viewer->frameBufferWidth = width;
-                                       viewer->frameBufferHeight = height;
-                                       viewer->windowResized = true;
-                                   });
-
-
-    // Keep track of cursor position to handle various interaction gestures
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
-        auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
-        common::Point2D currentCursorPosition {static_cast<float>(x), static_cast<float>(y)};
-        viewer->cursorPositionDifference = currentCursorPosition - viewer->cursorPosition;
-        viewer->cursorPosition = currentCursorPosition;
-    });
-
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
-        auto viewer = reinterpret_cast<Viewer*>(glfwGetWindowUserPointer(window));
-        viewer->cursorPositionDifference = {static_cast<float>(xOffset), static_cast<float>(yOffset)};
-        unsigned modifierKeys = 0;
-        EventHandler eh;
-        if (eh.isModifierKeyPressed(GLFW_MOD_SHIFT)) {
-            modifierKeys |= GLFW_MOD_SHIFT;
-        }
-        if (eh.isModifierKeyPressed(GLFW_MOD_CONTROL)) {
-            modifierKeys |= GLFW_MOD_CONTROL;
-        }
-        eh.raiseEvent(Event{MOUSE_WHEEL_EVENT, modifierKeys});
-    });
-
     // Start handling events
     EventHandler().start(window);
+}
 
+void Viewer::notifyFrameBufferResized(events::EventData&& eventData) {
+    if (eventData.size() != 2) {
+        throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height "
+                                 "of the resized frame buffer must be specified");
+    }
+    frameBufferWidth = std::any_cast<unsigned>(eventData.at(0));
+    frameBufferHeight = std::any_cast<unsigned>(eventData.at(1));
+    windowResized = true;
+}
+
+void Viewer::notifyCursorMoved(events::EventData&& eventData) {
+    if (eventData.size() != 2) {
+        throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height of the resized "
+                                 "frame buffer must be specified");
+    }
+    common::Point2D currentCursorPosition {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
+    cursorPositionDifference = currentCursorPosition - cursorPosition;
+    cursorPosition = currentCursorPosition;
+}
+
+void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
+    if (eventData.size() != 3) {
+        throw std::runtime_error("Incorrect event data for scroll event. Scroll offsets and modifier keys are required "
+                                 "to correctly process the scroll event");
+    }
+    cursorPositionDifference = {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
+    unsigned modifierKeys = std::any_cast<unsigned>(eventData[2]);
+    EventHandler eventHandler;
+    if (modifierKeys & GLFW_MOD_CONTROL) {
+        eventHandler.raiseEvent(events::EventId::Zoomed, {cursorPosition, cursorPositionDifference});
+    } else if (modifierKeys & GLFW_MOD_SHIFT) {
+        eventHandler.raiseEvent(events::EventId::Panned, {cursorPosition, cursorPositionDifference});
+    }
 }
 
 void Viewer::setColors() {

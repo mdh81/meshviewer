@@ -1,4 +1,5 @@
 #include "EventHandler.h"
+#include "EventTypes.h"
 #include <iostream>
 #include <exception>
 #include <unordered_map>
@@ -7,19 +8,58 @@
 namespace mv::events {
 
 namespace {
-    auto keyPressHandler = [](GLFWwindow* window, int key, int scancode, int action, int modifiers) {
-        EventHandler{}.raiseEvent(Event(key, modifiers));
+    auto keyListener = [](GLFWwindow* window, int key, int scancode, int action, int modifiers) {
+        EventHandler eventHandler;
+        std::unordered_map<unsigned, unsigned> modifierKeyToModifierMap = {{GLFW_KEY_LEFT_CONTROL, GLFW_MOD_CONTROL},
+                                                                           {GLFW_KEY_RIGHT_CONTROL, GLFW_MOD_CONTROL},
+                                                                           {GLFW_KEY_LEFT_SHIFT, GLFW_MOD_SHIFT},
+                                                                           {GLFW_KEY_RIGHT_SHIFT, GLFW_MOD_SHIFT},
+                                                                           {GLFW_KEY_LEFT_ALT, GLFW_MOD_ALT},
+                                                                           {GLFW_KEY_RIGHT_ALT, GLFW_MOD_ALT}};
+        auto itr = modifierKeyToModifierMap.find(key);
+        bool isModifierKeyEvent = itr != modifierKeyToModifierMap.end();
+        if (action == GLFW_PRESS) {
+            isModifierKeyEvent ?
+                eventHandler.notifyModifierKeyPressed(itr->second) : eventHandler.raiseEvent(Event(key, modifiers));
+        } else if (isModifierKeyEvent /* && action == GLFW_RELEASE */) {
+            eventHandler.notifyModifierKeyReleased(itr->second);
+        }
     };
 
-    auto mouseClickHandler = [](GLFWwindow* window, int button, int action, int modifiers) {
+    auto mouseClickListener = [](GLFWwindow* window, int button, int action, int modifiers) {
         EventHandler{}.raiseEvent(Event(button, modifiers));
+    };
+
+    auto frameBufferResizeListener = [](GLFWwindow *window, int width, int height) {
+        EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized}, {static_cast<unsigned>(width), static_cast<unsigned>(height)});
+    };
+
+    auto scrollListener = [](GLFWwindow* window, double xOffset, double yOffset) {
+        unsigned modifierKeys {};
+        EventHandler eventHandler;
+        if (eventHandler.isModifierKeyPressed(GLFW_MOD_SHIFT)) {
+            modifierKeys |= GLFW_MOD_SHIFT;
+        }
+        if (eventHandler.isModifierKeyPressed(GLFW_MOD_CONTROL)) {
+            modifierKeys |= GLFW_MOD_CONTROL;
+        }
+        eventHandler.raiseEvent(Event{EventId::Scrolled, modifierKeys}, {static_cast<float>(xOffset),
+                                                                         static_cast<float>(yOffset),
+                                                                         modifierKeys});
+    };
+
+    auto cursorPositionListener = [](GLFWwindow* window, double x, double y) {
+        EventHandler{}.raiseEvent(Event{EventId::CursorMoved}, {static_cast<float>(x), static_cast<float>(y)});
     };
 }
 
 void EventHandler::start(GLFWwindow* window) {
     if (!started) {
-        glfwSetKeyCallback(window, keyPressHandler);
-        glfwSetMouseButtonCallback(window, mouseClickHandler);
+        glfwSetKeyCallback(window, keyListener);
+        glfwSetMouseButtonCallback(window, mouseClickListener);
+        glfwSetFramebufferSizeCallback(window, frameBufferResizeListener);
+        glfwSetScrollCallback(window, scrollListener);
+        glfwSetCursorPosCallback(window, cursorPositionListener);
         started = true;
     } else {
         std::runtime_error("Event handler already initialized");
@@ -44,7 +84,7 @@ std::string EventHandler::executeBasicEventCallback(Callback::ObservingPointer c
     return !isCompatible ? "Basic event callbacks cannot be executed with dynamic data" : std::string{};
 }
 
-std::string EventHandler::executeDataEventCallback(Callback::ObservingPointer callback, DynamicEventData&& eventData) const {
+std::string EventHandler::executeDataEventCallback(Callback::ObservingPointer callback, EventData&& eventData) const {
     bool isCompatible;
     auto dataEventCallback = std::dynamic_pointer_cast<DataEventCallback>(callback.lock());
     if ((isCompatible = (dataEventCallback != nullptr))) {
@@ -53,12 +93,12 @@ std::string EventHandler::executeDataEventCallback(Callback::ObservingPointer ca
     return !isCompatible ? "Data event callbacks cannot be executed without event data" : std::string{};
 }
 
-std::string EventHandler::executeCallback(Callback::ObservingPointer callback, DynamicEventData&& eventData) const {
+std::string EventHandler::executeCallback(Callback::ObservingPointer callback, EventData&& eventData) const {
     return eventData.empty() ? executeBasicEventCallback(callback) :
                                executeDataEventCallback(callback, std::move(eventData));
 }
 
-void EventHandler::raiseEvent(Event const& event, DynamicEventData&& eventData) {
+void EventHandler::raiseEvent(Event const& event, EventData&& eventData) {
     auto callback = getEventHandler(event);
     if (!callback.expired()) {
         std::string error = executeCallback(callback, std::move(eventData));
