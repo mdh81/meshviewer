@@ -24,13 +24,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Emscripten
+      - name: Install Emscripten and Build
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-          source ./emsdk_env.sh
+          echo "EMSDK=$(pwd)" >> $GITHUB_ENV
+          echo "EM_CONFIG=${{github.workspace}}/emsdk/.emscripten" >> $GITHUB_ENV
+          echo "$(./emsdk construct_env)" >> $GITHUB_ENV
 
       - name: Configure Emscripten Build
         run: emcmake cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DEMSCRIPTEN=On
