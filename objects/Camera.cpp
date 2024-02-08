@@ -251,12 +251,6 @@ void Camera::orbitLoop() {
 }
 
 void Camera::toggleOrbit(const common::Axis& axis) {
-     // NOTE: In web assembly, enabling threading support is straightforward, but
-     // emscripten's pthread support relies on SharedArrayBuffer, which is not
-     // enabled by default and enabling support requires the site to specify
-     // cross-origin opener policies via http headers. This is too much work at
-     // this point, and as per the dit might impede loading other resources
-     // Reference: https://developer.chrome.com/blog/coep-credentialless-origin-trial/
     if (!orbitAxis) {
         // If the orbit axis hasn't been set yet, set it and start orbiting around it
         orbitAxis = axis;
