@@ -2,7 +2,6 @@
 #include <functional>
 #include <utility>
 #include <vector>
-#include "Viewer.h"
 #include "EventHandler.h"
 #include "Types.h"
 
@@ -28,11 +27,15 @@ namespace mv::scene {
         mv::events::EventHandler().registerBasicEventCallback(
                 GLFW_KEY_F, *this, &Viewport::toggleFog);
 
-        mv::events::EventHandler().registerBasicEventCallback(
-                mv::events::Event{common::MOUSE_WHEEL_EVENT, GLFW_MOD_CONTROL}, *this, &Viewport::zoom3DView);
+        // TODO: Depending on FPS degradation, it might be better to make these basic events and store the cursor position
+        // and cursor position difference in EventHandler and have Viewport grab it from EventHandler or create an
+        // intermediary mono-state object like CursorState that can be used by all pieces of the app
+        // My feeling is any_cast is slow for gesture events
+        mv::events::EventHandler().registerDataEventCallback(
+                mv::events::Event{events::EventId::Zoomed}, *this, &Viewport::zoom3DView);
 
-        mv::events::EventHandler().registerBasicEventCallback(
-                mv::events::Event{common::MOUSE_WHEEL_EVENT, GLFW_MOD_SHIFT}, *this, &Viewport::pan3DView);
+        mv::events::EventHandler().registerDataEventCallback(
+                mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
     }
 
     void Viewport::add(mv::Drawable& drawable) {
@@ -171,31 +174,29 @@ namespace mv::scene {
         return viewportBounds;
     }
 
-    void Viewport::zoom3DView() {
-        debug = false;
-        common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
+    void Viewport::zoom3DView(events::EventData&& zoomEventData) {
+        if (zoomEventData.size() != 2) {
+            throw std::runtime_error("Zoom event data is incorrect. Need the current cursor position and the "
+                                     "cursor position difference to determine the zoom direction");
+        }
+        common::Point2D cursorPosition = std::any_cast<common::Point2D>(zoomEventData[0]);
         common::Point2D cursorPositionDifference;
         if (isViewportEvent(cursorPosition)) {
-            cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+            cursorPositionDifference = std::any_cast<common::Point2D>(zoomEventData[1]);
             cursorPositionDifference.y > 0 ? camera->zoom(common::Direction::Forward) :
                                              camera->zoom(common::Direction::Backward);
-            if (debug) {
-                std::cerr << "Zooming 3D view" << std::endl;
-                std::cerr << "Is viewport event: " << isViewportEvent(cursorPosition);
-                if (isViewportEvent(cursorPosition)) {
-                    std::cerr << "\t View will be zoomed " << (cursorPositionDifference.y > 0 ? "in" : "out") << std::endl;
-                }
-            }
-        } else if (debug) {
-            std::cerr << "Is not viewport event: " << cursorPosition << std::endl;
         }
     }
 
-    void Viewport::pan3DView() {
-        common::Point2D cursorPosition = Viewer::getInstance().getCursorPosition();
+    void Viewport::pan3DView(events::EventData&& panEventData) {
+        if (panEventData.size() != 2) {
+            throw std::runtime_error("Pan event data is incorrect. Need the current cursor position and the "
+                                     "cursor position difference to determine the pan direction");
+        }
+        common::Point2D cursorPosition = std::any_cast<common::Point2D>(panEventData[0]);
         common::Point2D cursorPositionDifference;
         if (isViewportEvent(cursorPosition)) {
-            cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
+            cursorPositionDifference = std::any_cast<common::Point2D>(panEventData[1]);
             if (fabs(cursorPositionDifference.x) > fabs(cursorPositionDifference.y)) {
                 camera->pan(cursorPositionDifference.x > 0 ? common::Direction::Right : common::Direction::Left);
             } else {

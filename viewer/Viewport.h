@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "3dmath/Matrix.h"
 #include "Types.h"
+#include "EventTypes.h"
 #include <unordered_set>
 
 
@@ -85,8 +86,8 @@ private:
         }
         void enableFog();
         void disableFog();
-        void zoom3DView();
-        void pan3DView();
+        void zoom3DView(events::EventData&&);
+        void pan3DView(events::EventData&&);
         [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
 
     private:
