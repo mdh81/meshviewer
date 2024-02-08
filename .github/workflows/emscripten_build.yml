@@ -1,10 +1,13 @@
-name: Build & Quality Checks
+name: Emscripten Build
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_run:
+    workflows: [ "Build & Quality Checks" ]
+    branches: [ main ]
+    types:
+      - completed
 
 env:
   BUILD_TYPE: Release
@@ -19,22 +22,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Dependencies
-        run: brew install glfw glm glew
+      - name: Install Emscripten
+        run: brew install emscripten
 
       # There are times cmake configure fails for no relevant reason. Haven't seen the failure after adding this step
       # to delete and recreate the build directory
       - name: Recreate Build Directory
         run: |
           rm -f ${{github.workspace}}/build
-          mkdir ${{github.workspace}}/build
+          mkdir ${{github.workspace}}/build      
 
       - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DEMSCRIPTEN=On
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Test
-        working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
