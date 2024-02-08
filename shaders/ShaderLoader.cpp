@@ -3,7 +3,6 @@
 #include <string>
 #include <exception>
 #include <filesystem>
-#include "GL/glew.h"
 using namespace std;
 
 namespace mv {
