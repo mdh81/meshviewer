@@ -27,15 +27,10 @@ jobs:
       - name: Install Emscripten
         run: brew install emscripten
 
-      # There are times cmake configure fails for no relevant reason. Haven't seen the failure after adding this step
-      # to delete and recreate the build directory
-      - name: Recreate Build Directory
-        run: |
-          rm -f ${{github.workspace}}/build
-          mkdir ${{github.workspace}}/build      
-
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DEMSCRIPTEN=On
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        run: |
+          cd ${{github.workspace}}/build 
+          make -j4
