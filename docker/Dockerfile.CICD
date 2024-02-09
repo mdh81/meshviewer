@@ -1,0 +1,58 @@
+FROM ubuntu:23.10
+
+# Avoid warnings by switching to noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install all dependencies
+RUN apt-get update && apt-get install -y \
+    # Development tools
+    build-essential \
+    clang \
+    cmake \
+    git \
+    # OpenGL libraries
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    freeglut3-dev \
+    # GLEW and GLFW
+    libglew-dev \
+    libglfw3 \
+    libglfw3-dev \
+    # Install Python for Emscripten
+    python3 \
+    python3-pip \
+    # Install vim
+    vim \
+    # Cleanup
+    && rm -rf /var/lib/apt/lists/*
+
+# Install GLM
+RUN git clone https://github.com/g-truc/glm.git && \
+    cd glm && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make && \
+    make install && \
+    cd ../.. && \
+    rm -rf glm
+
+# Install Emscripten
+RUN git clone https://github.com/emscripten-core/emsdk.git && \
+    cd emsdk && \
+    ./emsdk install latest && \
+    ./emsdk activate latest
+
+# Set the environment variables for Emscripten
+ENV EMSDK /emsdk
+ENV EM_CONFIG /emsdk/.emscripten
+ENV PATH="/emsdk:/emsdk/upstream/emscripten:${PATH}"
+
+# Switch back to dialog for any ad-hoc use of apt-get
+ENV DEBIAN_FRONTEND=dialog
+
+# Set the working directory
+WORKDIR /
+
+# Entry point
+CMD [ "/bin/bash" ]
