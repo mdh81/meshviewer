@@ -11,6 +11,7 @@ namespace mv {
         public:
             std::tuple<bool, GLuint> loadVertexShader(std::string const& shaderFileName, std::string& compilerOutput);
             std::tuple<bool, GLuint> loadFragmentShader(std::string const& shaderFileName, std::string& compilerOutput);
+            virtual ~ShaderLoader() = default;
         protected:
             virtual void loadShader(std::string const& shaderFileName, std::string& fileContents);
             GLuint compileShader(GLuint const shaderId, std::string& compilerOutput);
