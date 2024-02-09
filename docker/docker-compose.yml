@@ -9,3 +9,11 @@ services:
       - ~/.vim:/headless/.vim  
     ports:
       - "6911:6901"
+  # Service to run the container used for CI/CD builds
+  cicd:
+    image: mdh81/mvlinux-cicd
+    command: tail -f /dev/null
+    volumes:
+      - ../:/meshviewer
+      - ~/.vimrc:/.vimrc
+      - ~/.vim:/.vim
