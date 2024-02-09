@@ -21,16 +21,15 @@ foreach(test ${allTests})
         ${test} 
         PUBLIC
         gtest_main
-        ${glLibs}
-        "-framework OpenGL"
         common
         viewer
-        shaders
         events
         mesh
         objects
         configuration
         gmock
+        ${glLibs}
+        shaders
     )
     gtest_discover_tests(${test})
 endforeach(test)

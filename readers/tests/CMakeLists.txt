@@ -19,10 +19,10 @@ foreach (test ${allTests})
         readers
         mesh
         common
-        shaders
         objects
         events
         ${glLibs}
+        shaders
     )
     gtest_discover_tests(${test} PROPERTIES ENVIRONMENT "modelsDir=${CMAKE_BINARY_DIR}/testfiles")
 endforeach(test)
