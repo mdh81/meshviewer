@@ -5,108 +5,21 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(MeshViewer VERSION 1.0.0)
-
-include(common/testsupport/TestSupport.cmake)
-
-if (APPLE)
-    add_compile_options(-DOSX)
-    set(enableTesting ON)
-    enable_testing()
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-DDEBUG)
-endif()
-
-# The linux dev environment that have been tested and in use are via containers running linux
-# The container that's used with VNC to troubleshoot visual issues is running a 64-bit debian
-# The container used for CI on github uses an alpine distro. The section below sets up the build
-# for these two linux dev environments.
-if (LINUX)
-    if (EXISTS /usr/lib/aarch64-linux-gnu)
-        set(LIBRARY_PATH /usr/lib/aarch64-linux-gnu/)
-    else()
-        set(LIBRARY_PATH /usr/lib)
-    endif()
-    add_library(GLEW::glew SHARED IMPORTED GLOBAL)
-    set_target_properties(GLEW::glew PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libGLEW.so)
-    target_include_directories(GLEW::glew INTERFACE /usr/include)
-    add_library(glfw SHARED IMPORTED)
-    set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libglfw.so)
-    target_include_directories(glfw INTERFACE /usr/include)
-    add_library(glm INTERFACE)
-    target_include_directories(glm INTERFACE /usr/include)
-    add_library(glm::glm ALIAS glm)
-    add_library(GLEW::GLEW ALIAS GLEW::glew)
-    find_package(OpenGL REQUIRED)
-    set(OPENGL_LIBRARIES OpenGL::GL)
-    set(enableTesting OFF)
-elseif(NOT EMSCRIPTEN)
-    find_package(GLEW REQUIRED)
-    find_package(GLFW3 REQUIRED)
-    find_package(OpenGL REQUIRED)
-    find_package(glm REQUIRED)
-    # set include directories explicitly for desktop builds this avoids reliance on
-    # subprojects having to use target_link_libraries command to set include paths
-    # NOTE: Each module's cmake config file uses its own convention for variable names
-    #       This project uses camel-case for variable names across all languages
-    get_target_property(glfwIncludeDirectory glfw INTERFACE_INCLUDE_DIRECTORIES)
-    # TODO: This property is pointing to the wrong path on macOS. Compilation is successful
-    # only because glm headers and glfw headers above share the same root directory
-    get_target_property(glmIncludeDirectory glm::glm INTERFACE_INCLUDE_DIRECTORIES)
-    set(glIncludeDirectories
-        ${GLEW_INCLUDE_DIRECTORY}
-        ${glfwIncludeDirectory}
-        ${OPENGL_INCLUDE_DIR}
-        ${glmIncludeDirectory})
-endif()
-
+# Load platform specific configuration
+# NOTE: Order is important to make sure emscripten build is configured as such
+# on all platforms
 if (EMSCRIPTEN)
-    # set preprocessor flag
-    add_compile_options(-DEMSCRIPTEN)
-    # compile and link options
-    add_compile_options(
-        --no-heap-copy
-        -fexceptions
-        -pthread
-    )
-    add_link_options(
-        --emrun
-        -fexceptions
-        -pthread
-        -sUSE_WEBGL2=1
-        -sMIN_WEBGL_VERSION=2
-        -sMAX_WEBGL_VERSION=2
-        -sUSE_GLFW=3
-        -sFULL_ES2
-        -sEXPORTED_RUNTIME_METHODS=allocate
-        -sPTHREAD_POOL_SIZE=2
-        "SHELL:-sWASM=1 -sUSE_WEBGL2=1 -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sSTACK_SIZE=5MB"
-        --embed-file ${CMAKE_CURRENT_SOURCE_DIR}/testfiles@testfiles
-        --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/config/defaults.cfg@config/defaults.cfg
-    )
-
-    # TODO: Remove this when glm is replaced with 3dmath
-    list(APPEND glIncludeDirectories /opt/homebrew/include)
-    # Disable building tests, they are not relevant for web target
-    set(enableTesting OFF)
-    # Build html output
-    set(CMAKE_EXECUTABLE_SUFFIX ".html")
-    # Enable debug
-    if (DEBUG)
-        add_compile_options(-g)
-    endif()
-
+    message(STATUS "Configuring Emscripten build")
+    include(emscripten.cmake)
+elseif (APPLE)
+    message(STATUS "Configuring macOS build")
+    include(macOS.cmake)
+elseif (LINUX)
+    message(STATUS "Configuring Linux build")
+    include(ubuntu.cmake)
+else()
+    message(FATAL_ERROR "Unsupported platform")
 endif()
-
-# get gtest
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG release-1.11.0
-)
-FetchContent_MakeAvailable(googletest)
 
 # Set default build type to debug
 if (NOT DEFINED CMAKE_BUILD_TYPE)
@@ -114,19 +27,31 @@ if (NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-# List of opengl libraries
-if (NOT EMSCRIPTEN)
-    set(glLibs ${OPENGL_LIBRARIES} GLEW::GLEW glfw)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-DDEBUG)
 endif()
 
-# Every submodule is dependent on 3dmath
-include_directories(3dmath/include)
+# get gtest
+if (enableTesting)
+    enable_testing()
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG release-1.11.0
+    )
+    FetchContent_MakeAvailable(googletest)
+    include(common/testsupport/TestSupport.cmake)
+endif()
+
 
 # Define app name as a variable so submodules can set target properties for the app
 set(appName meshViewer)
 
 # Submodules
 add_subdirectory(3dmath)
+# Every other submodule is dependent on 3dmath
+include_directories(3dmath/include)
 add_subdirectory(events)
 add_subdirectory(mesh)
 add_subdirectory(objects)
@@ -177,12 +102,17 @@ file(
     ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.stl
     ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.ply
 )
-
-add_custom_target(
-    testFiles ALL
-    ${CMAKE_COMMAND} -E copy ${models} ${CMAKE_BINARY_DIR}/testfiles/
+foreach(model ${models})
+file(
+    COPY
+    ${model}
+    DESTINATION
+    ${CMAKE_BINARY_DIR}/testfiles/
 )
+endforeach()
 
 if (EMSCRIPTEN)
+    #TODO: Resolve the order dependency issue between web and shaders submodules
+    # Once done, move this add_subdirectory call to emscripten.cmake
     add_subdirectory(web)
 endif()
