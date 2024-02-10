@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdh81/mvlinux-cicd
-      options: --entrypoint tail -f /dev/null
+      options: --entrypoint "/bin/sh -c 'tail -f /dev/null'"
 
     steps:
         
