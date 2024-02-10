@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdh81/mvlinux-cicd
+      options: --entrypoint tail -f /dev/null
 
     steps:
+        
       - name: Checkout MeshViewer
         uses: actions/checkout@v3
         with:
