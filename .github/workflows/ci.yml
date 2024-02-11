@@ -10,14 +10,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: mdh81/mvlinux-alpine
-
+        
     steps:
-      - name: docker debug
-        run: |          
-          /usr/bin/docker inspect grep $(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
-          /usr/bin/docker ls -a | grep $(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
-          /usr/bin/docker run --rm -it --entrypoint /bin/sh mdh81/mvlinux-alpine
-          /usr/bin/docker logs -f | grep $(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
+      - name: Docker Debug
+        run: |
+          CONTAINER_NAME=$(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
+          if [ ! -z "$CONTAINER_NAME" ]; then
+            /usr/bin/docker inspect $CONTAINER_NAME || true
+            /usr/bin/docker logs $CONTAINER_NAME || true
+          else
+            echo "Container not found or not running"
+          fi
+        continue-on-error: true
           
       - name: Checkout MeshViewer
         uses: actions/checkout@v3
