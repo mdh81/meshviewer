@@ -20,13 +20,13 @@ jobs:
         run: docker build -t mvlinux -f ${{github.workspace}}/docker/Dockerfile.CICD .
 
       - name: Create Docker container
-        run: docker run -d --name cicd -v ${{github.workspace}}:/meshviewer mvlinux
+        run: docker run -w /meshviewer -d --name cicd -v ${{github.workspace}}:/meshviewer mvlinux
 
       - name: Configure CMake
-        run: docker exec cicd cmake -B /meshviewer/build -DCMAKE_BUILD_TYPE=Release
+        run: docker exec cicd cmake -B build -DCMAKE_BUILD_TYPE=Release
 
-     # - name: Build
-     #   run: cmake --build ${{github.workspace}}/build --config Release
+      - name: Build
+        run: docker exec cicd cmake --build build --config Release
 
-     # - name: Test
-     #   run: ctest -C Release --rerun-failed --output-on-failure -S /meshviewer/build
+      - name: Test
+        run: docker exec cicd ctest -C Release --rerun-failed --output-on-failure -S build
