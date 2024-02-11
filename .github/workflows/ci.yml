@@ -17,11 +17,10 @@ jobs:
           submodules: recursive
           
       - name: Create Docker Image
-        run: |        
-          docker build -t mvlinux -f ${{github.workspace}}/docker/Dockerfile.CICD .
+        run: docker build -t mvlinux -f ${{github.workspace}}/docker/Dockerfile.CICD .
 
       - name: Create Docker container
-          docker run -d --name cicd -v ${{github.workspace}}:/meshviewer mvlinux                
+        run: docker run -d --name cicd -v ${{github.workspace}}:/meshviewer mvlinux
 
       - name: Configure CMake
         run: docker exec cicd cmake -B /meshviewer/build -DCMAKE_BUILD_TYPE=Release
