@@ -9,24 +9,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: mdh81/mvlinux-cicd
 
-    steps:
-      - name: Start container
-        run: |
-          docker run -d --name cicd \
-            -v ${{ github.workspace }}:/meshviewer \
-            mdh81/mvlinux-cicd tail -f /dev/null
-        
+    steps:              
       - name: Checkout MeshViewer
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
       - name: Configure CMake
-        run: docker exec cicd cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: docker exec cicd cmake --build ${{github.workspace}}/build --config Release
+        run: cmake --build ${{github.workspace}}/build --config Release
 
       - name: Test
-        run: docker exec cicd ctest -C Release --rerun-failed --output-on-failure -S /meshviewer/build
+        run: ctest -C Release --rerun-failed --output-on-failure -S /meshviewer/build
