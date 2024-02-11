@@ -4,7 +4,7 @@
 #   Mesa GL is used as the OpenGL implementation
 
 
-set(LIBRARY_PATH /usr/lib/aarch64-linux-gnu/)
+set(LIBRARY_PATH /usr/lib/x86_64-linux-gnu/)
 add_library(GLEW::glew SHARED IMPORTED GLOBAL)
 set_target_properties(GLEW::glew PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libGLEW.so)
 target_include_directories(GLEW::glew INTERFACE /usr/include)
