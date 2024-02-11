@@ -12,9 +12,10 @@ jobs:
     container: mdh81/mvlinux-alpine
 
     steps:
-      - name: docker logs
+      - name: docker debug
         run: |          
-          /usr/bin/ docker logs -f $(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
+          /usr/bin/ docker ls -a | grep $(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
+          docker inspect grep $(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
           
       - name: Checkout MeshViewer
         uses: actions/checkout@v3
