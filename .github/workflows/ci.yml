@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: mdh81/mvlinux-cicd
+    container: alpine:latest
 
     steps:              
       - name: Checkout MeshViewer
