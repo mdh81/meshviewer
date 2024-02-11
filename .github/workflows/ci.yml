@@ -9,18 +9,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: mdh81/mvlinux-alpine
+    container: alpine
         
     steps:
-      - name: Docker Debug
+      - name: Install dependencies
         run: |
-          CONTAINER_NAME=$(docker ps --format "{{.Names}}\t{{.Image}}" | grep 'mdh81/mvlinux-alpine' | cut -f1)
-          if [ ! -z "$CONTAINER_NAME" ]; then
-            /usr/bin/docker inspect $CONTAINER_NAME || true
-            /usr/bin/docker logs $CONTAINER_NAME || true
-          else
-            echo "Container not found or not running"
-          fi
+          apk update && apk add --no-cache \
+          # Development tools
+          build-base \
+          clang \
+          cmake \
+          git \
+          # OpenGL libraries
+          mesa-dev \
+          glu-dev \
+          freeglut-dev \
+          # GLEW and GLFW (Note: GLFW might need to be built from source if not available)
+          glew-dev \
+          glfw-dev \
+          # Install Python for Emscripten (Python3 comes pre-installed with many Alpine images)
+          python3 \
+          py3-pip          
         continue-on-error: true
           
       - name: Checkout MeshViewer
