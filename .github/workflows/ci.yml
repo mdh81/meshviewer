@@ -14,22 +14,7 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          apk update && apk add --no-cache \
-          # Development tools
-          build-base \
-          clang \
-          cmake \
-          git \
-          # OpenGL libraries
-          mesa-dev \
-          glu-dev \
-          freeglut-dev \
-          # GLEW and GLFW (Note: GLFW might need to be built from source if not available)
-          glew-dev \
-          glfw-dev \
-          # Install Python for Emscripten (Python3 comes pre-installed with many Alpine images)
-          python3 \
-          py3-pip          
+          apk update
         continue-on-error: true
           
       - name: Checkout MeshViewer
