@@ -29,4 +29,10 @@ jobs:
         run: docker exec cicd cmake --build build --config Release
 
       - name: Test
-        run: docker exec cicd ctest -C Release --rerun-failed --output-on-failure -S build
+        run: docker exec cicd ctest  --test-dir build --rerun-failed --output-on-failure
+
+      - name: Configure Emscripten Build
+        run: docker exec cicd emcmake cmake -B build_web -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN=ON
+
+      - name: Build Web Assembly
+        run: docker exec cicd cmake --build build_web --config Release
