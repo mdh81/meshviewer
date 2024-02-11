@@ -55,4 +55,4 @@ ENV DEBIAN_FRONTEND=dialog
 WORKDIR /
 
 # Entry point
-CMD [ "/bin/bash" ]
+ENTRYPOINT ["/bin/bash", "-c", "tail -f /dev/null"]]

@@ -1,4 +1,5 @@
 services:
+  # Service to run the linux container with vnc server to get an interactive linux build
   mvlinux:
     image: mdh81/linux-vnc-base
     environment:
@@ -12,7 +13,6 @@ services:
   # Service to run the container used for CI/CD builds
   cicd:
     image: mdh81/mvlinux-cicd
-    command: tail -f /dev/null
     volumes:
       - ../:/meshviewer
       - ~/.vimrc:/.vimrc
