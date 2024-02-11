@@ -18,11 +18,13 @@ jobs:
           
       - name: Create Docker Image
         run: |        
-          docker build -t mvlinux -f ${{github.workspace}}/docker/Dockerfile.CICD .          
-                
+          docker build -t mvlinux -f ${{github.workspace}}/docker/Dockerfile.CICD .
 
-     # - name: Configure CMake
-     #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
+      - name: Create Docker container
+          docker run -d --name cicd -v ${{github.workspace}}:/meshviewer mvlinux                
+
+      - name: Configure CMake
+        run: docker exec cicd cmake -B /meshviewer/build -DCMAKE_BUILD_TYPE=Release
 
      # - name: Build
      #   run: cmake --build ${{github.workspace}}/build --config Release
