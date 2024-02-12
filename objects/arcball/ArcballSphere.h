@@ -20,7 +20,7 @@ namespace mv::objects {
 
     private:
         unsigned const resolution;
-        common::RGBColor const color;
+        common::RGBAColor const color;
     };
 
 }
