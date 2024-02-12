@@ -13,7 +13,7 @@ namespace mv::objects {
     : ArcballVisualizationItem(displayDimensions, "ArcballPoint.vert", "ArcballPoint.frag")
     , scaleFactor(1)
     , pointSizePixels(20) {
-
+        ArcballVisualizationItem::color = {1.f, 1.f, 1.f, 0.7f};
     }
 
     void ArcballPoint::render() {
@@ -32,11 +32,12 @@ namespace mv::objects {
         glCallWithErrorCheck(glEnable, GL_BLEND);
         glCallWithErrorCheck(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+        glCallWithErrorCheck(glActiveTexture, GL_TEXTURE0);
         glCallWithErrorCheck(glBindTexture, GL_TEXTURE_2D, textureId);
 
         glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_FILL);
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
-                             numConnectivityEntries,   // Number of entries in the connectivity array
+                             numConnectivityEntriesQuad,   // Number of entries in the connectivity array
                              GL_UNSIGNED_INT,          // Type of element buffer data
                              nullptr);                 // Offset into element buffer data
         setTransforms();
@@ -141,14 +142,15 @@ namespace mv::objects {
         dataSize = plane.getTris().size() * sizeof(math3d::types::Tri);
         glCallWithErrorCheck(glBufferData, GL_ELEMENT_ARRAY_BUFFER, dataSize, plane.getTris().data(), GL_STATIC_DRAW);
 
-        numConnectivityEntries = static_cast<unsigned>(plane.getTris().size() * 3);
+        numConnectivityEntriesQuad = static_cast<unsigned>(plane.getTris().size() * 3);
 
         generateColors();
     }
 
     void ArcballPoint::generateColors() {
         if (readyToRender) return;
-
+        GLint pointColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "pointColor");
+        glCallWithErrorCheck(glUniform4fv, pointColorId, 1, color.getData());
     }
 
     void ArcballPoint::fadeOut() {
@@ -159,7 +161,8 @@ namespace mv::objects {
         // Allow the base class to set the orthographic projection
         ArcballVisualizationItem::setTransforms();
         GLint pointTransformId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "pointTransformMatrix");
-        math3d::Matrix<float, 4, 4> pointTransform = math3d::TranslationMatrix<float>{positionCamera} *
+        math3d::Matrix<float, 4, 4> pointTransform =
+                math3d::TranslationMatrix<float>{positionCamera } *
                 math3d::ScalingMatrix<float>{scaleFactor, scaleFactor, 1};
         // Set point location and size
         glCallWithErrorCheck(glUniformMatrix4fv,
