@@ -21,6 +21,9 @@ namespace mv::objects {
         void setVisualizationOff();
 
         [[nodiscard]]
+        common::RotationMatrix getRotation();
+
+        [[nodiscard]]
         common::RotationMatrix getRotation(common::Point3D const& cursorPositionDevice);
 
         [[nodiscard]]
@@ -40,6 +43,13 @@ namespace mv::objects {
 
         void notifyDisplayResized(common::DisplayDimensions const& displaySize) override;
 
+        void handleScrollEvent(common::Point3D const& cursorPositionDevice);
+
+        void reset() {
+            arcStartPoint = nullptr;
+            arcEndPoint = nullptr;
+        }
+
     private:
         void createVisualization();
         void updateVisualization();
@@ -55,10 +65,10 @@ namespace mv::objects {
         std::unique_ptr<common::Point3D> arcStartPoint;
         std::unique_ptr<common::Point3D> arcEndPoint;
         std::unique_ptr<common::Vector3D> rotationAxis;
-        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartPointVisual;
-        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndPointVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> originVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartVectorVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndVectorVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcAxisVectorVisual;
         float theta {0.f};
         bool visualizationOn{};
         std::thread fadeOutTimer;
@@ -69,6 +79,13 @@ namespace mv::objects {
         std::unique_ptr<std::thread> interactionMonitorThread;
         bool fadeOutVisualization {false};
         common::DisplayDimensions displayDimensions;
+        enum class InteractionState {
+            Stopped,
+            Interacting
+        };
+        InteractionState interactionState;
+        std::optional<common::Point2D> previousCursorPosition;
+        std::optional<common::Point2D> currentCursorPosition;
     };
 
     using ArcballControllerPointer = std::unique_ptr<ArcballController>;
