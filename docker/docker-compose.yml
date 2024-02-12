@@ -1,5 +1,5 @@
 services:
-  # Service to run the linux container with vnc server to get an interactive linux build
+  # Service to run the linux container with vnc server to get an GUI environment to troubleshoot problems on linux
   mvlinux:
     image: mdh81/linux-vnc-base
     environment:
