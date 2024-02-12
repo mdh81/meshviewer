@@ -1,10 +1,9 @@
-#ifndef MESH_VIEWER_EVENT_H
-#define MESH_VIEWER_EVENT_H
+#pragma once
 
 #include <iostream>
 #include "EventTypes.h"
 
-namespace mv { namespace events {
+namespace mv::events {
 
 class Event { 
     public:
@@ -39,9 +38,8 @@ class Event {
         };
 
     protected:
-        const unsigned id;
-        const int modifier;
-
+        unsigned const id;
+        int const modifier;
 };
 
 inline std::ostream& operator <<(std::ostream& os, Event const& event) {
@@ -49,7 +47,4 @@ inline std::ostream& operator <<(std::ostream& os, Event const& event) {
     return os;
 }
 
-} }
-
-
-#endif
+}
