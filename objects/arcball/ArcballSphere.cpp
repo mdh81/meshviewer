@@ -10,7 +10,7 @@ namespace mv::objects {
     ArcballSphere::ArcballSphere(common::DisplayDimensions const& displayDimensions)
     : ArcballVisualizationItem(displayDimensions, "ArcballSphere.vert", "ArcballSphere.frag")
     , resolution(64)
-    , color({0.5, 0.5, 0.5}) {
+    , color({0.5, 0.5, 0.5, 0.2f}) {
         opacity = 0.2f;
     }
 
@@ -26,9 +26,9 @@ namespace mv::objects {
         glCallWithErrorCheck(glEnable, GL_BLEND);
         glCallWithErrorCheck(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_FILL);
+        glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_LINE);
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
-                             numConnectivityEntries,   // Number of entries in the connectivity array
+                             numConnectivityEntriesQuad,   // Number of entries in the connectivity array
                              GL_UNSIGNED_INT,          // Type of element buffer data
                              nullptr);                 // Offset into element buffer data
         // Reset state
@@ -98,7 +98,7 @@ namespace mv::objects {
         dataSize = sphere.getTris().size() * sizeof(math3d::types::Tri);
         glCallWithErrorCheck(glBufferData, GL_ELEMENT_ARRAY_BUFFER, dataSize, sphere.getTris().data(), GL_STATIC_DRAW);
 
-        numConnectivityEntries = static_cast<unsigned>(sphere.getTris().size() * 3);
+        numConnectivityEntriesQuad = static_cast<unsigned>(sphere.getTris().size() * 3);
 
         generateColors();
     }
@@ -116,11 +116,6 @@ namespace mv::objects {
 
     void ArcballSphere::updateColor() {
         auto sphereColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "sphereColor");
-        RGBAColor color4;
-        color4.r = color.r;
-        color4.g = color.g;
-        color4.b = color.b;
-        color4.a = opacity;
-        glCallWithErrorCheck(glUniform4fv, sphereColorId, 1, color4.getData());
+        glCallWithErrorCheck(glUniform4fv, sphereColorId, 1, color.getData());
     }
 }
