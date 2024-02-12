@@ -109,10 +109,6 @@ namespace mv::scene {
             displayGradientBackground();
         }
 
-        // Draw arcball interactor next with depth write disabled so all scene objects will render on top of arcball
-        // NOTE: render call is always made to support the fade out use case
-        arcballController->render();
-
         // Add fog if enabled
         fogEnabled ? enableFog() : disableFog();
 
@@ -120,6 +116,9 @@ namespace mv::scene {
             drawable.get().render();
         }
 
+        // Draw arcball interactor next with depth write disabled so all scene objects will render on top of arcball
+        // NOTE: render call is always made to support the fade out use case
+        arcballController->render();
     }
 
     void Viewport::displayGradientBackground() {
@@ -227,29 +226,31 @@ namespace mv::scene {
     }
 
     void Viewport::rotate3DViewWithScrollGesture() {
-        common::Point2D cursorPositionAWindow = Viewer::getInstance().getCursorPosition();
-        common::Point2D cursorPositionDifference = Viewer::getInstance().getCursorPositionDifference();
-        common::Point2DUniquePointer cursorPositionAViewport;
-        if ((cursorPositionAViewport = isViewportEvent(cursorPositionAWindow))) {
-            common::Point2D cursorPositionBWindow = cursorPositionAWindow + cursorPositionDifference;
-            common::Point2DUniquePointer cursorPositionBViewport;
-            if ((cursorPositionBViewport = isViewportEvent(cursorPositionBWindow))) {
-                common::Point3D cursorPositionADevice = getViewportToDeviceTransform() * *cursorPositionAViewport;
-                common::Point3D cursorPositionBDevice = getViewportToDeviceTransform() * *cursorPositionBViewport;
-                camera->rotate(cursorPositionADevice, cursorPositionBDevice, arcballController);
-            }
+        auto cursorPosition = Viewer::getInstance().getCursorPosition();
+        if (!isViewportEvent(cursorPosition)) return;
+        if (cursorPosition != scrollGestureStartPosition) {
+            scrollGestureStartPosition = cursorPosition;
+            scrollGesturePreviousPosition = scrollGestureStartPosition;
+            arcballController->reset();
         }
+        auto cursorPositionWithScroll = scrollGesturePreviousPosition + Viewer::getInstance().getCursorPositionDifference();
+        auto cursorPositionViewport = convertWindowToViewportCoordinates(cursorPositionWithScroll);
+        scrollGesturePreviousPosition = cursorPositionWithScroll;
+        arcballController->handleScrollEvent(
+                getViewportToDeviceTransform() * convertWindowToViewportCoordinates(cursorPositionWithScroll));
+        camera->setRotation(arcballController->getRotation());
     }
 
-    common::Point2DUniquePointer Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
+    common::Point2D Viewport::convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const {
         auto windowToViewport = getWindowToViewportTransform();
-        common::Point3D cursorPositionWindow = {cursorPosition.x, cursorPosition.y, 1.f };
+        common::Point3D cursorPositionWindow = {windowCoordinates.x, windowCoordinates.y, 1.f };
         common::Point3D cursorPositionViewport = windowToViewport * cursorPositionWindow;
-        if (coordinates.contains(cursorPositionViewport)) {
-            return std::make_unique<common::Point2D>(common::Point2D{cursorPositionViewport.x, cursorPositionViewport.y});
-        } else {
-            return nullptr;
-        }
+        return {cursorPositionViewport.x, cursorPositionViewport.y};
+    }
+
+    bool Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
+        auto viewportCoordinate = convertWindowToViewportCoordinates(cursorPosition);
+        return coordinates.contains({viewportCoordinate.x, viewportCoordinate.y, 0.f});
     }
 
 }

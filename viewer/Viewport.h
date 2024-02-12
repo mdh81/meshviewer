@@ -108,7 +108,9 @@ private:
         void rotate3DViewWithScrollGesture();
         void displayGradientBackground();
         [[nodiscard]]
-        common::Point2DUniquePointer isViewportEvent(common::Point2D const& cursorPosition) const;
+        bool isViewportEvent(common::Point2D const& cursorPosition) const;
+        [[nodiscard]]
+        common::Point2D convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const;
 
     private:
         using DrawablesSet = std::unordered_set<Drawable::DrawableReference,
@@ -124,6 +126,8 @@ private:
         bool showGradientBackground;
         bool fogEnabled;
         bool showArcball;
+        common::Point2D scrollGestureStartPosition{};
+        common::Point2D scrollGesturePreviousPosition{};
         friend class ViewportTest;
     };
 }
