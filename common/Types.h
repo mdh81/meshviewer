@@ -31,6 +31,7 @@ namespace mv::common {
     using Line = std::vector<Point3D>;
     using Lines = std::vector<Line>;
     using Points = std::vector<Point3D>;
+    using TwoDPoints = std::vector<Point2D>;
     using Bounds = math3d::Bounds3D<float>;
     using ProjectionMatrix = math3d::ProjectionMatrix<float>;
     using RotationMatrix = math3d::RotationMatrix<float>;
