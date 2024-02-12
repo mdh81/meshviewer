@@ -24,7 +24,7 @@ using namespace events;
     , orbitAngle(0.f)
     , zoomFactor(1.f)
     , movementIncrement(.02f)
-    , rotation(math3d::IdentityMatrix<float, 4, 4>{}){
+    , rotation(math3d::RotationMatrix<float>{}){
 
      EventHandler().registerBasicEventCallback(GLFW_KEY_O, *this, &Camera::setProjectionType,
                                                ProjectionType::Orthographic);
@@ -325,7 +325,7 @@ void Camera::zoom(common::Direction direction) {
 
  void Camera::rotate(const common::Point3D &cursorPositionADevice, common::Point3D const& cursorPositionBDevice, mv::objects::ArcballControllerPointer& arcballController) {
     auto arcballRotation = arcballController->getRotation(cursorPositionADevice, cursorPositionBDevice);
-    rotation = rotation * arcballRotation;
+    rotation = arcballRotation;
  }
 
 }

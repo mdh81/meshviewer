@@ -42,6 +42,9 @@ class Camera : public MeshViewerObject {
         void zoom(common::Direction direction);
         void pan(common::Direction direction);
         void rotate(common::Point3D const& cursorPositionADevice, common::Point3D const& cursorPositionBDevice, std::unique_ptr<objects::ArcballController>& arcballController);
+        void setRotation(math3d::RotationMatrix<float> const& rotationMatrix) {
+            rotation = rotationMatrix;
+        }
 
         // Sets projection type
         void setProjectionType(const ProjectionType type) { projectionType = type; }
@@ -70,7 +73,7 @@ private:
         glm::mat4 viewTransform;
         glm::mat4 projectionTransform;
         math3d::Matrix<float, 4, 4> projectionTransformTest;
-        math3d::Matrix<float, 4, 4> rotation;
+        math3d::RotationMatrix<float> rotation;
         float zoomFactor;
         float movementIncrement;
         common::Point2D panTarget;
