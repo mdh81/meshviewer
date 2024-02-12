@@ -5,10 +5,10 @@
 namespace mv::objects {
 
 
-    class ArcballVector : public ArcballVisualizationItem {
+    class ArcballDirectionVector : public ArcballVisualizationItem {
 
     public:
-        ArcballVector(common::DisplayDimensions const& displayDimensions);
+        ArcballDirectionVector(common::DisplayDimensions const& displayDimensions);
         void setPosition(common::Point3D const& position) override {
             pointOnSphere = position;
         };
@@ -21,13 +21,15 @@ namespace mv::objects {
         void fadeOut() override;
 
     private:
-        void constructGeometry(common::Points& vertices, math3d::types::Tris& indices, float lineWidthCamera);
+        void constructGeometry(common::TwoDPoints& vertices, math3d::types::Tris& indices, float lineWidthCamera);
+        void createTexture(bool isQuadTexture);
 
     private:
-        math3d::Matrix<float, 4, 4> pointTransform;
         unsigned const lineWidthPixels;
-        unsigned textureId;
+        unsigned quadTextureId;
+        unsigned triTextureId;
         common::Point3D pointOnSphere;
+        common::Point4D vectorColor;
 
     };
 
