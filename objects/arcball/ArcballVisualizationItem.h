@@ -38,14 +38,20 @@ namespace mv::objects {
         // Convert from screen to model units
         float getScaleFactorInCameraSpace(unsigned short sizeInPixels) const;
 
+        void setColor(common::RGBAColor const& color) {
+            this->color = color;
+        }
+
     protected:
         void setTransforms() override;
         virtual void fadeOut() = 0;
 
     protected:
         common::ProjectionMatrixPointer projectionMatrix;
-        unsigned numConnectivityEntries{};
+        unsigned numConnectivityEntriesQuad{};
+        unsigned numConnectivityEntriesTri{};
         float opacity;
+        common::RGBAColor color;
         common::DisplayDimensions displayDimensions;
     };
 
