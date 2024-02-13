@@ -1,6 +1,5 @@
 #include "Viewport.h"
 #include <functional>
-#include <utility>
 #include <vector>
 #include "EventHandler.h"
 #include "Types.h"
@@ -8,10 +7,11 @@
 namespace mv::scene {
 
     Viewport::Viewport(Viewport::ViewportCoordinates  coordinates)
-    : coordinates(std::move(coordinates))
+    : coordinates(coordinates)
     , showGradientBackground(true)
     , fogEnabled(false)
-    , windowDimensions{} {
+    , windowDimensions{}
+    , showArcball(false) {
         MeshViewerObject::debug = true;
         registerEventHandlers();
     }
@@ -36,6 +36,9 @@ namespace mv::scene {
 
         mv::events::EventHandler().registerDataEventCallback(
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
+
+        mv::events::EventHandler().registerBasicEventCallback(
+                mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
     }
 
     void Viewport::add(mv::Drawable& drawable) {
@@ -93,10 +96,12 @@ namespace mv::scene {
 
         // Background has to be drawn first (it's render method will disable writing to depth buffer)
         if (showGradientBackground) {
-            if (!gradientBackground) {
-                gradientBackground = std::make_unique<objects::GradientBackground>();
-            }
-            gradientBackground->render();
+            displayGradientBackground();
+        }
+
+        // Draw arcball interactor next with depth write disabled so all scene objects will render on top of arcball
+        if (showArcball) {
+           displayArcball();
         }
 
         // Add fog if enabled
@@ -106,6 +111,20 @@ namespace mv::scene {
             drawable.get().render();
         }
 
+    }
+
+    void Viewport::displayGradientBackground() {
+        if (!gradientBackground) {
+            gradientBackground = std::make_unique<objects::GradientBackground>();
+        }
+        gradientBackground->render();
+    }
+
+    void Viewport::displayArcball() {
+        if (!arcball) {
+            arcball = std::make_unique<objects::Arcball>();
+        }
+        arcball->render();
     }
 
     void Viewport::enableFog() {

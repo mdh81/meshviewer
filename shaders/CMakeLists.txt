@@ -21,6 +21,8 @@ file(
     GLOB 
     shaders 
     ${CMAKE_CURRENT_SOURCE_DIR}/*.glsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.vert
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.frag
 )
 
 add_custom_target(

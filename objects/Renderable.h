@@ -39,7 +39,16 @@ public:
     }
 
 protected:
+    [[nodiscard]] bool needsProjectionUpdate() const {
+        return updateProjection;
+    }
+    void setProjectionUpdated() {
+        updateProjection = false;
+    }
+
+protected:
     bool readyToRender{};
+    bool updateProjection{true};
     float aspectRatio{1.0f};
 };
 

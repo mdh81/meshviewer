@@ -23,6 +23,7 @@ namespace mv::common {
     using Point2D = math3d::Vector2<float>;
     using Vector2D = math3d::Vector2<float>;
     using Color = Point3D;
+    using RGBAColor = math3d::Vector4<float>;
     using Line = std::vector<Point3D>;
     using Lines = std::vector<Line>;
     using Points = std::vector<Point3D>;

@@ -72,7 +72,9 @@ void Drawable::createShaderProgram() {
 // modelViewTransform and projectionTransform
 void Drawable::setTransforms() {
 
-    // TODO: Use mathlib's matrix
+    // TODO 1: Use mathlib's matrix
+
+    // TODO 2: Only update model view transform when camera is dirty
 
     // Compute the transform that will transform a vertex from
     // world coordinates to camera coordinates
@@ -88,14 +90,19 @@ void Drawable::setTransforms() {
                        1,        // num matrices,
                        GL_FALSE, // transpose
                        &modelView[0][0]);
-    // Get the model view transform matrix id in the shader
-    GLint projectionId = glGetUniformLocation(shaderProgram, "projectionTransform");
 
-    // Set projection
-    glUniformMatrix4fv(projectionId,
-                       1,        // num matrices,
-                       GL_FALSE, // transpose
-                       &camera->getProjectionTransform()[0][0]);
+    if (needsProjectionUpdate()) {
+        // Get the projection transform matrix id in the shader
+        GLint projectionId = glGetUniformLocation(shaderProgram, "projectionTransform");
+
+        // Set projection
+        glUniformMatrix4fv(projectionId,
+                           1,        // num matrices,
+                           GL_FALSE, // transpose
+                           &camera->getProjectionTransform()[0][0]);
+
+       setProjectionUpdated();
+    }
 }
 
 }

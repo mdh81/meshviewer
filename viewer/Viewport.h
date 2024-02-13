@@ -5,6 +5,8 @@
 #include "3dmath/Vector.h"
 #include "Drawable3D.h"
 #include "Camera.h"
+#include "Arcball.h"
+#include "3dmath/Vector.h"
 #include "3dmath/Matrix.h"
 #include "Types.h"
 #include "EventTypes.h"
@@ -84,10 +86,15 @@ private:
         void toggleFog() {
             fogEnabled = !fogEnabled;
         }
+        void toggleArcballDisplay() {
+            showArcball = !showArcball;
+        }
         void enableFog();
         void disableFog();
         void zoom3DView(events::EventData&&);
         void pan3DView(events::EventData&&);
+        void displayGradientBackground();
+        void displayArcball();
         [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
 
     private:
@@ -96,12 +103,14 @@ private:
                 MeshViewerObject::MeshViewerObjectEquals>;
         DrawablesSet drawables;
         std::unique_ptr<mv::objects::GradientBackground> gradientBackground;
+        std::unique_ptr<mv::objects::Arcball> arcball;
         std::optional<Drawable::DrawableReference> activeObject;
         common::Bounds coordinates;
         common::WindowDimensions windowDimensions;
         Camera::SharedCameraPointer camera;
         bool showGradientBackground;
         bool fogEnabled;
+        bool showArcball;
         friend class ViewportTest;
     };
 }
