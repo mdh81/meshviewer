@@ -161,7 +161,7 @@ class Util {
     bool operator == (math3d::Vector<T, size> const& v1, math3d::Vector<T, size> const& v2) {
         static_assert(std::is_floating_point<T>::value, "Component-wise comparison is only available for floating point vector types");
         for (unsigned i = 0; i < size; ++i) {
-            if ( fabs(v1[i] - v2[i]) > Util::sm_tolerance ) return false;
+            if ( fabs(v1[i] - v2[i]) > Util::tolerance ) return false;
         }
         return true;
     }

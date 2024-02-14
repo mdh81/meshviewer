@@ -28,7 +28,7 @@ class ConfigurationReader {
        [[nodiscard]]
        common::Vector3D getVector(std::string const& name) const;
        void append(std::string const& name, std::string const& value) {
-           m_data.emplace(name, value);
+           data.emplace(name, value);
        }
 
     public:

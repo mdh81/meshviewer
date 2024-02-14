@@ -116,7 +116,7 @@ namespace mv::objects {
         if (!arcStartPoint || !arcEndPoint) return {};
 
         rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
-        //std::cout << "Rotation Axis: " << *rotationAxis << "\nRotation amount = " << math3d::Utilities::asDegrees(theta) << std::endl;
+        std::cout << "Rotation Axis: " << *rotationAxis << "\nRotation amount = " << math3d::Utilities::asDegrees(theta) << std::endl;
         theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
 
         updateVisualization();

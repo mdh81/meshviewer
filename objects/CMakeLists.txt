@@ -1,4 +1,4 @@
-file(GLOB sources "*.cpp")
+file(GLOB_RECURSE sources "*.cpp" "arcball/*.cpp")
 
 add_library(objects ${sources})
 

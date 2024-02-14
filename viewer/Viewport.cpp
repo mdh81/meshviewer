@@ -39,8 +39,8 @@ namespace mv::scene {
         mv::events::EventHandler().registerDataEventCallback(
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
 
-        mv::events::EventHandler().registerBasicEventCallback(
-                mv::events::Event{events::EventId::Scrolled}, *this, &Viewport::rotate3DViewWithScrollGesture);
+        mv::events::EventHandler().registerDataEventCallback(
+                mv::events::Event{events::EventId::Rotated}, *this, &Viewport::rotate3DViewWithScrollGesture);
 
         mv::events::EventHandler().registerBasicEventCallback(
                 mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
@@ -225,15 +225,21 @@ namespace mv::scene {
         }
     }
 
-    void Viewport::rotate3DViewWithScrollGesture() {
-        auto cursorPosition = Viewer::getInstance().getCursorPosition();
+    void Viewport::rotate3DViewWithScrollGesture(events::EventData&& rotateEventData) {
+        if (rotateEventData.size() != 2) {
+            throw std::runtime_error("Rotate event data is incorrect. Need the current cursor position and the "
+                                     "cursor position difference to determine the rotation");
+        }
+        common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
+        common::Point2D cursorPositionDifference;
         if (!isViewportEvent(cursorPosition)) return;
+        cursorPositionDifference = std::any_cast<common::Point2D>(rotateEventData[1]);
         if (cursorPosition != scrollGestureStartPosition) {
             scrollGestureStartPosition = cursorPosition;
             scrollGesturePreviousPosition = scrollGestureStartPosition;
             arcballController->reset();
         }
-        auto cursorPositionWithScroll = scrollGesturePreviousPosition + Viewer::getInstance().getCursorPositionDifference();
+        auto cursorPositionWithScroll = scrollGesturePreviousPosition + cursorPositionDifference;
         auto cursorPositionViewport = convertWindowToViewportCoordinates(cursorPositionWithScroll);
         scrollGesturePreviousPosition = cursorPositionWithScroll;
         arcballController->handleScrollEvent(

@@ -41,7 +41,6 @@ class Camera : public MeshViewerObject {
         // View controls
         void zoom(common::Direction direction);
         void pan(common::Direction direction);
-        void rotate(common::Point3D const& cursorPositionADevice, common::Point3D const& cursorPositionBDevice, std::unique_ptr<objects::ArcballController>& arcballController);
         void setRotation(math3d::RotationMatrix<float> const& rotationMatrix) {
             rotation = rotationMatrix;
         }

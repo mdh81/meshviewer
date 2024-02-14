@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Drawable.h"
+#include "PointerTypes.h"
 #include "EventTypes.h"
 #include <memory>
 
@@ -74,7 +75,7 @@ class Viewer : public MeshViewerObject {
         Drawable::Drawables activeObjects;
         common::Point2D cursorPosition;
         common::Point2D cursorPositionDifference;
-        std::unique_ptr<mv::scene::Scene> scene;
+        common::UniquePointer<mv::scene::Scene> scene;
         bool printGLInfoOnStartup;
 
     // Member functions

@@ -59,6 +59,8 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
             Event{events::EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
     eventHandler.registerDataEventCallback(
             Event{events::EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::Scrolled}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
 
     Viewer::RenderLoop::viewer = this;
 }
@@ -156,6 +158,8 @@ void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
         eventHandler.raiseEvent(events::EventId::Zoomed, {cursorPosition, cursorPositionDifference});
     } else if (modifierKeys & GLFW_MOD_SHIFT) {
         eventHandler.raiseEvent(events::EventId::Panned, {cursorPosition, cursorPositionDifference});
+    } else {
+        eventHandler.raiseEvent(events::EventId::Rotated, {cursorPosition, cursorPositionDifference});
     }
 }
 
@@ -211,7 +215,7 @@ void Viewer::RenderLoop::draw() {
 #endif
 
         if (viewer->windowResized) {
-            viewer->scene->notifyWindowResized(viewer->frameBufferWidth, viewer->frameBufferHeight);
+            viewer->scene->notifyDisplayResized(DisplayDimensions{viewer->windowWidth, viewer->windowHeight, viewer->frameBufferWidth, viewer->frameBufferHeight});
             viewer->windowResized = false;
         }
 
@@ -252,7 +256,7 @@ void Viewer::render() {
 
     // Create a scene
     DisplayDimensions displayDimensions{windowWidth, windowHeight, frameBufferWidth, frameBufferHeight};
-    scene::Scene scene(displayDimensions);
+    scene = std::make_unique<scene::Scene>(displayDimensions);
 
     // Add renderables to the default scene
     for (auto& renderable : drawables) {
