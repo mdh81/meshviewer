@@ -40,7 +40,7 @@ namespace mv::scene {
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
 
         mv::events::EventHandler().registerDataEventCallback(
-                mv::events::Event{events::EventId::Rotated}, *this, &Viewport::rotate3DViewWithScrollGesture);
+                mv::events::Event{events::EventId::Rotated}, *this, &Viewport::rotate3DView);
 
         mv::events::EventHandler().registerBasicEventCallback(
                 mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
@@ -225,7 +225,7 @@ namespace mv::scene {
         }
     }
 
-    void Viewport::rotate3DViewWithScrollGesture(events::EventData&& rotateEventData) {
+    void Viewport::rotate3DView(events::EventData&& rotateEventData) {
         if (rotateEventData.size() != 2) {
             throw std::runtime_error("Rotate event data is incorrect. Need the current cursor position and the "
                                      "cursor position difference to determine the rotation");

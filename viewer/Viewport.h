@@ -105,7 +105,7 @@ private:
         void disableFog();
         void zoom3DView(events::EventData&&);
         void pan3DView(events::EventData&&);
-        void rotate3DViewWithScrollGesture(events::EventData&&);
+        void rotate3DView(events::EventData &&rotateEventData);
         void displayGradientBackground();
         [[nodiscard]]
         bool isViewportEvent(common::Point2D const& cursorPosition) const;
