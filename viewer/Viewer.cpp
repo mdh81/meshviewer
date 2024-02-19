@@ -159,7 +159,7 @@ void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
     } else if (modifierKeys & GLFW_MOD_SHIFT) {
         eventHandler.raiseEvent(events::EventId::Panned, {cursorPosition, cursorPositionDifference});
     } else {
-        eventHandler.raiseEvent(events::EventId::Rotated, {cursorPosition, cursorPositionDifference});
+        eventHandler.raiseEvent(events::EventId::ScrollRotated, {cursorPosition, cursorPositionDifference});
     }
 }
 

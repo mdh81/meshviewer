@@ -105,7 +105,7 @@ private:
         void disableFog();
         void zoom3DView(events::EventData&&);
         void pan3DView(events::EventData&&);
-        void rotate3DView(events::EventData &&rotateEventData);
+        void scrollRotate3DView(events::EventData &&rotateEventData);
         void displayGradientBackground();
         [[nodiscard]]
         bool isViewportEvent(common::Point2D const& cursorPosition) const;
@@ -128,6 +128,7 @@ private:
         bool showArcball;
         common::Point2D scrollGestureStartPosition{};
         common::Point2D scrollGesturePreviousPosition{};
+        std::optional<common::Vector2D> scrollDirection;
         friend class ViewportTest;
     };
 }

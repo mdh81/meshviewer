@@ -40,7 +40,7 @@ namespace mv::scene {
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
 
         mv::events::EventHandler().registerDataEventCallback(
-                mv::events::Event{events::EventId::Rotated}, *this, &Viewport::rotate3DView);
+                mv::events::Event{events::EventId::ScrollRotated}, *this, &Viewport::scrollRotate3DView);
 
         mv::events::EventHandler().registerBasicEventCallback(
                 mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
@@ -225,7 +225,7 @@ namespace mv::scene {
         }
     }
 
-    void Viewport::rotate3DView(events::EventData&& rotateEventData) {
+    void Viewport::scrollRotate3DView(events::EventData&& rotateEventData) {
         if (rotateEventData.size() != 2) {
             throw std::runtime_error("Rotate event data is incorrect. Need the current cursor position and the "
                                      "cursor position difference to determine the rotation");
@@ -234,6 +234,7 @@ namespace mv::scene {
         common::Point2D cursorPositionDifference;
         if (!isViewportEvent(cursorPosition)) return;
         cursorPositionDifference = std::any_cast<common::Point2D>(rotateEventData[1]);
+
         if (cursorPosition != scrollGestureStartPosition) {
             scrollGestureStartPosition = cursorPosition;
             scrollGesturePreviousPosition = scrollGestureStartPosition;
@@ -243,8 +244,10 @@ namespace mv::scene {
         auto cursorPositionViewport = convertWindowToViewportCoordinates(cursorPositionWithScroll);
         scrollGesturePreviousPosition = cursorPositionWithScroll;
         arcballController->handleScrollEvent(
-                getViewportToDeviceTransform() * convertWindowToViewportCoordinates(cursorPositionWithScroll));
+                getViewportToDeviceTransform() * convertWindowToViewportCoordinates(cursorPositionWithScroll),
+                scrollDirection && scrollDirection->dot(cursorPositionDifference) < 0);
         camera->setRotation(arcballController->getRotation());
+        scrollDirection = cursorPositionDifference;
     }
 
     common::Point2D Viewport::convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const {
