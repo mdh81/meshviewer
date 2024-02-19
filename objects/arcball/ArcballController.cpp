@@ -11,11 +11,17 @@
 
 namespace mv::objects {
 
+    namespace {
+        constexpr float oneDegreeInRadian = std::numbers::pi / 180;
+    }
+
     ArcballController::ArcballController()
     : Renderable()
     , sphere({0.f, 0.f, 0.f}, 1.f)
     , visualizationTTL(500)
-    , interactionState {InteractionState::Stopped} {
+    , interactionState {InteractionState::Stopped}
+    , mode {Mode::Inactive} {
+
 
     }
 
@@ -29,6 +35,7 @@ namespace mv::objects {
                 interactionMonitorThread = nullptr;
                 arcStartPoint = nullptr;
                 arcEndPoint = nullptr;
+                mode = Mode::Inactive;
                 break;
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds (300));
@@ -37,33 +44,38 @@ namespace mv::objects {
 
     }
 
-    void ArcballController::handleScrollEvent(common::Point3D const& cursorPositionDevice) {
+    void ArcballController::reset() {
+        arcStartPoint = nullptr;
+        arcEndPoint = nullptr;
+        positiveRotation = true;
+        mode = Mode::Inactive;
+    }
+
+    void ArcballController::handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged) {
 
         if (!arcStartPoint) {
-            // 1. Convert cursor position to sphere point
-            // 2. Record arc start point
-            // 3. Start timer. Timer will count down to gesture timeout and will reset the counter if another gesture event
-            //    were to happen before the timeout
-            // 4. When timer runs out, the timer thread will set arcStartPoint and arcEndPoint to nullptr and will fade out the
-            //    arc and other visuals
-
             arcStartPoint = getCursorLocationOnArcball(cursorPositionDevice);
             //interactionMonitorThread = std::make_unique<std::thread>(&ArcballController::monitorInteraction, this);
             //interactionMonitorThread->detach();
-
-
         } else {
-            arcEndPoint = getCursorLocationOnArcball(cursorPositionDevice);
-            // 1. Convert cursor position to sphere point
-            // 2. Record arc end point
             if (!arcEndPoint) {
-                std::cout << "End point not on arcball" << std::endl;
+                arcEndPoint = getCursorLocationOnArcball(cursorPositionDevice);
+                rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
+                theta = asin(rotationAxis->length());
+            } else {
+                if (directionChanged) {
+                    positiveRotation = !positiveRotation;
+                }
+                theta += oneDegreeInRadian * (positiveRotation ? 1.f : -1.f);
+                auto planeAxisX = *arcStartPoint;
+                auto planeAxisY = planeAxisX * *rotationAxis;
+                *arcEndPoint = (cos(theta) * planeAxisX) +  (sin(theta) * planeAxisY);
             }
         }
-
+        mode = Mode::Scroll;
     }
 
-    std::unique_ptr<common::Point3D> ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
+    common::UniquePointer<common::Point3D> ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
         math3d::types::Point3D cursorPositionCamera = convertCursorToCameraCoordinates(cursorPositionDevice);
         // In the camera space the ray from the cursor position is always in the negative z-direction
         auto intersectionResult = sphere.intersectWithRay({cursorPositionCamera, {0, 0, -1}});
@@ -74,40 +86,12 @@ namespace mv::objects {
         }
     }
 
-    common::RotationMatrix ArcballController::getRotation(common::Point3D const& cursorPositionADevice, common::Point3D const& cursorPositionBDevice) {
-        if (!projectionMatrix) throw std::logic_error("Projection matrix should have been created by this point in time");
-
-        common::RotationMatrix rotationMatrix{};
-        arcStartPoint = getCursorLocationOnArcball(cursorPositionADevice);
-        if (arcStartPoint) {
-            arcEndPoint = getCursorLocationOnArcball(cursorPositionBDevice);
-            if (arcEndPoint) {
-                rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
-                //std::cout << "Rotation Axis: " << *rotationAxis / rotationAxis->length() << "\nRotation amount = "
-                //          << math3d::Utilities::asDegrees(theta) << std::endl;
-                theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
-                rotationMatrix = common::RotationMatrix{rotationAxis->normalize(), math3d::Utilities::asDegrees(theta)};
-                //std::cout << "Rotation Matrix: \n" << rotationMatrix << std::endl;
-            }
-        }
-        previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
-
-        if (!interactionMonitorThread) {
-            interactionMonitorThread = std::make_unique<std::thread>(&ArcballController::monitorInteraction, this);
-            interactionMonitorThread->detach();
-        }
-
-        updateVisualization();
-
-        return rotationMatrix;
-    }
-
     void ArcballController::updateVisualization() {
         if (arcStartPoint && originVisual) {
             originVisual->get().setPosition({0.f, 0.f, 0.f});
             arcStartVectorVisual->get().setPosition(*arcStartPoint);
             arcEndVectorVisual->get().setPosition(*arcEndPoint);
-            arcAxisVectorVisual->get().setPosition((*arcStartPoint * *arcEndPoint).normalize());
+            arcAxisVectorVisual->get().setPosition(rotationAxis->normalize());
         }
     }
 
@@ -115,9 +99,10 @@ namespace mv::objects {
 
         if (!arcStartPoint || !arcEndPoint) return {};
 
-        rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
-        std::cout << "Rotation Axis: " << *rotationAxis << "\nRotation amount = " << math3d::Utilities::asDegrees(theta) << std::endl;
-        theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
+        if (mode == Mode::Drag) {
+            rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
+            theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
+        }
 
         updateVisualization();
 

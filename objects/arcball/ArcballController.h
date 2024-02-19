@@ -5,6 +5,7 @@
 #include "3dmath/RotationMatrix.h"
 #include "ArcballVisualizationItem.h"
 #include "Types.h"
+#include "PointerTypes.h"
 #include <chrono>
 #include <thread>
 #include <memory>
@@ -43,12 +44,9 @@ namespace mv::objects {
 
         void notifyDisplayResized(common::DisplayDimensions const& displaySize) override;
 
-        void handleScrollEvent(common::Point3D const& cursorPositionDevice);
+        void handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged);
 
-        void reset() {
-            arcStartPoint = nullptr;
-            arcEndPoint = nullptr;
-        }
+        void reset();
 
     private:
         void createVisualization();
@@ -56,15 +54,15 @@ namespace mv::objects {
         void recordCursorPosition(common::Point3D const& cursorPositionDevice);
         math3d::types::Point3D convertCursorToCameraCoordinates(common::Point3D const& cursorPosition);
         void monitorInteraction();
-        std::unique_ptr<common::Point3D> getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
+        common::UniquePointer<common::Point3D> getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
 
     private:
         using VisualizationItem = std::unique_ptr<ArcballVisualizationItem>;
         std::vector<VisualizationItem> visualizationItems;
         math3d::Sphere sphere;
-        std::unique_ptr<common::Point3D> arcStartPoint;
-        std::unique_ptr<common::Point3D> arcEndPoint;
-        std::unique_ptr<common::Vector3D> rotationAxis;
+        common::UniquePointer<common::Point3D> arcStartPoint;
+        common::UniquePointer<common::Point3D> arcEndPoint;
+        common::UniquePointer<common::Vector3D> rotationAxis;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> originVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartVectorVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndVectorVisual;
@@ -86,8 +84,15 @@ namespace mv::objects {
         InteractionState interactionState;
         std::optional<common::Point2D> previousCursorPosition;
         std::optional<common::Point2D> currentCursorPosition;
+        enum class Mode {
+            Inactive,
+            Scroll,
+            Drag,
+        };
+        Mode mode;
+        bool positiveRotation {true};
     };
 
-    using ArcballControllerPointer = std::unique_ptr<ArcballController>;
+    using ArcballControllerPointer = common::UniquePointer<ArcballController>;
 
 }
