@@ -10,7 +10,8 @@ namespace mv::events {
         CursorMoved        = 1002,
         Zoomed             = 1003,
         Panned             = 1004,
-        Rotated            = 1005,
+        ScrollRotated      = 1005,
+        DragRotated        = 1006,
     };
 
     using EventData = std::vector<std::any>;
