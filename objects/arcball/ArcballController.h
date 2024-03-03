@@ -25,12 +25,6 @@ namespace mv::objects {
         common::RotationMatrix getRotation();
 
         [[nodiscard]]
-        common::RotationMatrix getRotation(common::Point3D const& cursorPositionDevice);
-
-        [[nodiscard]]
-        common::RotationMatrix getRotation(common::Point3D const& cursorPositionADevice, common::Point3D const& cursorPositionBDevice);
-
-        [[nodiscard]]
         common::Point3D getCentroid() const override {
             return {0.f, 0.f, 0.f};
         }
@@ -51,7 +45,6 @@ namespace mv::objects {
     private:
         void createVisualization();
         void updateVisualization();
-        void recordCursorPosition(common::Point3D const& cursorPositionDevice);
         math3d::types::Point3D convertCursorToCameraCoordinates(common::Point3D const& cursorPosition);
         void monitorInteraction();
         common::UniquePointer<common::Point3D> getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
@@ -91,6 +84,7 @@ namespace mv::objects {
         };
         Mode mode;
         bool positiveRotation {true};
+        math3d::RotationMatrix<float> rotationMatrix;
     };
 
     using ArcballControllerPointer = common::UniquePointer<ArcballController>;

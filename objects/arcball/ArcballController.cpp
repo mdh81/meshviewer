@@ -102,41 +102,18 @@ namespace mv::objects {
         if (mode == Mode::Drag) {
             rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
             theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
+            rotationMatrix = common::RotationMatrix {rotationAxis->normalize(), math3d::Utilities::asDegrees(theta)};
+        } else if (mode == Mode::Scroll) {
+            auto currentRotationMatrix = common::RotationMatrix{rotationAxis->normalize(), positiveRotation ? 1.f : -1.f};
+            rotationMatrix = currentRotationMatrix * rotationMatrix;
         }
-
         updateVisualization();
-
-        return common::RotationMatrix {rotationAxis->normalize(), math3d::Utilities::asDegrees(theta)};
-    }
-
-
-    common::RotationMatrix ArcballController::getRotation(common::Point3D const& cursorPositionDevice) {
-        if (!projectionMatrix) throw std::logic_error("Projection matrix should have been created by this point in time");
-        recordCursorPosition(cursorPositionDevice);
-        if (!arcEndPoint) {
-            return {};
-        }
-        rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
-        std::cout << "Rotation Axis: " << *rotationAxis << "\nRotation amount = " << math3d::Utilities::asDegrees(theta) << std::endl;
-        theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
-        previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
-        return common::RotationMatrix {rotationAxis->normalize(), math3d::Utilities::asDegrees(theta)};
+        return rotationMatrix;
     }
 
     math3d::types::Point3D ArcballController::convertCursorToCameraCoordinates(common::Point3D const& cursorPositionDevice) {
         auto cursorPositionCamera = inverseProjectionMatrix * cursorPositionDevice;
         return { cursorPositionCamera.x, cursorPositionCamera.y, cursorPositionCamera.z };
-    }
-
-    void ArcballController::recordCursorPosition(common::Point3D const& cursorPositionDevice) {
-        math3d::types::Point3D cursorPositionCamera = convertCursorToCameraCoordinates(cursorPositionDevice);
-        // In the camera space the ray from the cursor position is always in the negative z-direction
-        auto intersectionResult = sphere.intersectWithRay({cursorPositionCamera, {0, 0, -1}});
-        if (!arcStartPoint) {
-            arcStartPoint = std::make_unique<common::Point3D>(Util::asFloat(intersectionResult.intersectionPoint));
-        } else {
-            arcEndPoint = std::make_unique<common::Point3D>(Util::asFloat(intersectionResult.intersectionPoint));
-        }
     }
 
     void ArcballController::setVisualizationOn() {
@@ -158,6 +135,7 @@ namespace mv::objects {
         for (auto& visualizationItem : visualizationItems) {
             visualizationItem->setProjectionMatrix(projectionMatrix);
         }
+        // TODO: Read from config
         arcStartVectorVisual->get().setColor({0.f, .7f, 0.f, .9f});
         arcEndVectorVisual->get().setColor({0.f, .7f, 0.f, .9f});
         arcAxisVectorVisual->get().setColor({0.f, 0.f, 0.6f, .9f});
