@@ -18,7 +18,7 @@ namespace mv::objects {
     ArcballController::ArcballController()
     : Renderable()
     , sphere({0.f, 0.f, 0.f}, 1.f)
-    , visualizationTTL(500)
+    , interactionTTL(200)
     , interactionState {InteractionState::Stopped}
     , mode {Mode::Inactive} {
 
@@ -29,34 +29,30 @@ namespace mv::objects {
 
         while(true) {
             auto currentInteractionTimePoint = std::chrono::high_resolution_clock::now();
-            auto elapsedTime = currentInteractionTimePoint - previousInteractionTimePoint;
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime).count() > visualizationTTL.count()) {
-                setVisualizationOff();
+            auto elapsedTime = currentInteractionTimePoint - previousInteractionTimePoint.load();
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime).count() > interactionTTL.count()) {
                 interactionMonitorThread = nullptr;
-                arcStartPoint = nullptr;
-                arcEndPoint = nullptr;
                 mode = Mode::Inactive;
                 break;
             } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds (300));
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
         }
 
     }
 
     void ArcballController::reset() {
-        arcStartPoint = nullptr;
-        arcEndPoint = nullptr;
         positiveRotation = true;
         mode = Mode::Inactive;
     }
 
     void ArcballController::handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged) {
-
-        if (!arcStartPoint) {
+        previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
+        if (mode == Mode::Inactive) {
             arcStartPoint = getCursorLocationOnArcball(cursorPositionDevice);
-            //interactionMonitorThread = std::make_unique<std::thread>(&ArcballController::monitorInteraction, this);
-            //interactionMonitorThread->detach();
+            arcEndPoint = nullptr;
+            interactionMonitorThread = std::make_unique<std::thread>(&ArcballController::monitorInteraction, this);
+            interactionMonitorThread->detach();
         } else {
             if (!arcEndPoint) {
                 arcEndPoint = getCursorLocationOnArcball(cursorPositionDevice);
@@ -87,8 +83,9 @@ namespace mv::objects {
     }
 
     void ArcballController::updateVisualization() {
-        if (arcStartPoint && originVisual) {
-            originVisual->get().setPosition({0.f, 0.f, 0.f});
+        if (arcStartPoint && arcStartPointVisual) {
+            arcStartPointVisual->get().setPosition(*arcStartPoint);
+            arcEndPointVisual->get().setPosition(*arcEndPoint);
             arcStartVectorVisual->get().setPosition(*arcStartPoint);
             arcEndVectorVisual->get().setPosition(*arcEndPoint);
             arcAxisVectorVisual->get().setPosition(rotationAxis->normalize());
@@ -97,7 +94,10 @@ namespace mv::objects {
 
     common::RotationMatrix ArcballController::getRotation() {
 
-        if (!arcStartPoint || !arcEndPoint) return {};
+        // If the arcball was just reset then return the previous rotation matrix
+        // NOTE: rotationMatrix is initialized to identity by its constructor, so we will return the right matrix
+        // when no arc point has been picked up
+        if (!arcStartPoint || !arcEndPoint) return rotationMatrix;
 
         if (mode == Mode::Drag) {
             rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
@@ -128,10 +128,21 @@ namespace mv::objects {
     void ArcballController::createVisualization() {
         visualizationItems.clear();
         visualizationItems.emplace_back(std::make_unique<ArcballSphere>(displayDimensions));
-        originVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballPoint>(displayDimensions)).get()));
-        arcStartVectorVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballDirectionVector>(displayDimensions)).get()));
-        arcEndVectorVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballDirectionVector>(displayDimensions)).get()));
-        arcAxisVectorVisual = std::ref(*(visualizationItems.emplace_back(std::make_unique<ArcballDirectionVector>(displayDimensions)).get()));
+
+        arcStartPointVisual = std::ref(*(visualizationItems.emplace_back(
+                std::make_unique<ArcballPoint>(displayDimensions)).get()));
+        arcEndPointVisual = std::ref(*(visualizationItems.emplace_back(
+                std::make_unique<ArcballPoint>(displayDimensions)).get()));
+
+        arcStartVectorVisual = std::ref(*(visualizationItems.emplace_back(
+                std::make_unique<ArcballDirectionVector>(displayDimensions)).get()));
+        arcEndVectorVisual = std::ref(*(visualizationItems.emplace_back(
+                std::make_unique<ArcballDirectionVector>(displayDimensions)).get()));
+
+        arcAxisVectorVisual = std::ref(*(visualizationItems.emplace_back(
+                std::make_unique<ArcballDirectionVector>(displayDimensions)).get()));
+
+
         for (auto& visualizationItem : visualizationItems) {
             visualizationItem->setProjectionMatrix(projectionMatrix);
         }

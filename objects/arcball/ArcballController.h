@@ -8,6 +8,7 @@
 #include "PointerTypes.h"
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include <memory>
 
 namespace mv::objects {
@@ -56,7 +57,8 @@ namespace mv::objects {
         common::UniquePointer<common::Point3D> arcStartPoint;
         common::UniquePointer<common::Point3D> arcEndPoint;
         common::UniquePointer<common::Vector3D> rotationAxis;
-        std::optional<std::reference_wrapper<ArcballVisualizationItem>> originVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartPointVisual;
+        std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndPointVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcStartVectorVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcEndVectorVisual;
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcAxisVectorVisual;
@@ -65,8 +67,8 @@ namespace mv::objects {
         std::thread fadeOutTimer;
         common::ProjectionMatrixPointer projectionMatrix;
         math3d::Matrix<float, 4, 4> inverseProjectionMatrix;
-        std::chrono::time_point<std::chrono::high_resolution_clock> previousInteractionTimePoint;
-        std::chrono::milliseconds const visualizationTTL;
+        std::atomic<decltype(std::chrono::high_resolution_clock::now())> previousInteractionTimePoint;
+        std::chrono::milliseconds const interactionTTL;
         std::unique_ptr<std::thread> interactionMonitorThread;
         bool fadeOutVisualization {false};
         common::DisplayDimensions displayDimensions;
