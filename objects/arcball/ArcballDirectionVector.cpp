@@ -34,7 +34,9 @@ namespace mv::objects {
         glCallWithErrorCheck(glActiveTexture, GL_TEXTURE0);
         glCallWithErrorCheck(glBindTexture, GL_TEXTURE_2D, quadTextureId);
 
+#ifndef EMSCRIPTEN
         glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_FILL);
+#endif
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
                              numConnectivityEntriesQuad,   // Number of entries in the connectivity array
                              GL_UNSIGNED_INT,              // Type of element buffer data

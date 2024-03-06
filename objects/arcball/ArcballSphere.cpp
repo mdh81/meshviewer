@@ -26,7 +26,9 @@ namespace mv::objects {
         glCallWithErrorCheck(glEnable, GL_BLEND);
         glCallWithErrorCheck(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+#ifndef EMSCRIPTEN
         glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_LINE);
+#endif
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
                              numConnectivityEntriesQuad,   // Number of entries in the connectivity array
                              GL_UNSIGNED_INT,          // Type of element buffer data
