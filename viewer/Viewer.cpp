@@ -193,8 +193,8 @@ bool Viewer::isCanvasResized(CanvasDimensions& canvasDimensions) const {
         canvasWidth = static_cast<int> (deviceWidth * pixelRatio);
         canvasHeight = static_cast<int> (deviceHeight * pixelRatio);
         emscripten_set_canvas_element_size("#canvas", canvasWidth, canvasHeight);
-        canvasDimensions.width = canvasWidth;
-        canvasDimensions.height = canvasHeight;
+        canvasDimensions.windowWidth = canvasWidth;
+        canvasDimensions.windowHeight = canvasHeight;
         return true;
     } else {
         return false;
@@ -210,7 +210,7 @@ void Viewer::RenderLoop::draw() {
 #ifdef EMSCRIPTEN
         CanvasDimensions canvasDimensions;
         if ((viewer->windowResized = viewer->isCanvasResized(canvasDimensions))) {
-            glfwSetWindowSize(viewer->window, canvasDimensions.width, canvasDimensions.height);
+            glfwSetWindowSize(viewer->window, canvasDimensions.windowWidth, canvasDimensions.windowHeight);
         }
 #endif
 

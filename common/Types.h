@@ -170,7 +170,7 @@ enum class NormalLocation {
 };
 
 #ifdef EMSCRIPTEN
-    using CanvasDimensions = WindowDimensions;
+    using CanvasDimensions = DisplayDimensions;
 #endif
 
 struct GlyphDecorator {
