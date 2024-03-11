@@ -68,7 +68,6 @@ namespace mv::objects {
         common::ProjectionMatrixPointer projectionMatrix;
         math3d::Matrix<float, 4, 4> inverseProjectionMatrix;
         std::atomic<decltype(std::chrono::high_resolution_clock::now())> previousInteractionTimePoint;
-        std::chrono::milliseconds const interactionTTL;
         std::unique_ptr<std::thread> interactionMonitorThread;
         bool fadeOutVisualization {false};
         common::DisplayDimensions displayDimensions;
@@ -76,7 +75,6 @@ namespace mv::objects {
             Stopped,
             Interacting
         };
-        InteractionState interactionState;
         std::optional<common::Point2D> previousCursorPosition;
         std::optional<common::Point2D> currentCursorPosition;
         enum class Mode {
