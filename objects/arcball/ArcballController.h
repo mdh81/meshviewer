@@ -48,7 +48,8 @@ namespace mv::objects {
         void updateVisualization();
         math3d::types::Point3D convertCursorToCameraCoordinates(common::Point3D const& cursorPosition);
         void monitorInteraction();
-        common::UniquePointer<common::Point3D> getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
+        common::Point3D getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
+
 
     private:
         using VisualizationItem = std::unique_ptr<ArcballVisualizationItem>;

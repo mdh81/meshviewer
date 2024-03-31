@@ -15,6 +15,13 @@ namespace mv::objects {
         constexpr float oneDegreeInRadian = std::numbers::pi / 180;
         constexpr std::chrono::milliseconds interactionTTL {200};
         constexpr std::chrono::milliseconds interactionThreadPauseInterval {20};
+
+        common::Vector3D randomNormalizedVector() {
+            common::Vector3D anyVector = {static_cast<float>(std::random_device()()),
+                                          static_cast<float>(std::random_device()()),
+                                          static_cast<float>(std::random_device()())};
+            return anyVector.normalize();
+        }
     }
 
     ArcballController::ArcballController()
@@ -48,13 +55,13 @@ namespace mv::objects {
     void ArcballController::handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged) {
         previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
         if (mode == Mode::Inactive) {
-            arcStartPoint = getCursorLocationOnArcball(cursorPositionDevice);
+            arcStartPoint = std::make_unique<common::Point3D>(getCursorLocationOnArcball(cursorPositionDevice));
             arcEndPoint = nullptr;
             interactionMonitorThread = std::make_unique<std::thread>(&ArcballController::monitorInteraction, this);
             interactionMonitorThread->detach();
         } else {
             if (!arcEndPoint) {
-                arcEndPoint = getCursorLocationOnArcball(cursorPositionDevice);
+                arcEndPoint = std::make_unique<common::Point3D>(getCursorLocationOnArcball(cursorPositionDevice));
                 rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
                 theta = asin(rotationAxis->length());
             } else {
@@ -72,21 +79,17 @@ namespace mv::objects {
         updateVisualization();
     }
 
-    common::UniquePointer<common::Point3D> ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
+    common::Point3D
+    ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
         math3d::types::Point3D cursorPositionCamera = convertCursorToCameraCoordinates(cursorPositionDevice);
         // In the camera space the ray from the cursor position is always in the negative z-direction
         common::Vector3D rayDirection = {0, 0, -1};
-        std::unique_ptr<common::Point3D> arcballPoint;
+        common::Point3D arcballPoint;
         auto intersectionResult = sphere.intersectWithRay({cursorPositionCamera, rayDirection});
         if (intersectionResult.status == math3d::IntersectionStatus::Intersects) {
-            arcballPoint = std::make_unique<common::Point3D>(Util::asFloat(intersectionResult.intersectionPoint));
+            arcballPoint = Util::asFloat(intersectionResult.intersectionPoint);
         } else {
-            // If there is no intersection, we pick the closest sphere point to the ray. This point is
-            // at a distance of sphere radius along the vector that is in the direction of the perpendicular
-            // projection of the vector from the sphere center to the cursor and the ray direction
-            std::cout << "Using vector projection " << std::endl;
-            auto vectorProjection = cursorPositionCamera.getVectorProjection(rayDirection);
-            arcballPoint = std::make_unique<common::Point3D>(vectorProjection.perpendicular.normalize());
+            arcballPoint = Util::asFloat(cursorPositionCamera.normalize());
         }
         return arcballPoint;
     }
