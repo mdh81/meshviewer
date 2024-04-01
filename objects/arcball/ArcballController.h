@@ -41,6 +41,8 @@ namespace mv::objects {
 
         void handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged);
 
+        void handleScrollEventNew(common::Point2D const& cursorPosition, common::Point2D const& cursorPositionDifference);
+
         void reset();
 
     private:
@@ -65,17 +67,9 @@ namespace mv::objects {
         std::optional<std::reference_wrapper<ArcballVisualizationItem>> arcAxisVectorVisual;
         float theta {0.f};
         bool visualizationOn{};
-        std::thread fadeOutTimer;
         common::ProjectionMatrixPointer projectionMatrix;
         math3d::Matrix<float, 4, 4> inverseProjectionMatrix;
-        std::atomic<decltype(std::chrono::high_resolution_clock::now())> previousInteractionTimePoint;
-        std::unique_ptr<std::thread> interactionMonitorThread;
-        bool fadeOutVisualization {false};
         common::DisplayDimensions displayDimensions;
-        enum class InteractionState {
-            Stopped,
-            Interacting
-        };
         std::optional<common::Point2D> previousCursorPosition;
         std::optional<common::Point2D> currentCursorPosition;
         enum class Mode {
@@ -83,7 +77,7 @@ namespace mv::objects {
             Scroll,
             Drag,
         };
-        Mode mode;
+        std::atomic<Mode> mode;
         bool positiveRotation {true};
         math3d::RotationMatrix<float> rotationMatrix;
     };

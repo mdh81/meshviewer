@@ -13,38 +13,12 @@ namespace mv::objects {
 
     namespace {
         constexpr float oneDegreeInRadian = std::numbers::pi / 180;
-        constexpr std::chrono::milliseconds interactionTTL {200};
-        constexpr std::chrono::milliseconds interactionThreadPauseInterval {20};
-
-        common::Vector3D randomNormalizedVector() {
-            common::Vector3D anyVector = {static_cast<float>(std::random_device()()),
-                                          static_cast<float>(std::random_device()()),
-                                          static_cast<float>(std::random_device()())};
-            return anyVector.normalize();
-        }
     }
 
     ArcballController::ArcballController()
     : Renderable()
     , sphere({0.f, 0.f, 0.f}, 1.f)
     , mode {Mode::Inactive} {
-
-
-    }
-
-    void ArcballController::monitorInteraction() {
-
-        while(true) {
-            auto currentInteractionTimePoint = std::chrono::high_resolution_clock::now();
-            auto elapsedTime = currentInteractionTimePoint - previousInteractionTimePoint.load();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime).count() > interactionTTL.count()) {
-                mode = Mode::Inactive;
-                break;
-            } else {
-                std::this_thread::sleep_for(interactionThreadPauseInterval);
-            }
-        }
-
     }
 
     void ArcballController::reset() {
@@ -53,12 +27,9 @@ namespace mv::objects {
     }
 
     void ArcballController::handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged) {
-        previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
         if (mode == Mode::Inactive) {
             arcStartPoint = std::make_unique<common::Point3D>(getCursorLocationOnArcball(cursorPositionDevice));
             arcEndPoint = nullptr;
-            interactionMonitorThread = std::make_unique<std::thread>(&ArcballController::monitorInteraction, this);
-            interactionMonitorThread->detach();
         } else {
             if (!arcEndPoint) {
                 arcEndPoint = std::make_unique<common::Point3D>(getCursorLocationOnArcball(cursorPositionDevice));
@@ -79,8 +50,7 @@ namespace mv::objects {
         updateVisualization();
     }
 
-    common::Point3D
-    ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
+    common::Point3D ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
         math3d::types::Point3D cursorPositionCamera = convertCursorToCameraCoordinates(cursorPositionDevice);
         // In the camera space the ray from the cursor position is always in the negative z-direction
         common::Vector3D rayDirection = {0, 0, -1};
@@ -134,7 +104,6 @@ namespace mv::objects {
     }
 
     void ArcballController::setVisualizationOff() {
-        //fadeOutTimer.join();
         visualizationOn = false;
     }
 

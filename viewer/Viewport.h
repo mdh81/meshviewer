@@ -11,6 +11,8 @@
 #include "Types.h"
 #include "EventTypes.h"
 #include <unordered_set>
+#include <memory>
+#include <thread>
 
 
 namespace mv::scene {
@@ -111,6 +113,7 @@ private:
         bool isViewportEvent(common::Point2D const& cursorPosition) const;
         [[nodiscard]]
         common::Point2D convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const;
+        void monitorInteraction();
 
     private:
         using DrawablesSet = std::unordered_set<Drawable::DrawableReference,
@@ -129,6 +132,8 @@ private:
         common::Point2D scrollGestureStartPosition{};
         common::Point2D scrollGesturePreviousPosition{};
         std::optional<common::Vector2D> scrollDirection;
+        std::unique_ptr<std::thread> interactionMonitorThread;
+        std::atomic<decltype(std::chrono::high_resolution_clock::now())> previousInteractionTimePoint{};
         friend class ViewportTest;
     };
 }

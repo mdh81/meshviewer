@@ -4,8 +4,14 @@
 #include "EventHandler.h"
 #include "Types.h"
 #include "Util.h"
+using namespace std::chrono_literals;
 
 namespace mv::scene {
+
+    namespace {
+        constexpr auto interactionTTL {200ms};
+        constexpr auto interactionThreadPauseInterval {20ms};
+    }
 
     Viewport::Viewport(Viewport::ViewportCoordinates  coordinates)
     : coordinates(coordinates)
@@ -194,6 +200,19 @@ namespace mv::scene {
         return viewportBounds;
     }
 
+    void Viewport::monitorInteraction() {
+        while(true) {
+            auto currentInteractionTimePoint = std::chrono::high_resolution_clock::now();
+            auto elapsedTime = currentInteractionTimePoint - previousInteractionTimePoint.load();
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime).count() > interactionTTL.count()) {
+                scrollGestureStartPosition = {-1, -1}; // Reset scroll start position once the interaction timer expires
+                break;
+            } else {
+                std::this_thread::sleep_for(interactionThreadPauseInterval);
+            }
+        }
+    }
+
     void Viewport::zoom3DView(events::EventData&& zoomEventData) {
         if (zoomEventData.size() != 2) {
             throw std::runtime_error("Zoom event data is incorrect. Need the current cursor position and the "
@@ -233,12 +252,16 @@ namespace mv::scene {
         common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
         common::Point2D cursorPositionDifference;
         if (!isViewportEvent(cursorPosition)) return;
+
+        previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
         cursorPositionDifference = std::any_cast<common::Point2D>(rotateEventData[1]);
 
         if (cursorPosition != scrollGestureStartPosition) {
             scrollGestureStartPosition = cursorPosition;
             scrollGesturePreviousPosition = scrollGestureStartPosition;
             arcballController->reset();
+            interactionMonitorThread = std::make_unique<std::thread>(&Viewport::monitorInteraction, this);
+            interactionMonitorThread->detach();
         }
         auto cursorPositionWithScroll = scrollGesturePreviousPosition + cursorPositionDifference;
         auto cursorPositionViewport = convertWindowToViewportCoordinates(cursorPositionWithScroll);
