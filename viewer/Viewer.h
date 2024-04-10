@@ -33,6 +33,8 @@ class Viewer : public MeshViewerObject {
         void notifyFrameBufferResized(events::EventData&&);
         void notifyCursorMoved(events::EventData&&);
         void notifyMouseWheelOrTouchPadScrolled(events::EventData&&);
+        void notifyLeftMousePressed();
+        void notifyLeftMouseReleased();
 
         // Creation Semantics
         static Viewer& getInstance();
@@ -77,6 +79,7 @@ class Viewer : public MeshViewerObject {
         common::Point2D cursorPositionDifference;
         common::UniquePointer<mv::scene::Scene> scene;
         bool printGLInfoOnStartup;
+        bool leftMouseDown{};
 
     // Member functions
     private:

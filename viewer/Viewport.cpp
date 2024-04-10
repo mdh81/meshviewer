@@ -48,6 +48,9 @@ namespace mv::scene {
         mv::events::EventHandler().registerDataEventCallback(
                 mv::events::Event{events::EventId::ScrollRotated}, *this, &Viewport::scrollRotate3DView);
 
+        mv::events::EventHandler().registerDataEventCallback(
+                mv::events::Event{events::EventId::DragRotated}, *this, &Viewport::dragRotate3DView);
+
         mv::events::EventHandler().registerBasicEventCallback(
                 mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
     }
@@ -271,6 +274,18 @@ namespace mv::scene {
                 scrollDirection && scrollDirection->dot(cursorPositionDifference) < 0);
         camera->setRotation(arcballController->getRotation());
         scrollDirection = cursorPositionDifference;
+    }
+
+    void Viewport::dragRotate3DView(events::EventData&& rotateEventData) {
+        if (rotateEventData.size() != 1) {
+            throw std::runtime_error("Drag rotate event data is incorrect. Need the current cursor position");
+        }
+        common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
+        if (!isViewportEvent(cursorPosition)) return;
+
+        arcballController->handleDragEvent(
+                getViewportToDeviceTransform() * convertWindowToViewportCoordinates(cursorPosition));
+        camera->setRotation(arcballController->getRotation());
     }
 
     common::Point2D Viewport::convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const {

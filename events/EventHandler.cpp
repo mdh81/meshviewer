@@ -27,7 +27,7 @@ namespace {
     };
 
     auto mouseClickListener = [](GLFWwindow* window, int button, int action, int modifiers) {
-        EventHandler{}.raiseEvent(Event(button, modifiers));
+        EventHandler{}.raiseEvent(Event(button, modifiers, action));
     };
 
     auto frameBufferResizeListener = [](GLFWwindow *window, int width, int height) {

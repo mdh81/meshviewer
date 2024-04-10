@@ -62,6 +62,11 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     eventHandler.registerDataEventCallback(
             Event{events::EventId::Scrolled}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
 
+    eventHandler.registerBasicEventCallback(
+            Event(MouseButton::Left, ButtonAction::Press), *this, &Viewer::notifyLeftMousePressed);
+    eventHandler.registerBasicEventCallback(
+            Event(MouseButton::Left, ButtonAction::Release), *this, &Viewer::notifyLeftMouseReleased);
+
     Viewer::RenderLoop::viewer = this;
 }
 
@@ -144,6 +149,9 @@ void Viewer::notifyCursorMoved(events::EventData&& eventData) {
     common::Point2D currentCursorPosition {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
     cursorPositionDifference = currentCursorPosition - cursorPosition;
     cursorPosition = currentCursorPosition;
+    if (leftMouseDown) {
+        EventHandler{}.raiseEvent(events::EventId::DragRotated, {cursorPosition});
+    }
 }
 
 void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
@@ -396,6 +404,15 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
     };
 
 
+}
+
+void Viewer::notifyLeftMousePressed() {
+    leftMouseDown = true;
+}
+
+void Viewer::notifyLeftMouseReleased() {
+    leftMouseDown = false;
+    EventHandler{}.raiseEvent(EventId::DragCompleted);
 }
 
 }
