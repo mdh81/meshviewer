@@ -41,7 +41,7 @@ namespace mv::objects {
 
         void handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged);
 
-        void handleScrollEventNew(common::Point2D const& cursorPosition, common::Point2D const& cursorPositionDifference);
+        void handleDragEvent(common::Point3D const& cursorPositionDevice);
 
         void reset();
 
@@ -51,7 +51,6 @@ namespace mv::objects {
         math3d::types::Point3D convertCursorToCameraCoordinates(common::Point3D const& cursorPosition);
         void monitorInteraction();
         common::Point3D getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice);
-
 
     private:
         using VisualizationItem = std::unique_ptr<ArcballVisualizationItem>;

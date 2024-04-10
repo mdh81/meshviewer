@@ -19,11 +19,28 @@ namespace mv::objects {
     : Renderable()
     , sphere({0.f, 0.f, 0.f}, 1.f)
     , mode {Mode::Inactive} {
+
+        mv::events::EventHandler().registerBasicEventCallback(
+                mv::events::Event{events::EventId::DragCompleted}, *this, &ArcballController::reset);
     }
 
     void ArcballController::reset() {
         positiveRotation = true;
         mode = Mode::Inactive;
+    }
+
+    void ArcballController::handleDragEvent(const common::Point3D& cursorPositionDevice) {
+        if (mode == Mode::Inactive) {
+            arcStartPoint = std::make_unique<common::Point3D>(getCursorLocationOnArcball(cursorPositionDevice));
+            arcEndPoint = nullptr;
+        } else {
+            arcEndPoint = std::make_unique<common::Point3D>(getCursorLocationOnArcball(cursorPositionDevice));
+            rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
+            theta = asin(rotationAxis->length());
+            rotationAxis->normalize();
+        }
+        mode = Mode::Drag;
+        updateVisualization();
     }
 
     void ArcballController::handleScrollEvent(common::Point3D const& cursorPositionDevice, bool const directionChanged) {
@@ -52,16 +69,7 @@ namespace mv::objects {
 
     common::Point3D ArcballController::getCursorLocationOnArcball(common::Point3D const& cursorPositionDevice) {
         math3d::types::Point3D cursorPositionCamera = convertCursorToCameraCoordinates(cursorPositionDevice);
-        // In the camera space the ray from the cursor position is always in the negative z-direction
-        common::Vector3D rayDirection = {0, 0, -1};
-        common::Point3D arcballPoint;
-        auto intersectionResult = sphere.intersectWithRay({cursorPositionCamera, rayDirection});
-        if (intersectionResult.status == math3d::IntersectionStatus::Intersects) {
-            arcballPoint = Util::asFloat(intersectionResult.intersectionPoint);
-        } else {
-            arcballPoint = Util::asFloat(cursorPositionCamera.normalize());
-        }
-        return arcballPoint;
+        return cursorPositionCamera.normalize();
     }
 
     void ArcballController::updateVisualization() {
