@@ -13,6 +13,7 @@ namespace mv::events {
         ScrollRotated      = 1005,
         DragRotated        = 1006,
         DragCompleted      = 1007,
+        DragStarted        = 1008,
     };
 
     enum class MouseButton : unsigned {

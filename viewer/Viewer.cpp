@@ -408,6 +408,7 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
 
 void Viewer::notifyLeftMousePressed() {
     leftMouseDown = true;
+    EventHandler{}.raiseEvent(EventId::DragStarted);
 }
 
 void Viewer::notifyLeftMouseReleased() {
