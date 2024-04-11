@@ -6,8 +6,7 @@
 #include "ArcballDirectionVector.h"
 #include "CallbackFactory.h"
 #include "EventHandler.h"
-#include <thread>
-#include <chrono>
+#include "EventTypes.h"
 
 namespace mv::objects {
 
@@ -20,13 +19,18 @@ namespace mv::objects {
     , sphere({0.f, 0.f, 0.f}, 1.f)
     , mode {Mode::Inactive} {
 
-        mv::events::EventHandler().registerBasicEventCallback(
-                mv::events::Event{events::EventId::DragCompleted}, *this, &ArcballController::reset);
+        {
+            using namespace mv::events;
+            auto eventHandler = EventHandler{};
+            eventHandler.registerBasicEventCallback(EventId::DragCompleted, *this, &ArcballController::reset);
+            eventHandler.registerBasicEventCallback(EventId::DragStarted, *this, &ArcballController::reset);
+        }
     }
 
     void ArcballController::reset() {
         positiveRotation = true;
         mode = Mode::Inactive;
+        previousRotationMatrix = rotationMatrix;
     }
 
     void ArcballController::handleDragEvent(const common::Point3D& cursorPositionDevice) {
@@ -89,12 +93,11 @@ namespace mv::objects {
         // If the arcball was just reset then return the previous rotation matrix
         // NOTE: rotationMatrix is initialized to identity by its constructor, so we will return the right matrix
         // when no arc point has been picked up
-        if (!arcStartPoint || !arcEndPoint || !rotationAxis /*Investigate this*/) return rotationMatrix;
+        if (!arcStartPoint || !arcEndPoint /*|| !rotationAxis Investigate this*/) return rotationMatrix;
 
         if (mode == Mode::Drag) {
-            rotationAxis = std::make_unique<common::Vector3D>(*arcStartPoint * *arcEndPoint);
-            theta = asin(rotationAxis->length() / (arcStartPoint->length() * arcEndPoint->length()));
-            rotationMatrix = common::RotationMatrix {rotationAxis->normalize(), math3d::Utilities::asDegrees(theta)};
+            rotationMatrix =
+                common::RotationMatrix {*rotationAxis, math3d::Utilities::asDegrees(theta)} * previousRotationMatrix;
         } else if (mode == Mode::Scroll) {
             auto currentRotationMatrix = common::RotationMatrix{*rotationAxis, positiveRotation ? 1.f : -1.f};
             rotationMatrix = currentRotationMatrix * rotationMatrix;

@@ -79,6 +79,7 @@ namespace mv::objects {
         std::atomic<Mode> mode;
         bool positiveRotation {true};
         math3d::RotationMatrix<float> rotationMatrix;
+        math3d::RotationMatrix<float> previousRotationMatrix{};
     };
 
     using ArcballControllerPointer = common::UniquePointer<ArcballController>;
