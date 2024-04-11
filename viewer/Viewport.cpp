@@ -253,11 +253,10 @@ namespace mv::scene {
                                      "cursor position difference to determine the rotation");
         }
         common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
-        common::Point2D cursorPositionDifference;
         if (!isViewportEvent(cursorPosition)) return;
 
         previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
-        cursorPositionDifference = std::any_cast<common::Point2D>(rotateEventData[1]);
+        auto cursorPositionDifference = std::any_cast<common::Point2D>(rotateEventData[1]);
 
         if (cursorPosition != scrollGestureStartPosition) {
             scrollGestureStartPosition = cursorPosition;
