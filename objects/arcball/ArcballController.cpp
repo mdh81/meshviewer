@@ -93,7 +93,7 @@ namespace mv::objects {
         // If the arcball was just reset then return the previous rotation matrix
         // NOTE: rotationMatrix is initialized to identity by its constructor, so we will return the right matrix
         // when no arc point has been picked up
-        if (!arcStartPoint || !arcEndPoint /*|| !rotationAxis Investigate this*/) return rotationMatrix;
+        if (!arcStartPoint || !arcEndPoint) return rotationMatrix;
 
         if (mode == Mode::Drag) {
             rotationMatrix =
