@@ -29,10 +29,9 @@ public:
     virtual common::Bounds getBounds() const = 0;
 
     virtual void notifyDisplayResized(common::DisplayDimensions const& displayDimensions) {
-        aspectRatio = static_cast<float>(displayDimensions.windowWidth) / static_cast<float>(displayDimensions.windowHeight);
-        if (fabs(aspectRatio - static_cast<float>(displayDimensions.frameBufferWidth) / displayDimensions.frameBufferHeight) > 1e-3) {
-           throw std::runtime_error("Framebuffer and window should have the same aspect ratio");
-        }
+        aspectRatio =
+            static_cast<float>(displayDimensions.frameBufferWidth) /
+            static_cast<float>(displayDimensions.frameBufferHeight);
         updateProjection = true;
         // TODO: This should trigger just projection re-computation not a geometry regenerate
         readyToRender = false;
