@@ -12,7 +12,14 @@ void mv::EmscriptenShaderLoader::loadShader(std::string const& shaderFileName,
     // when the emscripten build is configured. For each shader source file (with extension glsl)
     // the build system will create a DOM element with the same name as the source file.
 
-    std::string shaderBaseName = std::filesystem::path{shaderFileName}.stem();
+    std::string shaderBaseName {std::filesystem::path{shaderFileName}.stem()};
+    std::string shaderExtension {std::filesystem::path{shaderFileName}.extension().string().substr(1)};
+
+    // Adjust shader name for those shaders that use the <shader>.vert/frag naming convention
+    std::string shaderName = shaderBaseName;
+    if (shaderExtension == "vert" || shaderExtension == "frag") {
+        shaderName = shaderBaseName + '_' + shaderExtension;
+    }
 
     // clang-format off
     char* shaderSource = reinterpret_cast<char*>(EM_ASM_PTR(
@@ -27,7 +34,7 @@ void mv::EmscriptenShaderLoader::loadShader(std::string const& shaderFileName,
                 console.log('Failed to load shader!' + 'Shader resource ' + UTF8ToString($0) + ' was not found in DOM');
                 return Module.allocate(intArrayFromString(' '), ALLOC_STACK);
             }
-        }, shaderBaseName.data()
+        }, shaderName.data()
     ));
     // clang-format on
 
