@@ -164,6 +164,15 @@ struct DisplayDimensions {
     Point2D normalizedViewportSize;
 };
 
+inline std::ostream& operator<<(std::ostream& os, DisplayDimensions const displayDimensions) {
+    os << "Window Width " << displayDimensions.windowWidth
+       << " Height " << displayDimensions.windowHeight << std::endl;
+    os << "Framebuffer Width " << displayDimensions.frameBufferWidth
+       << " Height " << displayDimensions.frameBufferHeight << std::endl;
+    os << "Normalized viewport size: " << displayDimensions.normalizedViewportSize << std::endl;
+    return os;
+}
+
 enum class NormalLocation {
     Face,
     Vertex
