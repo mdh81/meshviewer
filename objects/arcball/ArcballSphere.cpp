@@ -1,6 +1,7 @@
 #include "ArcballSphere.h"
 #include "3dmath/primitives/Sphere.h"
 #include "Types.h"
+#include "ConfigurationReader.h"
 
 using namespace mv::common;
 
@@ -9,9 +10,10 @@ namespace mv::objects {
     // TODO: Read colors and other immutable properties from config
     ArcballSphere::ArcballSphere(common::DisplayDimensions const& displayDimensions)
     : ArcballVisualizationItem(displayDimensions, "ArcballSphere.vert", "ArcballSphere.frag")
-    , resolution(64)
-    , color({0.5, 0.5, 0.5, 0.2f}) {
-        opacity = 0.2f;
+    , resolution(config::ConfigurationReader::getInstance().getValueAs<unsigned>("ArcballResolution"))
+    , color(config::ConfigurationReader::getInstance().getColor("ArcballColor"))
+    , drawWireframe{} {
+        opacity = config::ConfigurationReader::getInstance().getValueAs<float>("ArcballOpacity");
     }
 
     void ArcballSphere::render() {
@@ -27,7 +29,9 @@ namespace mv::objects {
         glCallWithErrorCheck(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifndef EMSCRIPTEN
-        glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_LINE);
+        if (drawWireframe) {
+            glCallWithErrorCheck(glPolygonMode, GL_FRONT_AND_BACK, GL_LINE);
+        }
 #endif
         glCallWithErrorCheck(glDrawElements, GL_TRIANGLES,
                              numConnectivityEntriesQuad,   // Number of entries in the connectivity array
@@ -118,6 +122,11 @@ namespace mv::objects {
 
     void ArcballSphere::updateColor() {
         auto sphereColorId = glCallWithErrorCheck(glGetUniformLocation, shaderProgram, "sphereColor");
-        glCallWithErrorCheck(glUniform4fv, sphereColorId, 1, color.getData());
+        float rgba[4];
+        for (auto i : {0, 1, 2}) {
+            rgba[i] = color.getData()[i];
+        }
+        rgba[3] = opacity;
+        glCallWithErrorCheck(glUniform4fv, sphereColorId, 1, rgba);
     }
 }
