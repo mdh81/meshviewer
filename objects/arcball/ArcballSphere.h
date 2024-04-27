@@ -20,7 +20,8 @@ namespace mv::objects {
 
     private:
         unsigned const resolution;
-        common::RGBAColor const color;
+        common::RGBColor const color;
+        bool const drawWireframe;
     };
 
 }
