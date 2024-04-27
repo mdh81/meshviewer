@@ -55,23 +55,11 @@ class Viewport : public Renderable {
 
         // TODO: Add derivation to docs
         [[nodiscard]]
-        math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const {
-            return math3d::Matrix<float, 3, 3> {
-                {getWidth() / displayDimensions.windowWidth, 0.f,                                           0.f},
-                {0.f,                                        -getHeight() / displayDimensions.windowHeight, getHeight()},
-                {0.f,                                        0.f,                                           0.f}
-            };
-        }
+        math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const;
 
         // TODO: Add derivation to docs
         [[nodiscard]]
-        math3d::Matrix<float, 3, 3> getViewportToDeviceTransform() const {
-            return math3d::Matrix<float, 3, 3> {
-                {2.f / getWidth(), 0.f,                 -1.f},
-                {0.f,              2.f / getHeight(),   -1.f},
-                {0.f,              0.f,                 -1.f}
-            };
-        }
+        math3d::Matrix<float, 3, 3> getViewportToDeviceTransform() const;
 
         void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const override {
             for (auto& drawable : drawables) {

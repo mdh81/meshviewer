@@ -132,12 +132,14 @@ void Viewer::createWindow() {
 }
 
 void Viewer::notifyFrameBufferResized(events::EventData&& eventData) {
-    if (eventData.size() != 2) {
+    if (eventData.size() != 4) {
         throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height "
                                  "of the resized frame buffer must be specified");
     }
     frameBufferWidth = std::any_cast<unsigned>(eventData.at(0));
     frameBufferHeight = std::any_cast<unsigned>(eventData.at(1));
+    windowWidth = std::any_cast<unsigned>(eventData.at(2));
+    windowHeight = std::any_cast<unsigned>(eventData.at(3));
     windowResized = true;
 }
 

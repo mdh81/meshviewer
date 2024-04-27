@@ -31,7 +31,11 @@ namespace {
     };
 
     auto frameBufferResizeListener = [](GLFWwindow *window, int width, int height) {
-        EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized}, {static_cast<unsigned>(width), static_cast<unsigned>(height)});
+        int windowWidth, windowHeight;
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized},
+                                  {static_cast<unsigned>(width), static_cast<unsigned>(height),
+                                   static_cast<unsigned>(windowWidth), static_cast<unsigned>(windowHeight)});
     };
 
     auto scrollListener = [](GLFWwindow* window, double xOffset, double yOffset) {

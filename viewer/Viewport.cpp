@@ -295,8 +295,35 @@ namespace mv::scene {
     }
 
     bool Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
+#ifdef EMSCRIPTEN
+        std::cout << "Cursor position: " << cursorPosition << std::endl;
+        auto cursorViewportCoord = convertWindowToViewportCoordinates(cursorPosition);
+        std::cout << "Cursor Viewport coordinates: " << cursorViewportCoord << std::endl;
+        std::cout << "Viewport coordinates: " << coordinates << std::endl;
+        return true;
+#endif
+        std::cout << "Cursor position: " << cursorPosition << std::endl;
         auto viewportCoordinate = convertWindowToViewportCoordinates(cursorPosition);
+        std::cout << "Cursor Viewport coordinates: " << viewportCoordinate << std::endl;
         return coordinates.contains({viewportCoordinate.x, viewportCoordinate.y, 0.f});
+    }
+
+    math3d::Matrix<float, 3, 3> Viewport::getWindowToViewportTransform() const {
+        return math3d::Matrix<float, 3, 3> {
+                {getWidth() / displayDimensions.windowWidth, 0.f,                                           0.f},
+                {0.f,                                        -getHeight() / displayDimensions.windowHeight, getHeight()},
+                {0.f,                                        0.f,                                           0.f}
+        };
+    }
+
+    // TODO: Add derivation to docs
+    [[nodiscard]]
+    math3d::Matrix<float, 3, 3> Viewport::getViewportToDeviceTransform() const {
+        return math3d::Matrix<float, 3, 3> {
+                {2.f / getWidth(), 0.f,                 -1.f},
+                {0.f,              2.f / getHeight(),   -1.f},
+                {0.f,              0.f,                 -1.f}
+        };
     }
 
 }
