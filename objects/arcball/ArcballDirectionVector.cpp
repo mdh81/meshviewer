@@ -7,7 +7,7 @@
 using namespace mv::common;
 
 namespace mv::objects {
-
+    // TODO: Read immutable values from config
     ArcballDirectionVector::ArcballDirectionVector(DisplayDimensions const& displayDimensions)
             : ArcballVisualizationItem(displayDimensions, "ArcballAxis.vert", "ArcballAxis.frag")
             , lineWidthPixels(10)
