@@ -1,5 +1,6 @@
 #version 410 core
 
+precision highp float;
 in vec3 vertexCoordinatesIn;
 in vec2 textureCoordinatesIn;
 out vec2 textureCoordinates;

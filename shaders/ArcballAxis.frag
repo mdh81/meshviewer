@@ -1,5 +1,6 @@
 #version 410 core
 
+precision highp float;
 uniform vec4 axisColor;
 in vec2 textureCoordinates;
 out vec4 fragmentColor;
