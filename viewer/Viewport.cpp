@@ -295,16 +295,7 @@ namespace mv::scene {
     }
 
     bool Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
-#ifdef EMSCRIPTEN
-        std::cout << "Cursor position: " << cursorPosition << std::endl;
-        auto cursorViewportCoord = convertWindowToViewportCoordinates(cursorPosition);
-        std::cout << "Cursor Viewport coordinates: " << cursorViewportCoord << std::endl;
-        std::cout << "Viewport coordinates: " << coordinates << std::endl;
-        return true;
-#endif
-        std::cout << "Cursor position: " << cursorPosition << std::endl;
         auto viewportCoordinate = convertWindowToViewportCoordinates(cursorPosition);
-        std::cout << "Cursor Viewport coordinates: " << viewportCoordinate << std::endl;
         return coordinates.contains({viewportCoordinate.x, viewportCoordinate.y, 0.f});
     }
 
