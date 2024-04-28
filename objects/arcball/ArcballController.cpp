@@ -63,7 +63,8 @@ namespace mv::objects {
                 theta += oneDegreeInRadian * (positiveRotation ? 1.f : -1.f);
                 auto planeAxisX = *arcStartPoint;
                 auto planeAxisY = planeAxisX * *rotationAxis;
-                *arcEndPoint = (cos(theta) * planeAxisX) +  (sin(theta) * planeAxisY);
+                *arcEndPoint = (static_cast<float>(cos(theta)) * planeAxisX) +
+                                (static_cast<float>(sin(theta)) * planeAxisY);
             }
             rotationAxis->normalize();
         }
