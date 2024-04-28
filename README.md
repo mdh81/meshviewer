@@ -52,15 +52,5 @@ $ make -j<n> #n is number of parallel jobs
 # Run
 $ emrun --port <PORT> --browser <chrome|firefox|safari> meshViewer.html testfiles/suzanne_subdivided.stl
 
+Alternatively, run ./embuild.sh <-t Release|Debug> <-b chrome|firefox|safari>
 ```
-
-# Capabilities
-
-The viewer supports the following features:
-
-* Loading STL and PLY files
-* Rendering triangle meshes as wireframe or shaded
-* Orbiting the camera around cardinal axes
-* Zoom
-* Gradient backgrounds
-* Built-in event handler that can register member/free functions as event handlers for keyboard and mouse events
