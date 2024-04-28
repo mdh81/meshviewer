@@ -126,7 +126,7 @@ add_custom_target(
     ${CMAKE_COMMAND} -E copy ${textures} ${CMAKE_BINARY_DIR}/textures/
 )
 
-add_dependencies(${appName} textureCopy)
+add_dependencies(${appName} textureCopy shaderCopy)
 
 
 if (EMSCRIPTEN)
