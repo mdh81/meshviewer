@@ -12,12 +12,16 @@ namespace mv {
 
 class Drawable;
 
+namespace objects {
+    class ArcballController;
+}
+
 class Camera : public MeshViewerObject {
 
     public:
         enum class ProjectionType {
-                Orthographic,
-                Perspective
+            Orthographic,
+            Perspective
         };
 
         // Cameras are meant to be shared across renderables and across viewports
@@ -37,6 +41,9 @@ class Camera : public MeshViewerObject {
         // View controls
         void zoom(common::Direction direction);
         void pan(common::Direction direction);
+        void setRotation(math3d::RotationMatrix<float> const& rotationMatrix) {
+            rotation = rotationMatrix;
+        }
 
         // Sets projection type
         void setProjectionType(const ProjectionType type) { projectionType = type; }
@@ -58,12 +65,14 @@ private:
         void writeViewConfigurationToFile();
 
     private:
+        // TODO: Throw glm away and switch to 3dmath
         std::optional<common::Axis> orbitAxis;
         bool orbitOn;
         glm::mat4 modelTransform;
         glm::mat4 viewTransform;
         glm::mat4 projectionTransform;
         math3d::Matrix<float, 4, 4> projectionTransformTest;
+        math3d::RotationMatrix<float> rotation;
         float zoomFactor;
         float movementIncrement;
         common::Point2D panTarget;

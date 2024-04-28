@@ -3,3 +3,6 @@ build/
 *.swo
 cmake-build-debug/
 linux-build/
+build_web/
+3dmath/tests/testBin/
+

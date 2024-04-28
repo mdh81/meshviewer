@@ -1,5 +1,4 @@
 #include "ConfigurationReader.h"
-#include <exception>
 #include <fstream>
 #include <sstream>
 using namespace std;
@@ -45,9 +44,9 @@ namespace mv::config {
                 throw runtime_error(name + " is not a boolean property");
         }
 
-        Color ConfigurationReader::getColor(const std::string &name, const bool normalize) const {
+        RGBColor ConfigurationReader::getColor(const std::string &name, const bool normalize) const {
             std::string val = getValue(name);
-            Color color;
+            RGBColor color;
             istringstream ss(val);
             string colorComponent;
             auto formattedCorrectly = true;

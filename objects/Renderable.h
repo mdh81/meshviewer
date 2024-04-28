@@ -28,8 +28,11 @@ public:
     [[nodiscard]]
     virtual common::Bounds getBounds() const = 0;
 
-    virtual void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) {
-        aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+    virtual void notifyDisplayResized(common::DisplayDimensions const& displayDimensions) {
+        aspectRatio =
+            static_cast<float>(displayDimensions.frameBufferWidth) /
+            static_cast<float>(displayDimensions.frameBufferHeight);
+        updateProjection = true;
         // TODO: This should trigger just projection re-computation not a geometry regenerate
         readyToRender = false;
     }
@@ -39,7 +42,16 @@ public:
     }
 
 protected:
+    [[nodiscard]] bool needsProjectionUpdate() const {
+        return updateProjection;
+    }
+    void setProjectionUpdated() {
+        updateProjection = false;
+    }
+
+protected:
     bool readyToRender{};
+    bool updateProjection{true};
     float aspectRatio{1.0f};
 };
 

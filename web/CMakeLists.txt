@@ -41,6 +41,8 @@ file (
     GLOB
     shaderSources
     ${CMAKE_CURRENT_SOURCE_DIR}/../shaders/*.glsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shaders/*.vert
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shaders/*.frag
 )
 
 find_program(

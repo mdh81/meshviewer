@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Viewport.h"
+#include "Types.h"
 #include <memory>
 #include <vector>
 
@@ -13,7 +14,7 @@ class Scene : public Renderable {
         using ViewportCollection = std::vector<ViewportPointer>;
 
     public:
-        Scene(unsigned frameBufferWidth, unsigned frameBufferHeight);
+        Scene(common::DisplayDimensions const& displayDimensions);
         ~Scene() = default;
         // Scenes cannot be copied or assigned
         Scene(Scene const&) = delete;
@@ -37,7 +38,7 @@ class Scene : public Renderable {
         void render() override;
 
         // Notify this scene that the window was resized
-        void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) override;
+        void notifyDisplayResized(const common::DisplayDimensions &displaySize) override;
 
         [[nodiscard]]
         common::Point3D getCentroid() const override {

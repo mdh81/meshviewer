@@ -1,17 +1,25 @@
 #include "Viewport.h"
 #include <functional>
-#include <utility>
 #include <vector>
 #include "EventHandler.h"
 #include "Types.h"
+#include "Util.h"
+using namespace std::chrono_literals;
 
 namespace mv::scene {
 
+    namespace {
+        constexpr auto interactionTTL {200ms};
+        constexpr auto interactionThreadPauseInterval {20ms};
+    }
+
     Viewport::Viewport(Viewport::ViewportCoordinates  coordinates)
-    : coordinates(std::move(coordinates))
+    : coordinates(coordinates)
     , showGradientBackground(true)
     , fogEnabled(false)
-    , windowDimensions{} {
+    , displayDimensions{}
+    , showArcball(false)
+    , arcballController(std::make_unique<objects::ArcballController>()){
         MeshViewerObject::debug = true;
         registerEventHandlers();
     }
@@ -36,6 +44,15 @@ namespace mv::scene {
 
         mv::events::EventHandler().registerDataEventCallback(
                 mv::events::Event{events::EventId::Panned}, *this, &Viewport::pan3DView);
+
+        mv::events::EventHandler().registerDataEventCallback(
+                mv::events::Event{events::EventId::ScrollRotated}, *this, &Viewport::scrollRotate3DView);
+
+        mv::events::EventHandler().registerDataEventCallback(
+                mv::events::Event{events::EventId::DragRotated}, *this, &Viewport::dragRotate3DView);
+
+        mv::events::EventHandler().registerBasicEventCallback(
+                mv::events::Event{GLFW_KEY_A, GLFW_MOD_SHIFT}, *this, &Viewport::toggleArcballDisplay);
     }
 
     void Viewport::add(mv::Drawable& drawable) {
@@ -61,22 +78,26 @@ namespace mv::scene {
         return drawableList;
     }
 
-    void Viewport::notifyWindowResized(unsigned int const windowWidth, unsigned int const windowHeight) {
+    void Viewport::notifyDisplayResized(common::DisplayDimensions const& displayDimensions) {
+        Renderable::notifyDisplayResized(displayDimensions);
         for (auto& drawable : drawables) {
-            drawable.get().notifyWindowResized(windowWidth, windowHeight);
+            drawable.get().notifyDisplayResized(displayDimensions);
         }
-        windowDimensions = {windowWidth, windowHeight};
-        Renderable::notifyWindowResized(windowWidth, windowHeight);
+        this->displayDimensions = displayDimensions;
+        this->displayDimensions.normalizedViewportSize = {coordinates.x.max - coordinates.x.min, coordinates.y.max - coordinates.y.min};
+        arcballController->notifyDisplayResized(this->displayDimensions);
     }
 
     void Viewport::render() {
         using namespace mv::common;
-        glCallWithErrorCheck(glViewport, coordinates.x.min * windowDimensions.width,
-                             coordinates.y.min * windowDimensions.height,
-                             coordinates.x.length() * windowDimensions.width,
-                             coordinates.y.length() * windowDimensions.height);
+        displayDimensions.normalizedViewportSize = {coordinates.x.max - coordinates.x.min, coordinates.y.max - coordinates.y.min};
+        glCallWithErrorCheck(glViewport, coordinates.x.min * displayDimensions.frameBufferWidth,
+                             coordinates.y.min * displayDimensions.frameBufferHeight,
+                             coordinates.x.length() * displayDimensions.frameBufferWidth,
+                             coordinates.y.length() * displayDimensions.frameBufferHeight);
 
         if (!camera) {
+            // First render
             camera = std::make_shared<mv::Camera>(*this, Camera::ProjectionType::Perspective);
             for (auto &drawable: drawables) {
                 // All 3D drawables share this viewport's camera
@@ -84,8 +105,9 @@ namespace mv::scene {
                     drawable.get().setCamera(camera);
                 }
                 // Set the initial window size for all drawables during this first render call
-                drawable.get().notifyWindowResized(windowDimensions.width, windowDimensions.height);
+                drawable.get().notifyDisplayResized(displayDimensions);
             }
+            arcballController->notifyDisplayResized(displayDimensions);
         }
 
         // Compute the view
@@ -93,10 +115,7 @@ namespace mv::scene {
 
         // Background has to be drawn first (it's render method will disable writing to depth buffer)
         if (showGradientBackground) {
-            if (!gradientBackground) {
-                gradientBackground = std::make_unique<objects::GradientBackground>();
-            }
-            gradientBackground->render();
+            displayGradientBackground();
         }
 
         // Add fog if enabled
@@ -106,6 +125,16 @@ namespace mv::scene {
             drawable.get().render();
         }
 
+        // Draw arcball interactor next with depth write disabled so all scene objects will render on top of arcball
+        // NOTE: render call is always made to support the fade out use case
+        arcballController->render();
+    }
+
+    void Viewport::displayGradientBackground() {
+        if (!gradientBackground) {
+            gradientBackground = std::make_unique<objects::GradientBackground>();
+        }
+        gradientBackground->render();
     }
 
     void Viewport::enableFog() {
@@ -174,6 +203,19 @@ namespace mv::scene {
         return viewportBounds;
     }
 
+    void Viewport::monitorInteraction() {
+        while(true) {
+            auto currentInteractionTimePoint = std::chrono::high_resolution_clock::now();
+            auto elapsedTime = currentInteractionTimePoint - previousInteractionTimePoint.load();
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime).count() > interactionTTL.count()) {
+                scrollGestureStartPosition = {-1, -1}; // Reset scroll start position once the interaction timer expires
+                break;
+            } else {
+                std::this_thread::sleep_for(interactionThreadPauseInterval);
+            }
+        }
+    }
+
     void Viewport::zoom3DView(events::EventData&& zoomEventData) {
         if (zoomEventData.size() != 2) {
             throw std::runtime_error("Zoom event data is incorrect. Need the current cursor position and the "
@@ -205,11 +247,74 @@ namespace mv::scene {
         }
     }
 
-    bool Viewport::isViewportEvent(const common::Point2D& cursorPosition) const {
+    void Viewport::scrollRotate3DView(events::EventData&& rotateEventData) {
+        if (rotateEventData.size() != 2) {
+            throw std::runtime_error("Rotate event data is incorrect. Need the current cursor position and the "
+                                     "cursor position difference to determine the rotation");
+        }
+        common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
+        if (!isViewportEvent(cursorPosition)) return;
+
+        previousInteractionTimePoint = std::chrono::high_resolution_clock::now();
+        auto cursorPositionDifference = std::any_cast<common::Point2D>(rotateEventData[1]);
+
+        if (cursorPosition != scrollGestureStartPosition) {
+            scrollGestureStartPosition = cursorPosition;
+            scrollGesturePreviousPosition = scrollGestureStartPosition;
+            arcballController->reset();
+            interactionMonitorThread = std::make_unique<std::thread>(&Viewport::monitorInteraction, this);
+            interactionMonitorThread->detach();
+        }
+        auto cursorPositionWithScroll = scrollGesturePreviousPosition + cursorPositionDifference;
+        auto cursorPositionViewport = convertWindowToViewportCoordinates(cursorPositionWithScroll);
+        scrollGesturePreviousPosition = cursorPositionWithScroll;
+        arcballController->handleScrollEvent(
+                getViewportToDeviceTransform() * convertWindowToViewportCoordinates(cursorPositionWithScroll),
+                scrollDirection && scrollDirection->dot(cursorPositionDifference) < 0);
+        camera->setRotation(arcballController->getRotation());
+        scrollDirection = cursorPositionDifference;
+    }
+
+    void Viewport::dragRotate3DView(events::EventData&& rotateEventData) {
+        if (rotateEventData.size() != 1) {
+            throw std::runtime_error("Drag rotate event data is incorrect. Need the current cursor position");
+        }
+        common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
+        if (!isViewportEvent(cursorPosition)) return;
+
+        arcballController->handleDragEvent(
+                getViewportToDeviceTransform() * convertWindowToViewportCoordinates(cursorPosition));
+        camera->setRotation(arcballController->getRotation());
+    }
+
+    common::Point2D Viewport::convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const {
         auto windowToViewport = getWindowToViewportTransform();
-        common::Point3D cursorWindowPosition = { cursorPosition.x, cursorPosition.y, 1.f };
-        common::Point3D cursorViewportPosition = windowToViewport * cursorWindowPosition;
-        return coordinates.contains(cursorViewportPosition);
+        common::Point3D cursorPositionWindow = {windowCoordinates.x, windowCoordinates.y, 1.f };
+        common::Point3D cursorPositionViewport = windowToViewport * cursorPositionWindow;
+        return {cursorPositionViewport.x, cursorPositionViewport.y};
+    }
+
+    bool Viewport::isViewportEvent(common::Point2D const& cursorPosition) const {
+        auto viewportCoordinate = convertWindowToViewportCoordinates(cursorPosition);
+        return coordinates.contains({viewportCoordinate.x, viewportCoordinate.y, 0.f});
+    }
+
+    math3d::Matrix<float, 3, 3> Viewport::getWindowToViewportTransform() const {
+        return math3d::Matrix<float, 3, 3> {
+                {getWidth() / displayDimensions.windowWidth, 0.f,                                           0.f},
+                {0.f,                                        -getHeight() / displayDimensions.windowHeight, getHeight()},
+                {0.f,                                        0.f,                                           0.f}
+        };
+    }
+
+    // TODO: Add derivation to docs
+    [[nodiscard]]
+    math3d::Matrix<float, 3, 3> Viewport::getViewportToDeviceTransform() const {
+        return math3d::Matrix<float, 3, 3> {
+                {2.f / getWidth(), 0.f,                 -1.f},
+                {0.f,              2.f / getHeight(),   -1.f},
+                {0.f,              0.f,                 -1.f}
+        };
     }
 
 }

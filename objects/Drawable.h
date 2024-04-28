@@ -54,7 +54,7 @@ class Drawable : public Renderable {
 
     protected:
         // Set the shader transform matrix inputs
-        void setTransforms();
+        virtual void setTransforms();
 
         // TODO: Does this make sense for a viewport? If so, it can move to Renderable
         // Generate data for the rendering pipeline

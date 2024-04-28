@@ -20,13 +20,30 @@ class ConfigurationReader {
     public:
        ~ConfigurationReader() = default;
        [[nodiscard]]
-       std::string getValue(const std::string& name) const;
+       std::string getValue(std::string const& name) const;
+
+       template<typename T>
+       [[nodiscard]]
+       T getValueAs(std::string const& name) const {
+           if (std::is_floating_point_v<T>) {
+               return static_cast<T>(std::strtof(getValue(name).c_str(), nullptr));
+           } else if (std::is_integral_v<T> && std::is_unsigned_v<T>) {
+               return static_cast<T>(std::strtoll(getValue(name).c_str(), nullptr, 10));
+           } else if (std::is_integral_v<T>) {
+               return static_cast<T>(std::strtoull(getValue(name).c_str(), nullptr, 10));
+           } else {
+               throw std::runtime_error(std::string{"getValueAs is not supported for "} + typeid(T).name());
+           }
+       }
        [[nodiscard]]
        bool getBoolean(std::string const& name) const;
        [[nodiscard]]
-       common::Color getColor(std::string const& name, bool normalize=true) const;
+       common::RGBColor getColor(std::string const& name, bool normalize=true) const;
        [[nodiscard]]
        common::Vector3D getVector(std::string const& name) const;
+       void append(std::string const& name, std::string const& value) {
+           data.emplace(name, value);
+       }
 
     public:
        ConfigurationReader(ConfigurationReader const&) = delete;

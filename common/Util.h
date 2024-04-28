@@ -40,7 +40,7 @@ class Util {
 
         static void printMatrix(glm::mat4& matrix) {
             using namespace std;
-            cout << setw(10) << matrix[0][0] << setw(10) << matrix[1][0] << setw(10) << matrix[2][0] << setw(10) << matrix[3][0]
+            cout << setw(10) << matrix[0][0] << setw(10) << matrix[1][0] << setw(10) << matrix[2][0] << setw(10) << matrix[3][0] 
                  << setw(10) << endl;
             cout << setw(10) << matrix[0][1] << setw(10) << matrix[1][1] << setw(10) << matrix[2][1] << setw(10) << matrix[3][1]
                  << setw(10) << endl;
@@ -134,6 +134,36 @@ class Util {
 
             ofs.close();
         }
+
+        static common::Point3D asFloat(math3d::types::Point3D const& doublePoint) {
+            return { static_cast<float> (doublePoint.x),
+                     static_cast<float> (doublePoint.y),
+                     static_cast<float> (doublePoint.z) };
+        }
 };
+
+    template<unsigned SquareMatrixDimension>
+    inline math3d::Vector<float, SquareMatrixDimension>
+    operator*(math3d::Matrix<float, SquareMatrixDimension, SquareMatrixDimension> const& matrix,
+              math3d::Vector<float, SquareMatrixDimension-1> const& vector) {
+
+        math3d::Vector<float, SquareMatrixDimension> adjustedVector;
+        for (auto i = 0u; i < SquareMatrixDimension-1; ++i) {
+            adjustedVector[i] = vector[i];
+        }
+        adjustedVector[SquareMatrixDimension-1] = 1.f;
+
+        return matrix * adjustedVector;
+    }
+
+    // TODO: Move this to mathlib
+    template<typename T, unsigned size>
+    bool operator == (math3d::Vector<T, size> const& v1, math3d::Vector<T, size> const& v2) {
+        static_assert(std::is_floating_point<T>::value, "Component-wise comparison is only available for floating point vector types");
+        for (unsigned i = 0; i < size; ++i) {
+            if ( fabs(v1[i] - v2[i]) > Util::tolerance ) return false;
+        }
+        return true;
+    }
 
 }

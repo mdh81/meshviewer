@@ -88,13 +88,12 @@ var Module = {
                 console.error(error);
             });
 
-        // model to be loaded
-        if (hasParameter('model')) {
-            var [filename, pathname ] = getFile(getParameter('model'));
-            FS.createPreloadedFile('./', filename, pathname, true, false);
-            argv.push(filename);
+        try {
+            var files = FS.readdir('/testfiles');
+            console.log('Files in /testfiles:', files);
+        } catch (error) {
+            console.error('Error reading /testfiles:', error);
         }
-
     }],
 
     arguments: argv,

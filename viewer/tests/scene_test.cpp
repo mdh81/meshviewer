@@ -2,15 +2,16 @@
 #include "Mock3DDrawable.h"
 #include "../Viewport.h"
 #include "../Scene.h"
+#include "../common/Types.h"
 #include "3dmath/Vector.h"
 using namespace std;
 using namespace mv::scene;
 
 TEST(Scene, Creation) {
-    Scene s1(10, 10);
+    Scene s1{{10, 10, 10, 10}};
     EXPECT_THROW({
         try {
-            Scene s2(0, 10);
+            Scene s2{{}};
         } catch(exception& ex) {
             throw;
         }
@@ -18,7 +19,7 @@ TEST(Scene, Creation) {
 }
 
 TEST(Scene, CreationOfDefaultViewport) {
-    Scene scene(100, 100);
+    Scene scene{{100, 100, 100, 100}};
     auto& viewports = scene.getViewports();
     auto numViewports = viewports.size();
     ASSERT_EQ(numViewports, 1) << "Default viewport not created";
@@ -29,14 +30,14 @@ TEST(Scene, CreationOfDefaultViewport) {
 }
 
 TEST(Scene, AddViewports) {
-    Scene scene(100, 100);
+    Scene scene{{100, 100, 100, 100}};
     scene.createViewport({{0.0f, 0.0f}, {0.5f,0.5f}});
     scene.createViewport({{0.5f, 0.5f}, {1.0f,1.0f}});
     ASSERT_EQ(scene.getViewports().size(), 3) << "Incorrect number of viewports added";
 }
 
 TEST(Scene, RemoveViewports) {
-    Scene scene(100, 100);
+    Scene scene{{100, 100, 100, 100}};
     scene.createViewport({{0.0f, 0.0f}, {0.5f,0.5f}});
     scene.createViewport({{0.5f, 0.5f}, {1.0f,1.0f}});
     auto& viewports = scene.getViewports();

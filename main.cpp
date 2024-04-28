@@ -19,10 +19,23 @@ bool ValidateArguments(int argc, char** argv) {
     return true;
 }
 
+void SetupTexturePath(std::string const& exeName) {
+    // Set up the texture path.
+#ifndef EMSCRIPTEN
+    // Cannot rely on the working directory being the parent of the app's executable.
+    auto parentDirectory = std::filesystem::canonical(std::filesystem::path(exeName).parent_path());
+    ConfigurationReader::getInstance().append("texturePath", parentDirectory / "textures");
+#else
+    ConfigurationReader::getInstance().append("texturePath", "textures");
+#endif
+}
+
 int main(int argc, char** argv) {
     if (!ValidateArguments(argc, argv)) {
         return EXIT_FAILURE;
     }
+
+    SetupTexturePath(argv[0]);
 
     // Create a manager to oversee lifecycle of callbacks
     CallbackManager::create();

@@ -114,7 +114,7 @@ void GradientBackground::generateRenderData() {
         geometryBounds = {{viewX.min, viewX.max},
                           {-1.f,      +1.f},
                           {-1.f,      1.f}};
-        OrthographicProjectionMatrix projectionMatrix{geometryBounds};
+        math3d::OrthographicProjectionMatrix<float> projectionMatrix{geometryBounds};
         glCallWithErrorCheck(glUniformMatrix4fv, matrixId, 1, GL_FALSE, projectionMatrix);
     } else {
         auto identityMatrix = math3d::IdentityMatrix<float, 4, 4>{};

@@ -1,17 +1,18 @@
 #include "Scene.h"
 #include "Viewer.h"
 #include "GradientBackground.h"
+#include "Types.h"
 #include <utility>
 #include <algorithm>
 
 namespace mv::scene {
 
-Scene::Scene(unsigned frameBufferWidth, unsigned frameBufferHeight) {
-    if (!frameBufferWidth || !frameBufferHeight) {
+Scene::Scene(common::DisplayDimensions const& displayDimensions) {
+    if (!displayDimensions.frameBufferWidth || !displayDimensions.frameBufferHeight) {
         throw std::runtime_error("Scene's dimensions cannot be zero");
     }
     createViewport({{0, 0}, {1, 1}});
-    notifyWindowResized(frameBufferWidth, frameBufferHeight);
+    notifyDisplayResized(displayDimensions);
 }
 
 void Scene::createViewport(Viewport::ViewportCoordinates const& coordinates) {
@@ -28,9 +29,9 @@ void Scene::render() {
     }
 }
 
-void Scene::notifyWindowResized(unsigned int const newWindowWidth, unsigned int const newWindowHeight) {
+void Scene::notifyDisplayResized(common::DisplayDimensions const& displaySize) {
     for(auto& viewport : viewports) {
-        viewport->notifyWindowResized(newWindowWidth, newWindowHeight);
+        viewport->notifyDisplayResized(displaySize);
     }
 }
 

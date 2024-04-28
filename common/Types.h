@@ -1,5 +1,4 @@
 #pragma once
-
 #include <vector>
 #include <limits>
 #include <type_traits>
@@ -12,6 +11,10 @@
 #include "3dmath/SupportingTypes.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
 #include "OpenGLCall.h"
+#include "GL/glew.h"
+#include "3dmath/ProjectionMatrix.h"
+#include "3dmath/RotationMatrix.h"
+
 
 // TODO: Time to split this into multiple headers.
 
@@ -23,10 +26,18 @@ namespace mv::common {
     using Point2D = math3d::Vector2<float>;
     using Vector2D = math3d::Vector2<float>;
     using Color = Point3D;
+    using RGBAColor = math3d::Vector4<float>;
+    using RGBColor = math3d::Vector3<float>;
     using Line = std::vector<Point3D>;
     using Lines = std::vector<Line>;
     using Points = std::vector<Point3D>;
+    using TwoDPoints = std::vector<Point2D>;
     using Bounds = math3d::Bounds3D<float>;
+    using ProjectionMatrix = math3d::ProjectionMatrix<float>;
+    using RotationMatrix = math3d::RotationMatrix<float>;
+    using Point2DUniquePointer = std::unique_ptr<Point2D>;
+    using ProjectionMatrixPointer = std::shared_ptr<ProjectionMatrix>;
+    using Point4D = math3d::Vector<float, 4>;
     using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
     using TransformMatrix = math3d::IdentityMatrix<float, 4, 4>;
     using Vector4D = math3d::Vector4<float>;
@@ -114,7 +125,7 @@ namespace mv::common {
         // Conversion constructor to convert enumerator to iterator type
         explicit EnumIterator(const T &f) : m_val(static_cast<ULType>(f)) {}
 
-        // Default constructor that initilizes the iterator to point to the first enumerator
+        // Default constructor that initializes the iterator to point to the first enumerator
         EnumIterator() : m_val(static_cast<ULType>(beginVal)) {}
 
         // Postfix increment operator
@@ -135,40 +146,53 @@ namespace mv::common {
     };
 
     using byte = char;
+    using pixel = unsigned char;
 
 // TODO: It makes more sense to move these definitions to specific types (e.g. Glyph)
-    enum class Axis {
-        X,
-        Y,
-        Z,
-        Arbitrary
-    };
+enum class Axis {
+    X,
+    Y,
+    Z,
+    Arbitrary
+};
 
-    struct WindowDimensions {
-        unsigned width;
-        unsigned height;
-    };
+struct DisplayDimensions {
+    unsigned windowWidth;
+    unsigned windowHeight;
+    unsigned frameBufferWidth;
+    unsigned frameBufferHeight;
+    Point2D normalizedViewportSize;
+};
+
+inline std::ostream& operator<<(std::ostream& os, DisplayDimensions const displayDimensions) {
+    os << "Window Width " << displayDimensions.windowWidth
+       << " Height " << displayDimensions.windowHeight << std::endl;
+    os << "Framebuffer Width " << displayDimensions.frameBufferWidth
+       << " Height " << displayDimensions.frameBufferHeight << std::endl;
+    os << "Normalized viewport size: " << displayDimensions.normalizedViewportSize << std::endl;
+    return os;
+}
+
+enum class NormalLocation {
+    Face,
+    Vertex
+};
 
 #ifdef EMSCRIPTEN
-    using CanvasDimensions = WindowDimensions;
+    using CanvasDimensions = DisplayDimensions;
 #endif
 
-    enum class NormalLocation {
-        Face,
-        Vertex
+struct GlyphDecorator {
+    enum class Style {
+        Line,
+        Arrow
     };
-
-    struct GlyphDecorator {
-        enum class Style {
-            Line,
-            Arrow
-        };
-        Style style;
-        Color color;
-        float length;
-        std::optional<float> arrowRadius;
-        std::optional<float> arrowLength;
-    };
+    Style style;
+    Color color;
+    float length;
+    std::optional<float> arrowRadius;
+    std::optional<float> arrowLength;
+};
 
     enum class GlyphAssociation {
         Undefined,

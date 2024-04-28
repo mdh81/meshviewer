@@ -10,7 +10,9 @@
         canvas.emscripten {
             border:           0px none;  /* no border, otherwise mouse coords will be wrong */
             padding:          0px;       /* no padding, otherwise mouse coords will be wrong */
-            background-color: white;
+            background-color: black;     /* set background to black to disable webgl's default blending opengl
+                                            back buffer with browser background. This is critical to get transparency
+                                            working in the app */
             width:            100vw;     /* be as wide as possible */
             height:           100vh;     /* be as tall as possible */
             max-height:       100vh;     /* don't grow more than screen height */

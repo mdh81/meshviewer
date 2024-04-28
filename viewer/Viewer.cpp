@@ -9,8 +9,7 @@
 #ifdef OSX
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "external/stb_image_write.h"
 #pragma clang diagnostic pop
 #endif
 
@@ -60,6 +59,13 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
             Event{events::EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
     eventHandler.registerDataEventCallback(
             Event{events::EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::Scrolled}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+
+    eventHandler.registerBasicEventCallback(
+            Event(MouseButton::Left, ButtonAction::Press), *this, &Viewer::notifyLeftMousePressed);
+    eventHandler.registerBasicEventCallback(
+            Event(MouseButton::Left, ButtonAction::Release), *this, &Viewer::notifyLeftMouseReleased);
 
     Viewer::RenderLoop::viewer = this;
 }
@@ -126,12 +132,14 @@ void Viewer::createWindow() {
 }
 
 void Viewer::notifyFrameBufferResized(events::EventData&& eventData) {
-    if (eventData.size() != 2) {
+    if (eventData.size() != 4) {
         throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height "
                                  "of the resized frame buffer must be specified");
     }
     frameBufferWidth = std::any_cast<unsigned>(eventData.at(0));
     frameBufferHeight = std::any_cast<unsigned>(eventData.at(1));
+    windowWidth = std::any_cast<unsigned>(eventData.at(2));
+    windowHeight = std::any_cast<unsigned>(eventData.at(3));
     windowResized = true;
 }
 
@@ -143,6 +151,9 @@ void Viewer::notifyCursorMoved(events::EventData&& eventData) {
     common::Point2D currentCursorPosition {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
     cursorPositionDifference = currentCursorPosition - cursorPosition;
     cursorPosition = currentCursorPosition;
+    if (leftMouseDown) {
+        EventHandler{}.raiseEvent(events::EventId::DragRotated, {cursorPosition});
+    }
 }
 
 void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
@@ -157,6 +168,8 @@ void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
         eventHandler.raiseEvent(events::EventId::Zoomed, {cursorPosition, cursorPositionDifference});
     } else if (modifierKeys & GLFW_MOD_SHIFT) {
         eventHandler.raiseEvent(events::EventId::Panned, {cursorPosition, cursorPositionDifference});
+    } else {
+        eventHandler.raiseEvent(events::EventId::ScrollRotated, {cursorPosition, cursorPositionDifference});
     }
 }
 
@@ -190,8 +203,8 @@ bool Viewer::isCanvasResized(CanvasDimensions& canvasDimensions) const {
         canvasWidth = static_cast<int> (deviceWidth * pixelRatio);
         canvasHeight = static_cast<int> (deviceHeight * pixelRatio);
         emscripten_set_canvas_element_size("#canvas", canvasWidth, canvasHeight);
-        canvasDimensions.width = canvasWidth;
-        canvasDimensions.height = canvasHeight;
+        canvasDimensions.windowWidth = canvasWidth;
+        canvasDimensions.windowHeight = canvasHeight;
         return true;
     } else {
         return false;
@@ -207,12 +220,12 @@ void Viewer::RenderLoop::draw() {
 #ifdef EMSCRIPTEN
         CanvasDimensions canvasDimensions;
         if ((viewer->windowResized = viewer->isCanvasResized(canvasDimensions))) {
-            glfwSetWindowSize(viewer->window, canvasDimensions.width, canvasDimensions.height);
+            glfwSetWindowSize(viewer->window, canvasDimensions.windowWidth, canvasDimensions.windowHeight);
         }
 #endif
 
         if (viewer->windowResized) {
-            viewer->scene->notifyWindowResized(viewer->frameBufferWidth, viewer->frameBufferHeight);
+            viewer->scene->notifyDisplayResized(DisplayDimensions{viewer->windowWidth, viewer->windowHeight, viewer->frameBufferWidth, viewer->frameBufferHeight});
             viewer->windowResized = false;
         }
 
@@ -252,7 +265,8 @@ void Viewer::render() {
     setColors();
 
     // Create a scene
-    scene.reset(new mv::scene::Scene(frameBufferWidth, frameBufferHeight));
+    DisplayDimensions displayDimensions{windowWidth, windowHeight, frameBufferWidth, frameBufferHeight};
+    scene = std::make_unique<scene::Scene>(displayDimensions);
 
     // Add renderables to the default scene
     for (auto& renderable : drawables) {
@@ -392,6 +406,16 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
     };
 
 
+}
+
+void Viewer::notifyLeftMousePressed() {
+    leftMouseDown = true;
+    EventHandler{}.raiseEvent(EventId::DragStarted);
+}
+
+void Viewer::notifyLeftMouseReleased() {
+    leftMouseDown = false;
+    EventHandler{}.raiseEvent(EventId::DragCompleted);
 }
 
 }

@@ -1,5 +1,7 @@
 add_library(
-    common 
+    common
+    external/stb_image.cpp
+    external/stb_image_write.cpp
     MeshViewerObject.cpp
     Environment.cpp
 )

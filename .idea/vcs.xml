@@ -3,7 +3,5 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/3dmath" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/build_linux/_deps/googletest-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/build_web/_deps/googletest-src" vcs="Git" />
   </component>
 </project>

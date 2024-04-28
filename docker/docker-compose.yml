@@ -1,14 +1,18 @@
 services:
   # Service to run the linux container with vnc server to get an GUI environment to troubleshoot problems on linux
   mvlinux:
+    # Forked image for a debian linux container with headless vnc, and OpenGL development environment
     image: mdh81/linux-vnc-base
     environment:
       DEV_CONTAINER: "true"
     volumes:
+      # Mount source code, vimrc and vim plugins for seamless editing
       - ../:/headless/meshviewer
       - ~/.vimrc:/headless/.vimrc
       - ~/.vim:/headless/.vim  
     ports:
+      # Expose port for novnc.
+      # Access container UI by pointing browser at http://localhost:6911/?password=vncpassword
       - "6911:6901"
   # Service to run the container used for CI/CD builds
   cicd:

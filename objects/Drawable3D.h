@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Drawable.h"
-#include "Camera.h"
 
 namespace mv {
 

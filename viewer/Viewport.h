@@ -5,10 +5,14 @@
 #include "3dmath/Vector.h"
 #include "Drawable3D.h"
 #include "Camera.h"
+#include "arcball/ArcballController.h"
+#include "3dmath/Vector.h"
 #include "3dmath/Matrix.h"
 #include "Types.h"
 #include "EventTypes.h"
 #include <unordered_set>
+#include <memory>
+#include <thread>
 
 
 namespace mv::scene {
@@ -41,7 +45,7 @@ class Viewport : public Renderable {
         [[nodiscard]]
         float getHeight() const { return coordinates.y.max - coordinates.y.min; }
 
-        void notifyWindowResized(unsigned windowWidth, unsigned windowHeight) override;
+        void notifyDisplayResized(const common::DisplayDimensions &displaySize) override;
 
         [[nodiscard]]
         common::Point3D getCentroid() const override;
@@ -49,14 +53,13 @@ class Viewport : public Renderable {
         [[nodiscard]]
         common::Bounds getBounds() const override;
 
+        // TODO: Add derivation to docs
         [[nodiscard]]
-        math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const {
-            return math3d::Matrix<float, 3, 3> {
-                    {1.f/windowDimensions.width,  0.f,                         0.f},
-                    {0.f,                        -1.f/windowDimensions.height, 1.f},
-                    {0.f,                         0.f,                         0.f}
-            };
-        }
+        math3d::Matrix<float, 3, 3> getWindowToViewportTransform() const;
+
+        // TODO: Add derivation to docs
+        [[nodiscard]]
+        math3d::Matrix<float, 3, 3> getViewportToDeviceTransform() const;
 
         void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const override {
             for (auto& drawable : drawables) {
@@ -84,11 +87,22 @@ private:
         void toggleFog() {
             fogEnabled = !fogEnabled;
         }
+        void toggleArcballDisplay() {
+            showArcball = !showArcball;
+            showArcball ? arcballController->setVisualizationOn() : arcballController->setVisualizationOff();
+        }
         void enableFog();
         void disableFog();
         void zoom3DView(events::EventData&&);
         void pan3DView(events::EventData&&);
-        [[nodiscard]] bool isViewportEvent(common::Point2D const& cursorPosition) const;
+        void scrollRotate3DView(events::EventData&& rotateEventData);
+        void dragRotate3DView(events::EventData&& rotateEventData);
+        void displayGradientBackground();
+        [[nodiscard]]
+        bool isViewportEvent(common::Point2D const& cursorPosition) const;
+        [[nodiscard]]
+        common::Point2D convertWindowToViewportCoordinates(common::Point2D const& windowCoordinates) const;
+        void monitorInteraction();
 
     private:
         using DrawablesSet = std::unordered_set<Drawable::DrawableReference,
@@ -96,12 +110,19 @@ private:
                 MeshViewerObject::MeshViewerObjectEquals>;
         DrawablesSet drawables;
         std::unique_ptr<mv::objects::GradientBackground> gradientBackground;
+        std::unique_ptr<mv::objects::ArcballController> arcballController;
         std::optional<Drawable::DrawableReference> activeObject;
         common::Bounds coordinates;
-        common::WindowDimensions windowDimensions;
+        common::DisplayDimensions displayDimensions;
         Camera::SharedCameraPointer camera;
         bool showGradientBackground;
         bool fogEnabled;
+        bool showArcball;
+        common::Point2D scrollGestureStartPosition{};
+        common::Point2D scrollGesturePreviousPosition{};
+        std::optional<common::Vector2D> scrollDirection;
+        std::unique_ptr<std::thread> interactionMonitorThread;
+        std::atomic<decltype(std::chrono::high_resolution_clock::now())> previousInteractionTimePoint{};
         friend class ViewportTest;
     };
 }
