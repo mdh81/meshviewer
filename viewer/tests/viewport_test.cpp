@@ -11,7 +11,7 @@ namespace mv::scene {
     class ViewportTest : public ::testing::Test {
     public:
         bool isViewportEvent(Viewport const &viewport, mv::common::Point2D const &cursorPosition) {
-            return viewport.isViewportEvent(cursorPosition) != nullptr;
+            return viewport.isViewportEvent(cursorPosition);
         }
 
         void SetUp() override {
