@@ -10,8 +10,9 @@ while [ "$#" -gt 0 ]; do
         *) break;;
     esac
 done
+mkdir -p ./build_web
 pushd ./build_web
-emcmake cmake -S ../ B . -DEMSCRIPTEN=On -DCMAKE_BUILD_TYPE="$buildType" &&
+emcmake cmake -S ../ -B . -DEMSCRIPTEN=On -DCMAKE_BUILD_TYPE="$buildType" &&
 make -j 10 VERBOSE=1
 if [ $? -eq 0 ]; then
   emrun --port 5600 --browser "$browser" meshViewer.html /testfiles/suzanne_subdivided.stl &
