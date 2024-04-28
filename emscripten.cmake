@@ -8,24 +8,26 @@ add_compile_options(
     -pthread
 )
 
-# Assets
+# Preloaded assets
+set(preloadedFiles "")
 # Sample files
 file(GLOB sampleFiles ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*)
 foreach(sampleFile ${sampleFiles})
     get_filename_component(destinationFile ${sampleFile} NAME)
-    set(assetMapping ${assetMapping} "--preload-file ${sampleFile}@testfiles/${destinationFile}")
-    message(STATUS "XXXX>> Asset Mapping: ${assetMapping}")
+    set(preloadedFiles "${preloadedFiles} --preload-file ${sampleFile}@testfiles/${destinationFile}")
 endforeach(sampleFile)
 # Textures
 file(GLOB textureFiles ${CMAKE_CURRENT_SOURCE_DIR}/objects/textures/*)
 foreach(textureFile ${textureFiles})
     get_filename_component(destinationFile ${textureFile} NAME)
-    set(assetMapping ${assetMapping} "--preload-file ${textureFile}@textures/${destinationFile}")
+    set(preloadedFiles "${preloadedFiles} --preload-file ${textureFile}@textures/${destinationFile}")
 endforeach(textureFile)
 
 # Link options
+# NOTE: It is vital to use SHELL: prefix to ensure that preloaded file paths that are composed above
+# are passed as-is without cmake attempting to help by inserting opening and closing quotes
 add_link_options(
-    --use_preload_cache ${assetMapping}
+    "SHELL: --use_preload_cache ${preloadedFiles}"
     --embed-file ${CMAKE_CURRENT_SOURCE_DIR}/config/defaults.cfg@config/defaults.cfg
     --emrun
     -fexceptions
