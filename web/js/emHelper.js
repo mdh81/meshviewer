@@ -87,13 +87,6 @@ var Module = {
             .catch(function(error) {
                 console.error(error);
             });
-
-        try {
-            var files = FS.readdir('/testfiles');
-            console.log('Files in /testfiles:', files);
-        } catch (error) {
-            console.error('Error reading /testfiles:', error);
-        }
     }],
 
     arguments: argv,
