@@ -1,12 +1,12 @@
 #include "gtest/gtest.h"
-#include "Mesh.h"
+#include "MeshImpl.h"
 #include "Face.h"
 #include "3dmath/Vector.h"
 using namespace std;
 using namespace mv;
 
 TEST(Vertex, FaceAssociation) {
-    Mesh m;
+    MeshImpl m;
     m.initialize(2, 1);
     m.addVertex(0, 0, 0);
     m.addVertex(5, 0, 0);
@@ -21,7 +21,7 @@ TEST(Vertex, FaceAssociation) {
 }
 
 TEST(Vertex, Normals) {
-    Mesh m;
+    MeshImpl m;
     m.initialize(4, 2);
     m.addVertex(5, 0, 0);
     m.addVertex(5, 5, 0);
