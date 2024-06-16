@@ -10,10 +10,9 @@
 #include "3dmath/Vector.h"
 #include "3dmath/SupportingTypes.h"
 #include "3dmath/OrthographicProjectionMatrix.h"
-#include "OpenGLCall.h"
-#include "GL/glew.h"
 #include "3dmath/ProjectionMatrix.h"
 #include "3dmath/RotationMatrix.h"
+#include "OpenGLCall.h"
 
 
 // TODO: Time to split this into multiple headers.
@@ -41,6 +40,8 @@ namespace mv::common {
     using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
     using TransformMatrix = math3d::IdentityMatrix<float, 4, 4>;
     using Vector4D = math3d::Vector4<float>;
+
+    constexpr const char* AppName = "MeshViewer";
 
     inline std::ostream &operator<<(std::ostream &os, const Point3D &v) {
         os << "[" << v.x << "," << v.y << "," << v.z << "]";
