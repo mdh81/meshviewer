@@ -31,8 +31,11 @@ class Scene : public Renderable {
             return viewports;
         }
 
-        // Add a renderable to the default viewport
-        void add(Drawable& drawable);
+        // Add a drawable to the default viewport
+        void add(Drawable&);
+
+        // Remove a drawable from the default viewport
+        void remove(Drawable&);
 
         // Render this scene. Calls render on all its viewports and the renderables in them
         void render() override;
