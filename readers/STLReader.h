@@ -1,18 +1,19 @@
 #pragma once
 #include <string>
 #include <utility>
-#include "Mesh.h"
 #include "Reader.h"
 
 namespace mv::readers {
 
-class STLReader : public MeshViewerObject, Reader {
+class STLReader : public Reader {
     public:
-        MeshPointer getOutput() override;
+        MeshPointer getOutput(Mesh::MeshPointer = nullptr) override;
     private:
-        explicit STLReader(std::string fn) : Reader(std::move(fn)) { }
-        MeshPointer readBinary(std::ifstream& ifs, bool clean);
+        MeshPointer getOutput(std::ifstream&, Mesh::MeshPointer&, bool clean = false);
+        explicit STLReader(std::string fileName, IMeshFactory const&);
+        MeshPointer readBinary(std::ifstream&, bool clean, Mesh::MeshPointer&);
 
+    friend class STLReaderFixture;
     friend class ReaderFactory;
 };
 

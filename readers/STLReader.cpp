@@ -1,17 +1,29 @@
-#include "STLReader.h"    
-#include <fstream>
+#include "STLReader.h"
+#include "MeshFactory.h"
 using namespace std;
 using namespace mv;
 
 namespace mv::readers {
 
-MeshPointer STLReader::getOutput() {
+namespace {
+    using MeshPointer = Reader::MeshPointer;
+}
+
+STLReader::STLReader(std::string fn, IMeshFactory const& meshFactory)
+    : Reader(std::move(fn), meshFactory) {
+}
+
+MeshPointer STLReader::getOutput(MeshPointer mesh) {
     // TODO: Turn on clean by default
     bool clean = false;
     ifstream ifs(fileName, ios::binary);
     if (!ifs) {
         throw std::runtime_error("Unable to open file " + fileName + '!');
     }
+    return std::move(getOutput(ifs, mesh));
+}
+
+MeshPointer STLReader::getOutput(std::ifstream& ifs, MeshPointer& mesh, bool clean) {
     string header;
     header.resize(80);
     ifs.read(header.data(), 80);
@@ -19,13 +31,13 @@ MeshPointer STLReader::getOutput() {
         throw std::runtime_error("Unable to read file" + fileName + '!');
     }
     if(header.find("solid") == string::npos) {
-        return readBinary(ifs, clean);
+        return std::move(readBinary(ifs, clean, mesh));
     } else {
         throw std::runtime_error("ASCII STLs not supported!");
     }
 }
 
-MeshPointer STLReader::readBinary(ifstream& ifs, bool const clean) {
+MeshPointer STLReader::readBinary(ifstream& ifs, bool const clean, Mesh::MeshPointer& mesh) {
     if (ifs.gcount() != 80) {
         throw std::runtime_error("File stream in unexpected state");
     }
@@ -33,8 +45,10 @@ MeshPointer STLReader::readBinary(ifstream& ifs, bool const clean) {
     unsigned numTris;
     ifs.read(reinterpret_cast<char*>(&numTris), 4);
 
-    // Initialize Mesh
-    MeshPointer mesh(new Mesh());
+    // To allow a mock mesh to be injected into this object for unit testing
+    if (!mesh) {
+        mesh = meshFactory.createMesh();
+    }
     mesh->initialize(numTris*3, numTris);
 
     // Read triangles
@@ -62,7 +76,7 @@ MeshPointer STLReader::readBinary(ifstream& ifs, bool const clean) {
     if (clean)
         mesh->removeDuplicateVertices();
 
-    return mesh;
+    return std::move(mesh);
 }
 
 }
