@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Renderable.h"
-#include "glm/glm.hpp"
 #include "Camera.h"
 #include <string>
 #include <unordered_set>
@@ -9,7 +8,7 @@
 
 namespace mv {
 
-// A drawable is a concrete renderable with geometry that can be drawn in one more scenes or viewports
+// A drawable is a renderable with geometry that can be drawn in one more scenes or viewports
 
 class Drawable : public Renderable {
 
@@ -17,7 +16,7 @@ class Drawable : public Renderable {
         using DrawableReference = std::reference_wrapper<Drawable>;
         using DrawableReferences = std::vector<DrawableReference>;
         using DrawablePointer = std::shared_ptr<Drawable>;
-        using Drawables = std::vector<DrawablePointer>;
+        using DrawablePointers = std::vector<DrawablePointer>;
         enum Effect {
             None = 0,
             Fog = 1,
@@ -26,7 +25,6 @@ class Drawable : public Renderable {
     public:
         Drawable(std::string  vertexShaderFileName, std::string  fragmentShaderFileName,
                  Camera::SharedCameraPointer camera, Effect supportedEffects);
-        Drawable() = delete;
         virtual ~Drawable() = default;
 
         [[nodiscard]]
@@ -54,7 +52,7 @@ class Drawable : public Renderable {
 
     protected:
         // Set the shader transform matrix inputs
-        virtual void setTransforms();
+        virtual void setTransforms() = 0;
 
         // TODO: Does this make sense for a viewport? If so, it can move to Renderable
         // Generate data for the rendering pipeline
@@ -75,6 +73,10 @@ class Drawable : public Renderable {
         Camera::SharedCameraPointer camera;
         bool glyphsOn{};
         const unsigned supportedEffects{};
+
+protected:
+    // To facilitate building mocks
+    Drawable() = default;
 };
 
 }
