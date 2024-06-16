@@ -21,7 +21,6 @@ foreach(test ${allTests})
         ${test} 
         PUBLIC
         gtest_main
-        common
         viewer
         events
         mesh
