@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "Mesh.h"
+#include "MeshImpl.h"
 #include "ReaderFactory.h"
 #include "glm/glm.hpp"
 #include <vector>
@@ -24,7 +24,7 @@ class MeshFixture : public ::testing::Test {
 
 TEST_F(MeshFixture, RemoveDuplicateVertices) {
     GTEST_SKIP() << "Removal of duplicate vertices is not tested until reindexing implementation is complete";
-    auto spMesh = ReaderFactory::getReader(m_modelsDir/"cube.stl")->getOutput();
+    auto spMesh = ReaderFactory{}.getReader(m_modelsDir/"cube.stl")->getOutput();
     int numOrigVertices = spMesh->getNumberOfVertices();
     spMesh->removeDuplicateVertices();
     int numNewVertices = spMesh->getNumberOfVertices();
@@ -33,7 +33,7 @@ TEST_F(MeshFixture, RemoveDuplicateVertices) {
 }
 
 TEST(Mesh, TestCentroid) {
-    Mesh m;
+    MeshImpl m;
     m.initialize(2, 1);
     m.addVertex(-5, 0, 0);
     m.addVertex(+5, 0, 0);
@@ -44,7 +44,7 @@ TEST(Mesh, TestCentroid) {
 }
 
 TEST(Mesh, TestConnectivityData) {
-    Mesh m;
+    MeshImpl m;
     m.initialize(4, 2);
     m.addVertex(-5, -5, 0);
     m.addVertex(+5, -5, 0);
@@ -66,7 +66,7 @@ TEST(Mesh, TestConnectivityData) {
 }
 
 TEST(Mesh, TransformMesh) {
-    Mesh m;
+    MeshImpl m;
     m.initialize(2, 1);
     m.addVertex(0, 0, 0);
     m.addVertex(5, 0, 0);
@@ -89,7 +89,7 @@ TEST(Mesh, TransformMesh) {
 
 TEST_F(MeshFixture, WriteSTL) {
     auto inputPath = MeshFixture::m_modelsDir/"cube.stl";
-    auto spMesh = ReaderFactory::getReader(inputPath)->getOutput();
+    auto spMesh = ReaderFactory{}.getReader(inputPath)->getOutput();
     auto inputFs = filesystem::file_size(inputPath);
     ASSERT_TRUE(inputFs > 0) << "Input STL file is bad";
     auto outputPath = MeshFixture::m_modelsDir/"cubeOut.stl";
@@ -101,7 +101,7 @@ TEST_F(MeshFixture, WriteSTL) {
 
 
 TEST(Mesh, Normals) {
-    Mesh m;
+    MeshImpl m;
     m.initialize(4, 2);
     m.addVertex(5, 0, 0);
     m.addVertex(5, 5, 0);
