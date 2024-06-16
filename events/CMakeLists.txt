@@ -8,6 +8,7 @@ target_include_directories(
     events
     PUBLIC
     ../common
+    .
 )
 
 target_link_libraries(
