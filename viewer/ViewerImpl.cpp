@@ -1,8 +1,7 @@
-#include "Viewer.h"
+#include "ViewerImpl.h"
 #include "Types.h"
+#include "EventTypes.h"
 #include "Scene.h"
-#include "Mesh.h"
-#include "ShaderLoader.h"
 #include "EventHandler.h"
 #include "ConfigurationReader.h"
 
@@ -24,18 +23,13 @@
 #include <string>
 using namespace std;
 
-namespace mv {
+namespace mv::viewer {
 using namespace common;
 using namespace events;
 
-Viewer* Viewer::RenderLoop::viewer = nullptr;
+ViewerImpl* ViewerImpl::RenderLoop::viewer = nullptr;
 
-Viewer& Viewer::getInstance() {
-    static Viewer instance;
-    return instance;
-}
-
-Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
+ViewerImpl::ViewerImpl(unsigned windowWidth, unsigned windowHeight)
     : windowWidth(windowWidth)
     , windowHeight(windowHeight)
     , frameBufferWidth(windowWidth)
@@ -49,28 +43,28 @@ Viewer::Viewer(unsigned windowWidth, unsigned windowHeight)
     // Register event handlers
     EventHandler eventHandler{};
     eventHandler.registerBasicEventCallback(
-            Event{GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT}, *this, &Viewer::saveSnapshot);
+            Event{GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT}, *this, &ViewerImpl::saveSnapshot);
 
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::FrameBufferResized}, *this, &Viewer::notifyFrameBufferResized);
+            Event{events::EventId::FrameBufferResized}, *this, &ViewerImpl::notifyFrameBufferResized);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::CursorMoved}, *this, &Viewer::notifyCursorMoved);
+            Event{events::EventId::CursorMoved}, *this, &ViewerImpl::notifyCursorMoved);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+            Event{events::EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+            Event{events::EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::Scrolled}, *this, &Viewer::notifyMouseWheelOrTouchPadScrolled);
+            Event{events::EventId::Scrolled}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
 
     eventHandler.registerBasicEventCallback(
-            Event(MouseButton::Left, ButtonAction::Press), *this, &Viewer::notifyLeftMousePressed);
+            Event(MouseButton::Left, ButtonAction::Press), *this, &ViewerImpl::notifyLeftMousePressed);
     eventHandler.registerBasicEventCallback(
-            Event(MouseButton::Left, ButtonAction::Release), *this, &Viewer::notifyLeftMouseReleased);
+            Event(MouseButton::Left, ButtonAction::Release), *this, &ViewerImpl::notifyLeftMouseReleased);
 
-    Viewer::RenderLoop::viewer = this;
+    ViewerImpl::RenderLoop::viewer = this;
 }
 
-void Viewer::createWindow() {
+void ViewerImpl::createWindow() {
 
     if (window) {
         std::cerr << "Ignoring request to create window. Window was already created" << std::endl;
@@ -131,7 +125,7 @@ void Viewer::createWindow() {
     EventHandler().start(window);
 }
 
-void Viewer::notifyFrameBufferResized(events::EventData&& eventData) {
+void ViewerImpl::notifyFrameBufferResized(mv::events::EventData&& eventData) {
     if (eventData.size() != 4) {
         throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height "
                                  "of the resized frame buffer must be specified");
@@ -143,7 +137,7 @@ void Viewer::notifyFrameBufferResized(events::EventData&& eventData) {
     windowResized = true;
 }
 
-void Viewer::notifyCursorMoved(events::EventData&& eventData) {
+void ViewerImpl::notifyCursorMoved(events::EventData&& eventData) {
     if (eventData.size() != 2) {
         throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height of the resized "
                                  "frame buffer must be specified");
@@ -156,7 +150,7 @@ void Viewer::notifyCursorMoved(events::EventData&& eventData) {
     }
 }
 
-void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
+void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
     if (eventData.size() != 3) {
         throw std::runtime_error("Incorrect event data for scroll event. Scroll offsets and modifier keys are required "
                                  "to correctly process the scroll event");
@@ -173,20 +167,36 @@ void Viewer::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
     }
 }
 
-void Viewer::setColors() {
+void ViewerImpl::setColors() {
 	// Dark grey background
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 }
 
-void Viewer::add(Drawable::Drawables const& newDrawables) {
+void ViewerImpl::add(Drawable::DrawablePointer&& drawable) {
+    if (scene) scene->add(*drawable);
+    drawables.push_back(std::move(drawable));
+}
+
+void ViewerImpl::add(Drawable::DrawablePointer const& drawable) {
+    if (scene) scene->add(*drawable);
+    drawables.push_back(drawable);
+}
+
+void ViewerImpl::add(Drawable::DrawablePointers const& newDrawables) {
     drawables.reserve(drawables.size() + newDrawables.size());
     for (auto& drawable : newDrawables) {
         drawables.push_back(drawable);
+        if (scene) scene->add(*drawable);
     }
 }
 
+void ViewerImpl::remove(Drawable::DrawablePointer const& drawableToRemove) {
+    drawables.erase(std::remove(drawables.begin(), drawables.end(), drawableToRemove), drawables.end());
+    if (scene) scene->remove(*drawableToRemove);
+}
+
 #ifdef EMSCRIPTEN
-bool Viewer::isCanvasResized(CanvasDimensions& canvasDimensions) const {
+bool ViewerImpl::isCanvasResized(CanvasDimensions& canvasDimensions) const {
     double deviceWidth, deviceHeight;
     int canvasWidth, canvasHeight;
     emscripten_get_canvas_element_size("#canvas", &canvasWidth, &canvasHeight);
@@ -212,7 +222,7 @@ bool Viewer::isCanvasResized(CanvasDimensions& canvasDimensions) const {
 }
 #endif
 
-void Viewer::RenderLoop::draw() {
+void ViewerImpl::RenderLoop::draw() {
 #ifndef EMSCRIPTEN
     do {
 #endif
@@ -253,7 +263,7 @@ void Viewer::RenderLoop::draw() {
 #endif
 }
 
-void Viewer::render() {
+void ViewerImpl::render() {
 
     if (!window)
         createWindow();
@@ -284,7 +294,7 @@ void Viewer::render() {
 #endif
 }
 
-void Viewer::prepareOffscreenRender() {
+void ViewerImpl::prepareOffscreenRender() {
 
     // Set viewport for the off-screen render
     glCallWithErrorCheck(glViewport, 0, 0, frameBufferWidth, frameBufferHeight);
@@ -331,7 +341,7 @@ void Viewer::prepareOffscreenRender() {
 
 }
 
-void Viewer::saveAsImage() {
+void ViewerImpl::saveAsImage() {
 #ifdef OSX
     // Create directory if it doesn't exist
     string outputDir = config::ConfigurationReader::getInstance().getValue("snapshotsDirectory");
@@ -390,7 +400,7 @@ void Viewer::saveAsImage() {
 #endif
 }
 
-math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
+math3d::Matrix<float, 3, 3> ViewerImpl::getViewportToWindowTransform() const {
     // Viewport coordinates are normalized, so they need to be scaled to window's size
     // Viewport and window have their x-coordinates pointing in the same direction, but
     // +Y goes up for viewport and down for window. We need to account for that via this
@@ -408,12 +418,12 @@ math3d::Matrix<float, 3, 3> Viewer::getViewportToWindowTransform() const {
 
 }
 
-void Viewer::notifyLeftMousePressed() {
+void ViewerImpl::notifyLeftMousePressed() {
     leftMouseDown = true;
     EventHandler{}.raiseEvent(EventId::DragStarted);
 }
 
-void Viewer::notifyLeftMouseReleased() {
+void ViewerImpl::notifyLeftMouseReleased() {
     leftMouseDown = false;
     EventHandler{}.raiseEvent(EventId::DragCompleted);
 }
