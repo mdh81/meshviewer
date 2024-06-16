@@ -57,6 +57,10 @@ namespace mv::scene {
 
     void Viewport::add(mv::Drawable& drawable) {
         drawables.insert(std::ref(drawable));
+        // Set the camera and display dimensions so the drawable can
+        // set the view and projection transforms
+        if (camera) drawable.setCamera(camera);
+        drawable.notifyDisplayResized(displayDimensions);
     }
 
     void Viewport::remove(mv::Drawable& drawable) {
@@ -170,7 +174,8 @@ namespace mv::scene {
 
     mv::common::Point3D Viewport::getCentroid() const {
         if (drawables.empty()) {
-            throw std::runtime_error("Cannot compute centroid. Viewport is empty");
+            //std::cerr << std::format("{}: No drawables were found.", __PRETTY_FUNCTION__);
+            return {};
         }
         mv::common::Point3D centroid;
         for (auto& drawable : drawables) {
@@ -187,7 +192,7 @@ namespace mv::scene {
 
     mv::common::Bounds Viewport::getBounds() const {
         if (drawables.empty()) {
-            throw std::runtime_error("Cannot compute centroid. Viewport is empty");
+            return {};
         }
         mv::common::Bounds viewportBounds;
         for (auto& drawable : drawables) {
