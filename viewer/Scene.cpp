@@ -23,6 +23,10 @@ void Scene::add(Drawable& drawable) {
     viewports.at(0)->add(drawable);
 }
 
+void Scene::remove(Drawable& drawable) {
+    viewports.at(0)->remove(drawable);
+}
+
 void Scene::render() {
     for(auto& viewport : viewports) {
         viewport->render();
