@@ -1,3 +1,6 @@
+# set experimental flag on, without this std::format doesn't compile
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexperimental-library")
+
 # set preprocessor flag
 add_compile_options(-DEMSCRIPTEN)
 
