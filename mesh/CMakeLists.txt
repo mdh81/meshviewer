@@ -1,17 +1,15 @@
+file(GLOB sources *.cpp)
+
 add_library(
     mesh 
-    Vertex.cpp
-    Face.cpp
-    Mesh.cpp
-    Octree.cpp
+    ${sources}
 )
 
 target_include_directories(
     mesh 
     PUBLIC
     ${mathIncDir}
-    ../common
-    ../objects
+    .
 )
 
 target_link_libraries(
@@ -19,6 +17,7 @@ target_link_libraries(
     PUBLIC
     objects
     configuration
+    common
 )
 
 if (enableTesting)
