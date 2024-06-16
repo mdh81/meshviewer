@@ -1,41 +1,60 @@
 #include "gtest/gtest.h"
-#include "ReaderFactory.h"
-#include "Mesh.h"
+#include "STLReader.h"
+#include "MockMeshFactory.h"
 #include <memory>
 #include <filesystem>
 using namespace std;
 using namespace mv;
 using namespace mv::common;
 using namespace mv::readers;
+using namespace testing;
 
-class STLReaderFixture : public ::testing::Test {
+namespace mv::readers {
+
+    class STLReaderFixture : public ::testing::Test {
     protected:
         void SetUp() override {
-            auto* pData = getenv("modelsDir");
-            if (!pData) throw std::runtime_error("modelsDir environment variable not set");        
-            m_modelsDir = pData; 
+            auto *pData = getenv("modelsDir");
+            if (!pData) throw std::runtime_error("modelsDir environment variable not set");
+            m_modelsDir = pData;
         }
+
+        void readData(std::string fileName) {
+            cout << std::filesystem::current_path() << std::endl;
+            ifstream ifs(m_modelsDir / fileName, ios::binary);
+            ASSERT_TRUE(ifs) << "Unable to open cube.stl test file";
+            stlReader.getOutput(ifs, mockMesh);
+        }
+
+        void readDataAndClean(std::string fileName) {
+            ifstream ifs(m_modelsDir / fileName, ios::binary);
+            ASSERT_TRUE(ifs) << "Unable to open cube.stl test file";
+            stlReader.getOutput(ifs, mockMesh, /*clean=*/true);
+        }
+
         filesystem::path m_modelsDir;
-};
+        mv::readers::STLReader stlReader{"", MockMeshFactory{}};
+        std::unique_ptr<Mesh> mockMesh { new MockMesh{} };
+    };
 
-TEST_F(STLReaderFixture, Read) {
-    ReaderPointer stlReader = ReaderFactory::getReader(m_modelsDir/"cube.stl");
-    auto spMesh = stlReader->getOutput();
-    ASSERT_EQ(spMesh->getNumberOfVertices(), 36) << "Incorrect number of vertices" << std::endl;
-    ASSERT_EQ(spMesh->getNumberOfFaces(), 12) << "Incorrect number of faces" << std::endl;
-    auto& v = spMesh->getVertex(0);
-    ASSERT_TRUE((v.x-1.0) < 1e-6 && (v.y-1.0) < 1e-6 && (v.z-1.0) < 1e-6) << "Vertex 0 is wrong" << std::endl;
-    auto& v1 = spMesh->getVertex(35);
-    ASSERT_TRUE((v1.x-1.0) < 1e-6 && (v1.y-1.0) < 1e-6 && (v1.z+1.0) < 1e-6) << "Vertex 0 is wrong" << std::endl;
-    auto& f = spMesh->getFace(0);
-    ASSERT_TRUE(f[0] == 0 && f[1] == 1 && f[2] == 2) << "Face 0 is wrong" << std::endl;
-    auto& f1 = spMesh->getFace(11);
-    ASSERT_TRUE(f1[0] == 33 && f1[1] == 34 && f1[2] == 35) << "Face 0 is wrong" << std::endl;
-}
+    TEST_F(STLReaderFixture, Read) {
+        auto& mesh = dynamic_cast<MockMesh&>(*mockMesh.get());
+        // 12 triangulated faces for a cube and 3 vertices per face since STL is not an indexed mesh
+        EXPECT_CALL(mesh, initialize(12*3, 12)).Times(Exactly(1));
+        // 36 vertices
+        EXPECT_CALL(mesh, addVertex(_,_,_)).Times(Exactly(36));
+        // 12 triangles
+        EXPECT_CALL(mesh, addFace(_)).Times(Exactly(12));
 
-TEST_F(STLReaderFixture, Cleanup) {
-    GTEST_SKIP() << "Removal of duplicate vertices is not tested until reindexing implementation is complete";
-    ReaderPointer stlReader = ReaderFactory::getReader(m_modelsDir/"cube.stl");
-    auto spMesh = stlReader->getOutput();
-    ASSERT_EQ(spMesh->getNumberOfVertices(), 8) << "Incorrect number of vertices" << std::endl;
+        readData("cube.stl");
+    }
+
+    TEST_F(STLReaderFixture, Cleanup) {
+        auto& mesh = dynamic_cast<MockMesh&>(*mockMesh.get());
+
+        // Should call Mesh::removeDuplicateVertices when clean flag is on
+        EXPECT_CALL(mesh, removeDuplicateVertices()).Times(Exactly(1));
+
+        readDataAndClean("cube.stl");
+    }
 }
