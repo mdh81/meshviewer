@@ -6,10 +6,17 @@ add_library(
     Environment.cpp
 )
 
+# TODO: This has to be reexamined
 target_include_directories(
     common 
     INTERFACE
     ${glIncludeDirectories}
+)
+
+target_include_directories(
+    common
+    PUBLIC
+    .
 )
 
 if (enableTesting)
