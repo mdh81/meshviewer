@@ -1,8 +1,6 @@
 #include "PLYReader.h"
-#include <fstream>
-#include <array>
 #include <algorithm>
-#include "Mesh.h"
+#include "MeshFactory.h"
 
 namespace {
     // Get a 3-tuple of the specified type from a space delimited string
@@ -21,30 +19,43 @@ namespace {
         }
         return result;
     }
+
+    using MeshPointer = mv::readers::Reader::MeshPointer;
 }
 
-mv::readers::MeshPointer mv::readers::PLYReader::getOutput() {
+mv::readers::PLYReader::PLYReader(std::string fileName, IMeshFactory const &meshFactory)
+    : Reader(std::move(fileName), meshFactory)
+    , isBinary(false)
+    , isLittleEndian(false)
+    , numVertices(0)
+    , numFaces(0) {
+}
+
+MeshPointer mv::readers::PLYReader::getOutput(MeshPointer mesh) {
     std::ifstream ifs(fileName, std::ios::binary);
     if (!ifs) {
         throw std::runtime_error("Unable to open file " + fileName + '!');
     }
-    return getOutput(ifs);
+    return getOutput(ifs, mesh);
 }
 
-mv::readers::MeshPointer mv::readers::PLYReader::getOutput(std::istream& inputStream) {
+MeshPointer mv::readers::PLYReader::getOutput(std::istream& inputStream, MeshPointer& mesh) {
     readHeader(inputStream);
-    return isBinary ? readBinary(inputStream) : readASCII(inputStream);
+    return isBinary ? readBinary(inputStream, mesh) : readASCII(inputStream, mesh);
 }
 
-mv::readers::MeshPointer mv::readers::PLYReader::readBinary(std::istream& inputStream) {
+MeshPointer mv::readers::PLYReader::readBinary(std::istream&, MeshPointer&) {
     std::cout << "Parsing PLY data in binary format" << std::endl;
     return {};
 }
 
-mv::readers::MeshPointer mv::readers::PLYReader::readASCII(std::istream& inputStream) {
+MeshPointer mv::readers::PLYReader::readASCII(std::istream& inputStream, MeshPointer& mesh) {
     std::cout << "Parsing PLY data in ASCII format" << std::endl;
 
-    MeshPointer mesh = std::make_unique<Mesh>();
+    // This is to allow a mock mesh to be injected into this object for unit testing
+    if (!mesh) {
+        mesh = meshFactory.createMesh();
+    }
     mesh->initialize(numVertices, numFaces);
 
     std::string line;
@@ -62,7 +73,7 @@ mv::readers::MeshPointer mv::readers::PLYReader::readASCII(std::istream& inputSt
         }
         mesh->addFace({tri.at(1), tri.at(2), tri.at(3)});
     }
-    return mesh;
+    return std::move(mesh);
 }
 
 void mv::readers::PLYReader::readHeader(std::istream& inputStream) {
