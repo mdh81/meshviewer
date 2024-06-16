@@ -61,6 +61,7 @@ add_subdirectory(shaders)
 add_subdirectory(viewer)
 add_subdirectory(config)
 add_subdirectory(writers)
+add_subdirectory(models)
 
 add_executable(
     ${appName}
@@ -81,16 +82,10 @@ target_include_directories(
 target_link_libraries(
     ${appName}
     PUBLIC
-    common
     events
-    readers
-    mesh
     viewer
-    events
-    objects
     shaders
-    configuration
-    writers
+    models
     ${glLibs}
 )
 
