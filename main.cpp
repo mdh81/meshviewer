@@ -1,15 +1,18 @@
 #include "Mesh.h"
-#include "Viewer.h"
-#include "ReaderFactory.h"
+#include "ViewerFactory.h"
 #include "ConfigurationReader.h"
 #include "CallbackManager.h"
+#include "ModelManager.h"
 #include <iostream>
 #include <string>
+#include <filesystem>
 using namespace std;
 using namespace mv;
 using namespace mv::common;
 using namespace mv::readers;
 using namespace mv::config;
+using namespace mv::models;
+using namespace mv::viewer;
 
 bool ValidateArguments(int argc, char** argv) {
     if (argc < 2) {
@@ -30,28 +33,35 @@ void SetupTexturePath(std::string const& exeName) {
 #endif
 }
 
-int main(int argc, char** argv) {
+bool loadModels(int argc, char** argv, ModelManager& modelManager) {
+#ifndef EMSCRIPTEN
     if (!ValidateArguments(argc, argv)) {
-        return EXIT_FAILURE;
+        return false;
     }
+    modelManager.loadModelFiles({argv + 1, argv + argc});
+#else
+    modelManager.loadModelFilesFromDirectory("/testfiles");
+#endif
+    return true;
+}
+
+int main(int argc, char** argv) {
+
+    // Create a manager to oversee lifecycle of callbacks
+    // NOTE: Created before any other object to ensure that it gets destructed last and thereby guarantee that
+    // references to it during the callback removal process are always valid
+    CallbackManager::create();
 
     SetupTexturePath(argv[0]);
 
-    // Create a manager to oversee lifecycle of callbacks
-    CallbackManager::create();
-
-    // Create drawable for the mesh
-    Drawable::Drawables drawables;
-    drawables.reserve(argc - 1);
-    for (unsigned i = 1; i < argc; ++i) {
-        auto spMesh =
-                ReaderFactory::getReader(argv[1])->getOutput();
-        drawables.push_back(std::move(spMesh));
+    // Load models
+    ModelManager modelManager;
+    if (!loadModels(argc, argv, modelManager)) {
+        return EXIT_FAILURE;
     }
-    Viewer::getInstance().add(drawables);
 
     // Render loop
-    Viewer::getInstance().render();
+    ViewerFactory{}.getViewer().render();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
