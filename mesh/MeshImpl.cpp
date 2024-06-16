@@ -1,4 +1,4 @@
-#include "Mesh.h"
+#include "MeshImpl.h"
 #include "ConfigurationReader.h"
 #include <limits>
 #include <iostream>
@@ -11,7 +11,7 @@ namespace mv {
 
 using namespace common;
 
-Mesh::Mesh()
+MeshImpl::MeshImpl()
     : Drawable3D("MeshVertex.glsl", "Fragment.glsl", Effect::Fog)
     , m_numVertices(0)
     , m_numFaces(0)
@@ -19,14 +19,14 @@ Mesh::Mesh()
 
 }
 
-void Mesh::initialize(const unsigned numVertices, const unsigned numFaces) {
+void MeshImpl::initialize(const unsigned numVertices, const unsigned numFaces) {
     m_numVertices = numVertices;
     m_numFaces = numFaces;
     m_vertices.reserve(m_numVertices);
     m_faces.reserve(m_numFaces);
 }
 
-Mesh::Mesh(const Mesh& another) :
+MeshImpl::MeshImpl(MeshImpl const& another) :
         Drawable3D(another.vertexShaderFileName, another.fragmentShaderFileName, Effect::Fog) {
     m_numVertices = another.m_numVertices;
     m_numFaces = another.m_numFaces;
@@ -37,37 +37,37 @@ Mesh::Mesh(const Mesh& another) :
     std::copy(another.m_faces.cbegin(), another.m_faces.cend(), m_faces.begin());
 }
 
-void Mesh::addVertex(const float x, const float y, const float z) {
+void MeshImpl::addVertex(const float x, const float y, const float z) {
     m_vertices.emplace_back(x, y, z);
 }
 
-void Mesh::addFace(const initializer_list<unsigned>& vertexIds) {
+void MeshImpl::addFace(const initializer_list<unsigned>& vertexIds) {
     m_faces.emplace_back(vertexIds);
     for (auto vertexId : vertexIds) {
         m_vertices.at(vertexId).addFace(m_faces.size()-1);
     }
 }
 
-const Vertex& Mesh::getVertex(const unsigned vertexIndex) const {
+const Vertex& MeshImpl::getVertex(const unsigned vertexIndex) const {
     if (vertexIndex >= m_numVertices)
         throw std::runtime_error("Vertex index invalid");
     return m_vertices.at(vertexIndex);
 }
 
-const Face& Mesh::getFace(unsigned faceIndex) const {
+const Face& MeshImpl::getFace(unsigned faceIndex) const {
     if (faceIndex >= m_numFaces)
         throw std::runtime_error("Face index invalid");
     return m_faces.at(faceIndex);
 }
 
-Bounds Mesh::getBounds() const {
+Bounds MeshImpl::getBounds() const {
     if (!m_bounds) {
-        const_cast<Mesh*>(this)->buildBounds();
+        const_cast<MeshImpl*>(this)->buildBounds();
     }
     return m_bounds.value();
 }
 
-void Mesh::buildBounds() {
+void MeshImpl::buildBounds() {
     m_bounds.emplace();
     for (auto& v : m_vertices) {
         if (v.x < m_bounds->x.min) m_bounds->x.min = v.x;
@@ -80,7 +80,7 @@ void Mesh::buildBounds() {
     }
 }
 
-unsigned Mesh::removeDuplicateVertices() {
+unsigned MeshImpl::removeDuplicateVertices() {
     // Build octree for faster search
     if (!m_octree) {
         m_octree.emplace(*this);
@@ -131,28 +131,28 @@ unsigned Mesh::removeDuplicateVertices() {
     return duplicateVertices.size();
 }
 
-Point3D Mesh::getCentroid() const {
+Point3D MeshImpl::getCentroid() const {
     if (!m_bounds) {
-        const_cast<Mesh*>(this)->buildBounds();
+        const_cast<MeshImpl*>(this)->buildBounds();
     }
     return { (this->m_bounds->x.max + this->m_bounds->x.min) * 0.5f,
              (this->m_bounds->y.max + this->m_bounds->y.min) * 0.5f,
              (this->m_bounds->z.max + this->m_bounds->z.min) * 0.5f };
 }
 
-void Mesh::buildVertexData() {
+void MeshImpl::buildVertexData() {
     m_vertexData = VertexData(m_numVertices);
     for (auto& v : m_vertices) {
         m_vertexData->append(v.x, v.y, v.z);
     }
 }
 
-Mesh::VertexData Mesh::getVertexData() const {
-    if (!m_vertexData) const_cast<Mesh*>(this)->buildVertexData();
+MeshImpl::VertexData MeshImpl::getVertexData() const {
+    if (!m_vertexData) const_cast<MeshImpl*>(this)->buildVertexData();
     return m_vertexData.value();
 }
 
-void Mesh::buildConnectivityData() {
+void MeshImpl::buildConnectivityData() {
     m_connectivityDataSize = 0;
     for (size_t i = 0; i < m_numFaces; ++i) {
         m_connectivityDataSize += (m_faces.at(i).size() * sizeof(unsigned));
@@ -165,17 +165,17 @@ void Mesh::buildConnectivityData() {
     }
 }
 
-void Mesh::getConnectivityData(size_t& numBytes, unsigned*& pConnData) const {
+void MeshImpl::getConnectivityData(size_t& numBytes, unsigned*& pConnData) const {
     // C++ doesn't provide a way out of const cast to support lazy loading that's
     // necessary here. Not all meshes will be rendered and until a mesh is rendered
     // there is no need to get connectivity data out of a mesh like below
-    if (!m_connectivity) const_cast<Mesh*>(this)->buildConnectivityData();
+    if (!m_connectivity) const_cast<MeshImpl*>(this)->buildConnectivityData();
     numBytes = m_connectivityDataSize;
     pConnData = m_connectivity.get();
 }
 
-std::unique_ptr<Mesh> Mesh::transform(common::TransformMatrix const& transformMatrix) const {
-    std::unique_ptr<Mesh> transformedMesh(new Mesh(*this));
+std::unique_ptr<Mesh> MeshImpl::transform(common::TransformMatrix const& transformMatrix) const {
+    std::unique_ptr<Mesh> transformedMesh(new MeshImpl(*this));
     auto& vertices = transformedMesh->getVertices();
     for (auto& vertex : vertices) {
         auto& v = const_cast<Vertex&>(vertex);
@@ -187,7 +187,7 @@ std::unique_ptr<Mesh> Mesh::transform(common::TransformMatrix const& transformMa
     return transformedMesh;
 }
 
-void Mesh::writeToSTL(std::string const& fileName) const {
+void MeshImpl::writeToSTL(std::string const& fileName) const {
 
     ofstream ofs(fileName, ios::binary);
     char header[80] = "STL file generated by MeshViewer (https://github.com/mdh81/meshviewer)";
@@ -214,7 +214,7 @@ void Mesh::writeToSTL(std::string const& fileName) const {
     ofs.close();
 }
 
-void Mesh::generateVertexNormals() {
+void MeshImpl::generateVertexNormals() {
     if (m_vertexNormals) return;
     m_vertexNormals = NormalData(m_numVertices);
     for (size_t i = 0; i < m_numVertices; ++i) {
@@ -223,7 +223,7 @@ void Mesh::generateVertexNormals() {
     }
 }
 
-void Mesh::generateFaceNormals() {
+void MeshImpl::generateFaceNormals() {
     if (m_faceNormals) return;
     m_faceNormals = NormalData(m_numFaces);
     for (size_t i = 0; i < m_numFaces; ++i) {
@@ -232,19 +232,19 @@ void Mesh::generateFaceNormals() {
     }
 }
 
-Mesh::NormalData Mesh::getNormals(const NormalLocation location) const {
+MeshImpl::NormalData MeshImpl::getNormals(const NormalLocation location) const {
     if (location == NormalLocation::Vertex) {
         if (!m_vertexNormals)
-            const_cast<Mesh*>(this)->generateVertexNormals();
+            const_cast<MeshImpl*>(this)->generateVertexNormals();
         return m_vertexNormals.value();
     } else {
         if (!m_faceNormals)
-            const_cast<Mesh*>(this)->generateFaceNormals();
+            const_cast<MeshImpl*>(this)->generateFaceNormals();
         return m_faceNormals.value();
     }
 }
 
-void Mesh::generateRenderData() {
+void MeshImpl::generateRenderData() {
 
     if (readyToRender) return;
 
@@ -318,7 +318,7 @@ void Mesh::generateRenderData() {
     // TODO: Dump member data buffers
 }
 
-void Mesh::generateColors() {
+void MeshImpl::generateColors() {
     if (readyToRender) return;
 
     auto& cfgReader = config::ConfigurationReader::getInstance();
@@ -345,7 +345,7 @@ void Mesh::generateColors() {
     glCallWithErrorCheck(glUniform3fv, lightIntensityId, 1, cfgReader.getColor("LightColor", true).getData());
 }
 
-void Mesh::render() {
+void MeshImpl::render() {
 
     if (!readyToRender) {
         generateRenderData();
@@ -366,6 +366,25 @@ void Mesh::render() {
                    GL_UNSIGNED_INT,                              // Type of element buffer data
                    nullptr                                     // Offset into element buffer data
                   );
+}
+
+unsigned MeshImpl::getNumberOfVertices() const  { return m_numVertices; };
+
+unsigned MeshImpl::getNumberOfFaces() const { return m_numFaces; }
+
+// Gets all vertices in this mesh
+Mesh::Vertices const& MeshImpl::getVertices() const { return m_vertices; }
+
+// Gets all faces in this mesh
+Mesh::Faces const& MeshImpl::getConnectivity() const { return m_faces; }
+
+void MeshImpl::writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const {
+    std::filesystem::path filePath = fileName;
+    if (filePath.extension() == ".STL" || filePath.extension() == ".stl") {
+        this->transform(transform)->writeToSTL(fileName);
+    } else {
+        throw std::runtime_error("Currently, only STL output for meshes is supported.");
+    }
 }
 
 }
