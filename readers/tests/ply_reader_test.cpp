@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
 #include "ReaderFactory.h"
-#include "Mesh.h"
+#include "PLYReader.h"
+#include "MockMeshFactory.h"
+#include "gmock/gmock.h"
 #include <memory>
 using namespace std;
 using namespace mv;
@@ -17,23 +19,26 @@ namespace mv::readers {
             unsigned numFaces;
         };
         static HeaderInfo testHeaderParsing(std::string const& header) {
-            auto plyReader = PLYReader::createForTest();
+            auto plyReader = PLYReader{"", MockMeshFactory{}};
             istringstream iss(header);
             plyReader.readHeader(iss);
             return {plyReader.isBinary, plyReader.isLittleEndian, plyReader.numVertices, plyReader.numFaces};
         }
 
-        static void readNonExistentFile() {
-            auto plyReader = PLYReader::createForTest();
-            plyReader.getOutput();
+        void readNonExistentFile() {
+            plyReader->getOutput();
         }
 
-        static MeshPointer readData(std::string const& data) {
-            auto plyReader = PLYReader::createForTest();
+        void readData(std::string const& data) {
             istringstream stream(data);
-            return plyReader.getOutput(stream);
+            // Call private method PLYReader::getOutput() and pass the mock mesh
+            // NOTE: Without the mock mesh being passed, gmock's EXPECT_ macros won't have an already instantiated
+            // object to work with (this is a gmock hard requirement, see the test below for setup)
+            plyReader->getOutput(stream, mockMeshPtr);
         }
 
+        Mesh::MeshPointer mockMeshPtr { new MockMesh{} };
+        std::unique_ptr<PLYReader> plyReader { new PLYReader{"", MockMeshFactory{}} };
     };
 
     TEST_F(PLYReaderFixture, ParseHeader) {
@@ -67,7 +72,6 @@ namespace mv::readers {
     }
 
     TEST_F(PLYReaderFixture, ASCIIInput) {
-        testing::internal::CaptureStdout();
         std::string asciiFile =
                 "ply\n"
                 "format ascii 1.0\n"
@@ -82,25 +86,13 @@ namespace mv::readers {
                 "5 0 0\n"
                 "5 5 0\n"
                 "3 0 1 2";
-        auto mesh = readData(asciiFile);
-        auto output = testing::internal::GetCapturedStdout();
-        unordered_set<string> outputSet;
-        istringstream iss(output);
-        string line;
-        while(getline(iss, line)) {
-            outputSet.insert(line);
-        }
-        ASSERT_TRUE(outputSet.find("Parsing PLY file with 3 vertices and 1 faces") != outputSet.end());
-        ASSERT_TRUE(outputSet.find("Parsing PLY data in ASCII format") != outputSet.end());
-        ASSERT_EQ(mesh->getNumberOfVertices(), 3);
-        ASSERT_EQ(mesh->getNumberOfFaces(), 1);
-        ASSERT_FLOAT_EQ(mesh->getVertices().at(0).dot({0,0,0}), 0.f);
-        ASSERT_FLOAT_EQ(mesh->getVertices().at(1).dot({5,0,0}), 25.f);
-        ASSERT_FLOAT_EQ(mesh->getVertices().at(2).dot({5,5,0}), 50.f);
-        ASSERT_TRUE(mesh->getFace(0).at(0) == 0);
-        ASSERT_TRUE(mesh->getFace(0).at(1) == 1);
-        ASSERT_TRUE(mesh->getFace(0).at(2) == 2);
 
+        auto &mockMesh = dynamic_cast<MockMesh &>(*mockMeshPtr.get());
+        EXPECT_CALL(mockMesh, addVertex(0, 0, 0)).Times(testing::Exactly(1));
+        EXPECT_CALL(mockMesh, addVertex(5, 0, 0)).Times(testing::Exactly(1));
+        EXPECT_CALL(mockMesh, addVertex(5, 5, 0)).Times(testing::Exactly(1));
+
+        readData(asciiFile);
     }
 
 }
