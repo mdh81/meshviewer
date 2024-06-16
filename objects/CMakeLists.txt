@@ -9,7 +9,7 @@ target_include_directories(
     ${mathIncDir}
     ${glIncludeDirectories}
     ../common
-    ../mesh
+    ../mesh # TODO: Why is this dependency required? Potential for circular dependency
     ../events
     ../config
     ../writers
