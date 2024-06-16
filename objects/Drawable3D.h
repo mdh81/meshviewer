@@ -6,19 +6,19 @@ namespace mv {
 
 class Drawable3D : public Drawable {
 
-public:
-    Drawable3D(std::string vertexShaderFileName, std::string fragmentShaderFileName, Effect supportedEffects = Effect::None)
-    : Drawable(vertexShaderFileName, fragmentShaderFileName, nullptr, supportedEffects) {}
+    public:
+        Drawable3D(std::string vertexShaderFileName, std::string fragmentShaderFileName,
+                   Effect supportedEffects = Effect::None);
 
-    [[nodiscard]]
-    bool is3D() const override { return true; }
+        [[nodiscard]]
+        bool is3D() const override { return true; }
 
-    virtual void writeToFile(std::string const& fileName, common::TransformMatrix const& transform) const override {
-        std::cerr << std::string(__PRETTY_FUNCTION__) + " is not implemented" << std::endl;
-    }
+    protected:
+        void setTransforms() override;
 
+    protected:
+        // For building mocks
+        Drawable3D() = default;
     };
 
-
-
-} // mv
+}
