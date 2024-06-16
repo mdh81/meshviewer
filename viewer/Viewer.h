@@ -1,96 +1,25 @@
 #pragma once
-#include "Mesh.h"
-#include "Camera.h"
 #include "Drawable.h"
 #include "PointerTypes.h"
-#include "EventTypes.h"
-#include <memory>
 
-class GLFWwindow;
+namespace mv::viewer {
 
-namespace mv {
+    // A viewer is a collection of scenes
+    class Viewer {
+        public:
+            // Add drawables to the scene
+            virtual void add(Drawable::DrawablePointer&& drawable) = 0;
+            virtual void add(Drawable::DrawablePointers const& newDrawables) = 0;
+            virtual void add(Drawable::DrawablePointer const&) = 0;
 
-namespace scene {
-    class Scene;
-}
+            // Remove a drawable from the scene
+            virtual void remove(Drawable::DrawablePointer const&) = 0;
 
-// A viewer is a collection of scenes
-class Viewer : public MeshViewerObject {
-    public:
-        ~Viewer() = default;
-        // Add a drawable to the viewer and transfer ownership of it to the viewer
-        void add(Drawable* drawable) { add(Drawable::DrawablePointer(drawable)); }
-        void add(Drawable::DrawablePointer&& drawable) { drawables.push_back(std::move(drawable)); }
-        // Add a list of drawables to the viewer and transfer ownership of them to the viewer
-        void add(Drawable::Drawables const& newDrawables);
-        // Render scenes, viewports, and renderables
-        void render();
-        [[nodiscard]] unsigned getWidth() const { return windowWidth; }
-        [[nodiscard]] unsigned getHeight() const { return windowHeight; }
-        [[nodiscard]] common::Point2D getCursorPosition() const { return cursorPosition; };
-        [[nodiscard]] common::Point2D getCursorPositionDifference() const { return cursorPositionDifference; }
-        [[nodiscard]] math3d::Matrix<float, 3, 3> getViewportToWindowTransform() const;
-        void notifyFrameBufferResized(events::EventData&&);
-        void notifyCursorMoved(events::EventData&&);
-        void notifyMouseWheelOrTouchPadScrolled(events::EventData&&);
-        void notifyLeftMousePressed();
-        void notifyLeftMouseReleased();
+            // Render scene, viewports and renderables
+            virtual void render() = 0;
 
-        // Creation Semantics
-        static Viewer& getInstance();
-
-    private:
-        explicit Viewer(unsigned winWidth=1024, unsigned winHeight=768);
-        class RenderLoop {
-            public:
-                RenderLoop() {}
-                static void draw();
-            private:
-                static mv::Viewer* viewer;
-                friend class mv::Viewer;
-        };
-
-        void createWindow();
-
-#ifdef EMSCRIPTEN
-        bool isCanvasResized(common::CanvasDimensions& canvasDimensions) const;
-#endif
-
-    public:
-        Viewer(const Viewer&) = delete;
-        Viewer(Viewer&&) = delete;
-        Viewer& operator=(const Viewer&) = delete;
-        Viewer& operator=(Viewer&&) = delete;
-
-    // Member data
-    private:
-        unsigned windowWidth;
-        unsigned windowHeight;
-        unsigned frameBufferWidth;
-        unsigned frameBufferHeight;
-        GLFWwindow* window;
-        bool renderToImage;
-        GLuint frameBufferId;
-        GLuint imageTextureId;
-        bool windowResized;
-        Drawable::Drawables drawables;
-        Drawable::Drawables activeObjects;
-        common::Point2D cursorPosition;
-        common::Point2D cursorPositionDifference;
-        common::UniquePointer<mv::scene::Scene> scene;
-        bool printGLInfoOnStartup;
-        bool leftMouseDown{};
-
-    // Member functions
-    private:
-        static void setColors();
-
-        void saveSnapshot() {
-            renderToImage = true;
-        }
-
-        void prepareOffscreenRender();
-        void saveAsImage();
-};
+            [[nodiscard]]
+            virtual math3d::Matrix<float, 3, 3> getViewportToWindowTransform() const = 0;
+    };
 
 }
