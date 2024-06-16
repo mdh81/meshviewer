@@ -1,9 +1,7 @@
 #include "GradientBackground.h"
 #include "ConfigurationReader.h"
 #include "EventHandler.h"
-#include "3dmath/OrthographicProjectionMatrix.h"
 #include "Gadget.h"
-#include "Util.h"
 #include <vector>
 #include <cmath>
 
