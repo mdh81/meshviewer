@@ -8,11 +8,16 @@ add_library(
 target_include_directories(
     readers 
     PUBLIC
-    ../mesh 
-    ../common
-    ../objects
+    .
+    ../mesh/
+    ../objects/
     ${mathIncDir}
-    ${glIncludeDirectories}
+)
+
+target_link_libraries(
+    readers
+    PRIVATE
+    common
 )
 
 if (enableTesting)
