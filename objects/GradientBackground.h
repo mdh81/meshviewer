@@ -42,6 +42,7 @@ public:
 protected:
     void generateRenderData() override;
     void generateColors() override { /* Empty because color data is packaged into vertex buffer data*/ };
+    void setTransforms() override { /* TODO: Pass transforms using this method */ }
 
 private:
     void generateLinearGradient();
