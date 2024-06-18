@@ -2,13 +2,9 @@
 
 #include "ReaderFactory.h"
 #include "MockMeshFactory.h"
+#include "MockReader.h"
 
 namespace mv {
-
-    struct MockReader : readers::Reader {
-        MockReader(std::string = "") : readers::Reader("", MockMeshFactory{}) {};
-        MOCK_METHOD(Mesh::MeshPointer, getOutput, (Mesh::MeshPointer));
-    };
 
     struct MockReaderFactory : readers::IReaderFactory {
         MOCK_METHOD(readers::ReaderPointer, getReader, (std::string const&), (const, override));
