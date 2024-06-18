@@ -6,6 +6,7 @@
       <file path="$PROJECT_DIR$" />
     </sourceRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/asan_build" />
       <file path="$PROJECT_DIR$/build" />
       <file path="$PROJECT_DIR$/build_linux" />
       <file path="$PROJECT_DIR$/build_web" />
