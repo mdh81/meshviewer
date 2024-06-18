@@ -29,6 +29,12 @@ endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(-DDEBUG)
+    # Enable address sanitizer if requested
+    if (USE_ADDRESS_SANITIZER)
+        message(STATUS "Turning on address sanitizer")
+        add_compile_options(-fsanitize=address)
+        add_link_options(-fsanitize=address)
+    endif()
 endif()
 
 # get gtest
