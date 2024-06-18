@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/3dmath" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/asan_build/_deps/googletest-src" vcs="Git" />
   </component>
 </project>
