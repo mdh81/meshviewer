@@ -6,6 +6,7 @@ namespace mv {
     // This interface facilitates dependency injection allowing tests from having to link against the mesh library
     struct IMeshFactory : MeshViewerObject {
        virtual Mesh::MeshPointer createMesh() const = 0;
+       virtual ~IMeshFactory() = default;
     };
 
     struct MeshFactory : IMeshFactory {
