@@ -12,12 +12,14 @@ while [ "$#" -gt 0 ]; do
 done
 buildDir="./build_web"
 buildDir+="_${buildType}"
-mkdir -p $buildDir
-pushd $buildDir
+mkdir -p "$buildDir"
+pushd "$buildDir" || exit
 emcmake cmake -S ../ -B . -DEMSCRIPTEN=On -DCMAKE_BUILD_TYPE="$buildType" &&
-make -j 10 VERBOSE=1
-if [ $? -eq 0 ]; then
+
+if make -j 10 VERBOSE=1
+then
   cp meshViewer.html index.html
+  kill -9 $(pgrep -fl python3 | grep emrun | cut -d ' ' -f 1)
   emrun --port 5600 --browser "$browser" index.html &
 fi
 popd
