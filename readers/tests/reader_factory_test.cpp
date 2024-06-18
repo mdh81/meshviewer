@@ -7,6 +7,8 @@ using namespace std;
 using namespace mv;
 using namespace mv::readers;
 
+#define MOCK_MESH_FACTORY std::make_unique<MockMeshFactory>()
+
 class ReaderFixture : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -23,7 +25,7 @@ TEST_F(ReaderFixture, FileWithoutExtension) {
     EXPECT_THROW(
     {
         try {
-            ReaderFactory{MockMeshFactory{}}.getReader("dummy");
+            ReaderFactory{MOCK_MESH_FACTORY}.getReader("dummy");
         } catch (std::runtime_error& ex) {
             throw;
         }
@@ -35,7 +37,7 @@ TEST_F(ReaderFixture, NonExistentFile) {
     EXPECT_THROW(
     {
         try {
-            ReaderFactory{MockMeshFactory{}}.getReader("dummy.nonexistent");
+            ReaderFactory{MOCK_MESH_FACTORY}.getReader("dummy.nonexistent");
         } catch (std::runtime_error& ex) {
             throw;
         }
@@ -47,7 +49,7 @@ TEST_F(ReaderFixture, UnsupportedFormat) {
     EXPECT_THROW(
     {
         try {
-            ReaderFactory{MockMeshFactory{}}.getReader((m_modelsDir/"dummy.unsupported").string());
+            ReaderFactory{MOCK_MESH_FACTORY}.getReader((m_modelsDir/"dummy.unsupported").string());
         } catch (std::runtime_error& ex) {
             throw;
         }
@@ -59,8 +61,8 @@ TEST_F(ReaderFixture, SupportedFormats) {
     EXPECT_NO_THROW(
     {
         try {
-            ReaderFactory{MockMeshFactory{}}.getReader((m_modelsDir/"cube.stl").string());
-            ReaderFactory{MockMeshFactory{}}.getReader((m_modelsDir/"cube.ply").string());
+            ReaderFactory{MOCK_MESH_FACTORY}.getReader((m_modelsDir/"cube.stl").string());
+            ReaderFactory{MOCK_MESH_FACTORY}.getReader((m_modelsDir/"cube.ply").string());
         } catch (std::runtime_error& ex) {
             throw;
         }
@@ -70,12 +72,12 @@ TEST_F(ReaderFixture, SupportedFormats) {
 
 TEST(ReaderFactory, ReturnsValidLookupResultsWithSupportedExtensions) {
     ofstream {"a.stl"}; ofstream {"a.ply"}; ofstream {"a.sTl"}; ofstream {"a.PlY"}; ofstream {"a.ObJ"};
-    ASSERT_TRUE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported("a.stl")) << "stl should be a supported type";
-    ASSERT_TRUE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported("a.ply")) << "ply should be a supported type";
-    ASSERT_TRUE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported("a.sTl")) << "stl should be a supported type";
-    ASSERT_TRUE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported("a.PlY")) << "stl should be a supported type";
-    ASSERT_FALSE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported("a.ObJ")) << "obj should be an unsupported type";
-    ASSERT_FALSE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported(".")) << "directories should be an unsupported type";
-    ASSERT_FALSE(ReaderFactory{MockMeshFactory{}}.isFileTypeSupported("abc.stl")) << "non-existent files should be "
+    ASSERT_TRUE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported("a.stl")) << "stl should be a supported type";
+    ASSERT_TRUE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported("a.ply")) << "ply should be a supported type";
+    ASSERT_TRUE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported("a.sTl")) << "stl should be a supported type";
+    ASSERT_TRUE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported("a.PlY")) << "stl should be a supported type";
+    ASSERT_FALSE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported("a.ObJ")) << "obj should be an unsupported type";
+    ASSERT_FALSE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported(".")) << "directories should be an unsupported type";
+    ASSERT_FALSE(ReaderFactory{MOCK_MESH_FACTORY}.isFileTypeSupported("abc.stl")) << "non-existent files should be "
                                                                                      "classified as unsupported";
 }

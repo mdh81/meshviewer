@@ -3,6 +3,7 @@
 #include "ReaderFactory.h"
 #include "Types.h"
 #include <format>
+#include <memory>
 
 namespace mv::models {
 
@@ -11,13 +12,13 @@ namespace mv::models {
     : modelFile(file)
     , modelDrawable(std::move(drawable)) {}
 
-    ModelManager::ModelManager(ModelManager::Mode mode, readers::IReaderFactory const& readerFactoryIn,
+    ModelManager::ModelManager(ModelManager::Mode mode, std::unique_ptr<readers::IReaderFactory const>&& readerFactory,
                                mv::viewer::Viewer& viewer)
     : currentModel{}
     , mode(mode)
-    , readerFactory(readerFactoryIn)
     , loaded(false)
-    , viewer(viewer) {
+    , viewer(viewer)
+    , readerFactory(std::move(readerFactory)) {
         events::EventHandler{}.registerBasicEventCallback(
                 events::Event{GLFW_KEY_M, GLFW_MOD_SHIFT},
                 *this,
@@ -44,10 +45,10 @@ namespace mv::models {
 
         for (decltype(currentModel) i = 0; i < modelFiles.size(); ++i) {
             if (mode == Mode::DisplayMultipleModels) {
-                modelDrawables.emplace_back(modelFiles[i], readerFactory.getReader(modelFiles[i])->getOutput());
+                modelDrawables.emplace_back(modelFiles[i], readerFactory->getReader(modelFiles[i])->getOutput());
             } else {
                 modelDrawables.emplace_back(modelFiles[i],
-                                            !i ? readerFactory.getReader(modelFiles[i])->getOutput() : nullptr);
+                                            !i ? readerFactory->getReader(modelFiles[i])->getOutput() : nullptr);
             }
         }
 
@@ -64,11 +65,12 @@ namespace mv::models {
 
     void ModelManager::loadModelFilesFromDirectory(std::filesystem::path const& modelFilesDirectory) {
         std::vector<std::string> modelsToLoad;
-        for (auto& dirEntry : std::filesystem::directory_iterator{modelFilesDirectory}) {
-            if (readerFactory.isFileTypeSupported(dirEntry)) {
-                modelsToLoad.push_back(dirEntry.path());
+        for (auto const& dirEntry : std::filesystem::directory_iterator{modelFilesDirectory}) {
+            auto const& path = dirEntry.path();
+            if (readerFactory->isFileTypeSupported(path)) {
+                modelsToLoad.push_back(path);
             } else {
-                std::puts(std::format("Skipping file {} from the models directory\n", dirEntry.path().c_str()).c_str());
+                std::puts(std::format("Skipping file {} from the model directory\n", path.c_str()).c_str());
             }
         }
         loadModelFiles(modelsToLoad);
@@ -86,7 +88,7 @@ namespace mv::models {
             }
             if (!modelDrawables[currentModel].modelDrawable) {
                 modelDrawables[currentModel].modelDrawable =
-                        std::move(readerFactory.getReader(modelDrawables[currentModel].modelFile)->getOutput());
+                        std::move(readerFactory->getReader(modelDrawables[currentModel].modelFile)->getOutput());
             }
             viewer.add(modelDrawables[currentModel].modelDrawable);
         }
