@@ -9,7 +9,8 @@ namespace mv::readers {
 
     std::unordered_set<std::string> ReaderFactory::supportedExtensions {"stl", "ply"};
 
-    ReaderFactory::ReaderFactory(IMeshFactory const& meshFactory) : meshFactory(meshFactory) {
+    ReaderFactory::ReaderFactory(std::unique_ptr<IMeshFactory const>&& meshFactory)
+    : meshFactory(std::move(meshFactory)) {
     }
 
     bool ReaderFactory::isFileTypeSupported(std::filesystem::path const& file) const {
@@ -51,15 +52,16 @@ namespace mv::readers {
                 };
 
         if (isExtension(file, "stl")) {
-            return std::unique_ptr<Reader>(new STLReader(fileName, meshFactory));
+            std::puts("Reading STL");
+            return std::unique_ptr<Reader>(new STLReader(fileName, getMeshFactory()));
         } else if (isExtension(file, "ply")) {
-            return std::unique_ptr<Reader>(new PLYReader(fileName, meshFactory));
+            return std::unique_ptr<Reader>(new PLYReader(fileName, getMeshFactory()));
         }
         throw std::runtime_error(fileName + " has no extension. Unable to find type");
     }
 
 
     IMeshFactory const& ReaderFactory::getMeshFactory() const {
-        return meshFactory;
+        return *meshFactory;
     }
 }
