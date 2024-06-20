@@ -22,6 +22,7 @@ target_link_libraries(
     PUBLIC
     common
     writers
+    shaders
 )
 
 if (enableTesting)
