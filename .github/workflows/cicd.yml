@@ -37,9 +37,17 @@ jobs:
       - name: Build Web Assembly
         run: docker exec cicd cmake --build build_web --config Release
 
-      - name: Update github pages
-        run: | 
-          cp build_web/meshViewer.* ${{github.workspace}}/docs/
-          cp ${{github.workspace}}/docs/meshViewer.html ${{github.workspace}}/docs/index.html
-          cp -r build_web/js ${{github.workspace}}/docs/ 
-          cp -r build_web/shaders ${{github.workspace}}/docs/
+      - name: Publish Web Viewer
+        run: |
+          git fetch origin
+          git checkout webviewer
+          git rm -rf .
+          cp build_web/meshViewer.* ./ 
+          cp meshViewer.html index.html
+          cp -r build_web/js . 
+          cp -r build_web/shaders .
+          git add .
+          git commit -m "Update web viewer to the latest version in the master branch"
+          git push origin webviewer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
