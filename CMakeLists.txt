@@ -88,9 +88,8 @@ target_include_directories(
 target_link_libraries(
     ${appName}
     PUBLIC
-    events
     viewer
-    shaders
+    events
     models
     ${glLibs}
 )
