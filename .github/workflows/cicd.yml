@@ -36,3 +36,11 @@ jobs:
 
       - name: Build Web Assembly
         run: docker exec cicd cmake --build build_web --config Release
+
+      - name: Update github pages
+        run: | 
+          mkdir -p docs
+          cp build_web/meshViewer.* docs/
+          cp docs/meshViewer.html docs/index.html
+          cp -r build_web/js docs/ 
+          cp -r build_web/shaders docs/
