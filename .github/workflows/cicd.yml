@@ -39,8 +39,7 @@ jobs:
 
       - name: Update github pages
         run: | 
-          mkdir -p docs
-          cp build_web/meshViewer.* docs/
-          cp docs/meshViewer.html docs/index.html
-          cp -r build_web/js docs/ 
-          cp -r build_web/shaders docs/
+          cp build_web/meshViewer.* ${{github.workspace}}/docs/
+          cp ${{github.workspace}}/docs/meshViewer.html ${{github.workspace}}/docs/index.html
+          cp -r build_web/js ${{github.workspace}}/docs/ 
+          cp -r build_web/shaders ${{github.workspace}}/docs/
