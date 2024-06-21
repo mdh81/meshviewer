@@ -45,7 +45,10 @@ jobs:
           git switch webviewer
           
           # Remove previous versions of the published artifacts
-          git rm -r *
+          git submodule deinit -f --all          # Get rid of all submodule-related files 
+          git rm -r --cached .                   # Unstage all tracked files
+          git rm -r * || true                    # Remove all tracked files, ignore errors if no files
+          git clean -fd -e build_web             # Remove all untracked files except for the build directory with artifacts to publish
           
           # Assemble artifacts for publishing
           cp build_web/meshViewer.* ./        
