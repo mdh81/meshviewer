@@ -39,7 +39,6 @@ jobs:
 
       - name: Publish Web Viewer
         run: |
-          git fetch origin
           git checkout webviewer
           git rm -rf .
           cp build_web/meshViewer.* ./ 
