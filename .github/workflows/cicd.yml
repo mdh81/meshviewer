@@ -37,7 +37,17 @@ jobs:
       - name: Build Web Assembly
         run: docker exec cicd cmake --build build_web --config Release
 
-      - name: Publish Web Viewer
+      - name: Assemble Web Viewer Artifacts
+        run: | 
+          chmod u+x web/artifacts.sh 
+          ./web/artifacts.sh
+
+      - name: Clean Build Directories
+        run: | 
+          rm -rf build
+          rm -rf build_web    
+
+      - name: Switch to webviewer branch
         run: |
           
           # Switch to the webviewer branch
@@ -45,20 +55,24 @@ jobs:
           git switch webviewer
           
           # Remove previous versions of the published artifacts
-          git submodule deinit -f --all          # Get rid of all submodule-related files 
+          git submodule deinit -f --all          # Get rid of all submodule-related files
           git rm -r --cached .                   # Unstage all tracked files
           git rm -r * || true                    # Remove all tracked files, ignore errors if no files
-          git clean -fd -e build_web             # Remove all untracked files except for the build directory with artifacts to publish
-          
-          # Assemble artifacts for publishing
-          cp build_web/meshViewer.* ./        
-          cp meshViewer.html index.html
-          cp -r build_web/js . 
-          cp -r build_web/shaders .
-          echo "This branch is used for publishing the web viewer artifacts. Refer to workflow step publish web viewer in .github/workflows/cicd.yml" > README.md
+          git clean -fd -e artifacts             # Remove all untracked files except for the build directory with artifacts to publish
 
-          # Ensure object files are omitted
-          echo "build_web/*" > .gitignore
+      - name: Debug Step
+        run: ls -l
+
+      - name: Prepare Artifacts
+        run: | 
+          mv artifacts/* .
+          rm -rf artifacts
+
+      - name: Publish Web Viewer
+        run: |
+
+          # Create readme for reference
+          echo "This branch is used for publishing the web viewer artifacts. Refer to .github/workflows/cicd.yml in the master branch" > README.md
 
           # Publish artifacts by committing the new versions of the artifacts
           git add .
