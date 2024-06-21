@@ -43,9 +43,9 @@ jobs:
           ./web/artifacts.sh
 
       - name: Clean Build Directories
-        run: | 
-          rm -rf build
-          rm -rf build_web    
+        run: |
+          docker exec cicd rm -rf /meshviewer/build
+          docker exec cicd rm -rf /meshviewer/build_web
 
       - name: Switch to webviewer branch
         run: |
