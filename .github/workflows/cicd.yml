@@ -39,14 +39,28 @@ jobs:
 
       - name: Publish Web Viewer
         run: |
-          git checkout webviewer
-          git rm -rf .
-          cp build_web/meshViewer.* ./ 
+          
+          # Switch to the webviewer branch
+          git fetch origin webviewer
+          git switch webviewer
+          
+          # Remove previous versions of the published artifacts
+          git rm -r *
+          
+          # Assemble artifacts for publishing
+          cp build_web/meshViewer.* ./        
           cp meshViewer.html index.html
           cp -r build_web/js . 
           cp -r build_web/shaders .
+          echo "This branch is used for publishing the web viewer artifacts. Refer to workflow step publish web viewer in .github/workflows/cicd.yml" > README.md
+
+          # Ensure object files are omitted
+          echo "build_web/*" > .gitignore
+
+          # Publish artifacts by committing the new versions of the artifacts
           git add .
           git commit -m "Update web viewer to the latest version in the master branch"
           git push origin webviewer
+          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
