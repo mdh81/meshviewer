@@ -40,27 +40,24 @@ jobs:
       - name: Assemble Web Viewer Artifacts
         run: docker exec cicd python3 web/py/artifacts.py assemble
 
-      - name: Switch to webviewer branch
+      - name: Prepare Web Viewer Artifacts for Deployment
         run: |
+          
+          # Get rid of all submodule-related files
+          git submodule deinit -f --all          
+          echo "Submodule deinit succeeded"
           
           # Switch to the webviewer branch
           git fetch origin webviewer
           git switch webviewer
           
           # Remove previous versions of the published artifacts
-          git submodule deinit -f --all          # Get rid of all submodule-related files
           git rm -r --cached .                   # Unstage all tracked files
-          git rm -r * || true                    # Remove all tracked files, ignore errors if no files
+          git rm -r * || true                    # Remove all tracked files 
           git clean -fd -e artifacts             # Remove all untracked files except for the build directory with artifacts to publish
-
-      - name: Debug Step
-        run: ls -l
-
-      - name: Prepare Artifacts
-        run:  docker exec cicd python3 web/py/artifacts.py deploy
-
-      - name: Debug Step
-        run: ls -l
+          
+          # Get the assembled artifacts and place them in the current directory 
+          docker exec cicd python3 web/py/artifacts.py deploy
 
       - name: Publish Web Viewer
         run: |
