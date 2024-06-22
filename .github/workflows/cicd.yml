@@ -38,14 +38,7 @@ jobs:
         run: docker exec cicd cmake --build build_web --config Release
 
       - name: Assemble Web Viewer Artifacts
-        run: | 
-          chmod u+x web/artifacts.sh 
-          ./web/artifacts.sh
-
-      - name: Clean Build Directories
-        run: |
-          docker exec cicd rm -rf /meshviewer/build
-          docker exec cicd rm -rf /meshviewer/build_web
+        run: docker exec cicd python3 web/py/artifacts.py assemble
 
       - name: Switch to webviewer branch
         run: |
@@ -64,9 +57,10 @@ jobs:
         run: ls -l
 
       - name: Prepare Artifacts
-        run: | 
-          mv artifacts/* .
-          rm -rf artifacts
+        run:  docker exec cicd python3 web/py/artifacts.py deploy
+
+      - name: Debug Step
+        run: ls -l
 
       - name: Publish Web Viewer
         run: |
