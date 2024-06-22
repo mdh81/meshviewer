@@ -44,8 +44,11 @@ jobs:
         run: |
           
           # Get rid of all submodule-related files
-          git submodule deinit -f --all          
-          echo "Submodule deinit succeeded"
+          git submodule deinit -f -- 3dmath
+          rm -rf 3dmath
+          rm -rf .git/modules/3dmath
+          git config -f .git/config --remove-section submodule.3dmath || true
+          git rm -f 3dmath
           
           # Switch to the webviewer branch
           git fetch origin webviewer
