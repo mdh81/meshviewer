@@ -95,7 +95,7 @@ def deploy():
     for artifact in artifacts:
         artifact_path = os.path.join(ARTIFACT_DIR, artifact)
         if os.path.isdir(artifact_path):
-            shutil.copytree(artifact_path, os.path.join(DEPLOYMENT_DIR, artifact))
+            shutil.copytree(artifact_path, os.path.join(DEPLOYMENT_DIR, artifact), dirs_exist_ok=True)
         else:
             shutil.copy2(artifact_path, DEPLOYMENT_DIR)
 
