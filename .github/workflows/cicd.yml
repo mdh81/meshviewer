@@ -40,38 +40,5 @@ jobs:
       - name: Assemble Web Viewer Artifacts
         run: docker exec cicd python3 web/py/artifacts.py assemble
 
-      - name: Prepare Web Viewer Artifacts for Deployment
-        run: |
-          
-          # Get rid of all submodule-related files
-          git submodule deinit -f -- 3dmath
-          rm -rf 3dmath
-          rm -rf .git/modules/3dmath
-          git config -f .git/config --remove-section submodule.3dmath || true
-          git rm -f 3dmath
-          
-          # Switch to the webviewer branch
-          git fetch origin webviewer
-          git switch webviewer
-          
-          # Remove previous versions of the published artifacts
-          # git rm -r --cached .                   # Unstage all tracked files
-          # git rm -r * || true                    # Remove all tracked files 
-          # git clean -fd -e artifacts             # Remove all untracked files except for the build directory with artifacts to publish
-          
-          # Get the assembled artifacts and place them in the current directory 
-          # docker exec cicd python3 web/py/artifacts.py deploy
-
-      #- name: Publish Web Viewer
-      #  run: |
-
-          # Create readme for reference
-       #   echo "This branch is used for publishing the web viewer artifacts. Refer to .github/workflows/cicd.yml in the master branch" > README.md
-
-          # Publish artifacts by committing the new versions of the artifacts
-        #  git add .
-        #  git commit -m "Update web viewer to the latest version in the master branch"
-        #  git push origin webviewer
-          
-        # env:
-        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish Web Viewer Artifacts
+        run: docker exec cicd python3 web/py/artifacts.py deploy
