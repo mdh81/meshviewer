@@ -40,12 +40,7 @@ jobs:
       - name: Assemble Web Viewer Artifacts
         run: docker exec cicd python3 web/py/artifacts.py assemble
 
-      - name: Debug Token Environment Variable
-        env:
-          GITHUB_TOKEN: ${{ secrets.WEB_VIEWER_DEPLOYMENT_GH_TOKEN }}
-        run: docker exec -e GITHUB_TOKEN cicd env
-
       - name: Publish Web Viewer Artifacts
         env:
-          GITHUB_TOKEN: ${{ secrets.WEB_VIEWER_DEPLOYMENT_GH_TOKEN }}
+          GITHUB_TOKEN: ${{secrets.WEB_VIEWER_DEPLOYMENT_GH_TOKEN}}
         run: docker exec -e GITHUB_TOKEN cicd python3 web/py/artifacts.py deploy
