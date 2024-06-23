@@ -87,7 +87,11 @@ def deploy():
     os.makedirs(DEPLOYMENT_DIR)
 
     # Create local git repository whose origin is the 3dviewer
-    repo = git.Repo.clone_from(DEPLOY_URL, DEPLOYMENT_DIR, branch='main')
+    gh_token = os.getenv('GITHUB_TOKEN')
+    if not gh_token:
+        raise RuntimeError('Missing environment variable GITHUB_TOKEN. Need a token to authenticate with the '
+                           'deployment repository')
+    repo = git.Repo.clone_from(DEPLOY_URL.replace('https://', f'https://{gh_token}@'), DEPLOYMENT_DIR, branch='main')
     origin = repo.remote(name='origin')
 
     # Copy artifacts to deployment directory

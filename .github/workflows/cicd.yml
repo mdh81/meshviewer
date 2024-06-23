@@ -42,3 +42,5 @@ jobs:
 
       - name: Publish Web Viewer Artifacts
         run: docker exec cicd python3 web/py/artifacts.py deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.WEB_VIEWER_DEPLOYMENT_GH_TOKEN }}
