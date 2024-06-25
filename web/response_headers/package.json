@@ -1,0 +1,12 @@
+{
+  "name": "response_headers",
+  "version": "0.0.0",
+  "devDependencies": {
+    "wrangler": "3.61.0"
+  },
+  "private": true,
+  "scripts": {
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy"
+  }
+}
