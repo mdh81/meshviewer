@@ -1,0 +1,8 @@
+name = "response_headers"
+main = "src/index.js"
+compatibility_date = "2024-06-24"
+account_id = "aefd8ac34a45fe5610747e11926c51c1"
+workers_dev = false
+routes = [
+    { pattern = "www.3dmodelviewer.org/*", zone_id = "be556851597b4306a5715dd01bbb8999" }
+]
