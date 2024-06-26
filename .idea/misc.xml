@@ -6,6 +6,7 @@
       <file path="$PROJECT_DIR$" />
     </sourceRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/artifacts" />
       <file path="$PROJECT_DIR$/asan_build" />
       <file path="$PROJECT_DIR$/build" />
       <file path="$PROJECT_DIR$/build_linux" />
@@ -13,7 +14,11 @@
       <file path="$PROJECT_DIR$/build_web_Debug" />
       <file path="$PROJECT_DIR$/build_web_Release" />
       <file path="$PROJECT_DIR$/cmake-build-debug" />
+      <file path="$PROJECT_DIR$/cmake-build-release" />
+      <file path="$PROJECT_DIR$/deployment" />
       <file path="$PROJECT_DIR$/linux-build" />
+      <file path="$PROJECT_DIR$/linux_build_Release" />
+      <file path="$PROJECT_DIR$/venv" />
     </excludeRoots>
   </component>
 </project>
