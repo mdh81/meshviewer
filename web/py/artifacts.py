@@ -11,7 +11,7 @@ ARTIFACT_DIR = 'artifacts'
 BUILD_DIR = 'build_web'
 DEPLOYMENT_DIR = 'deployment'
 DEPLOY_URL = 'https://github.com/mdh81/3dviewer.git'
-SOURCE_URL = 'https://github.com/mdh81/meshviewer.git'
+SOURCE_URL = 'https://github.com/mdh81/meshviewer/commit/'
 # NOTE: Paths in this list must be relative to the web viewer's build directory
 WEB_VIEWER_ARTIFACTS = [
     'meshViewer.html',
@@ -24,6 +24,7 @@ WEB_VIEWER_ARTIFACTS = [
 ]
 # NOTE: Change this if the corresponding artifact in WEB_VIEWER_ARTIFACTS changes
 MAIN_HTML = 'meshViewer.html'
+SHORT_SHA_LENGTH = 7
 
 
 class Mode(Enum):
@@ -32,16 +33,17 @@ class Mode(Enum):
 
 
 def print_usage_and_exit() -> None:
-    print(f'Usage: {sys.argv[0]} <mode: assemble|deploy>')
+    print(f'Usage: {sys.argv[0]} <mode: assemble|deploy> <version id (only for the deploy mode)>')
     sys.exit(-1)
 
 
-def check_arguments(args) -> Mode:
-    if len(args) != 2:
+def check_arguments() -> Mode:
+    if len(sys.argv) < 2 or sys.argv[1] not in ('assemble', 'deploy'):
         print_usage_and_exit()
-    if sys.argv[1] not in ('assemble', 'deploy'):
+    execution_mode: Mode = Mode.Assemble if sys.argv[1] == 'assemble' else Mode.Deploy
+    if execution_mode is Mode.Deploy and len(sys.argv) != 3:
         print_usage_and_exit()
-    return Mode.Assemble if sys.argv[1] == 'assemble' else Mode.Deploy
+    return execution_mode
 
 
 def check_artifacts() -> None:
@@ -111,12 +113,12 @@ def deploy():
 
     # Push the artifacts to remote
     repo.git.add(all=True)
-    repo.index.commit(f'Updating viewer to the latest version on the master branch of {SOURCE_URL}')
+    repo.index.commit(f'Updating web viewer to version {sys.argv[3][:SHORT_SHA_LENGTH]} ({SOURCE_URL}/{sys.argv[3]})')
     origin.push()
 
 
 if __name__ == '__main__':
-    mode: Mode = check_arguments(sys.argv)
+    mode: Mode = check_arguments()
     try:
         if mode == Mode.Assemble:
             check_artifacts()

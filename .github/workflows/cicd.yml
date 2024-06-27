@@ -44,5 +44,5 @@ jobs:
       - name: Publish Web Viewer Artifacts
         env:
           GITHUB_TOKEN: ${{secrets.WEB_VIEWER_DEPLOYMENT_GH_TOKEN}}
-        run: docker exec -e GITHUB_TOKEN cicd python3 web/py/artifacts.py deploy
+        run: docker exec -e GITHUB_TOKEN cicd python3 web/py/artifacts.py deploy ${GITHUB_SHA}
         if: github.event_name != 'pull_request'
