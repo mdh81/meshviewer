@@ -51,4 +51,8 @@ inline std::ostream& operator <<(std::ostream& os, Event const& event) {
     return os;
 }
 
+inline bool operator==(Event const& eventA, Event const& eventB) {
+    return eventA.getId() == eventB.getId() && eventA.getModifier() == eventB.getModifier();
+}
+
 }
