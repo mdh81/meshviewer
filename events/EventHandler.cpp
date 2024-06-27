@@ -53,7 +53,13 @@ namespace {
     };
 
     auto cursorPositionListener = [](GLFWwindow* window, double x, double y) {
-        EventHandler{}.raiseEvent(Event{EventId::CursorMoved}, {static_cast<float>(x), static_cast<float>(y)});
+        // glfwSetCursorPosCallback is triggered even when the cursor is outside the window. Only handle cursor events
+        // that happen within the window
+        int width{}, height{};
+        glfwGetWindowSize(window, &width, &height);
+        if (x > 0 && y > 0 && x < width && y < height) {
+            EventHandler{}.raiseEvent(Event{EventId::CursorMoved}, {static_cast<float>(x), static_cast<float>(y)});
+        }
     };
 }
 
@@ -103,6 +109,7 @@ std::string EventHandler::executeCallback(Callback::ObservingPointer callback, E
 }
 
 void EventHandler::raiseEvent(Event const& event, EventData&& eventData) {
+    // Call event handler
     auto callback = getEventHandler(event);
     if (!callback.expired()) {
         std::string error = executeCallback(callback, std::move(eventData));
@@ -111,6 +118,8 @@ void EventHandler::raiseEvent(Event const& event, EventData&& eventData) {
             ss << event;
             throw std::runtime_error("Incompatible event data " + ss.str() + ' ' + error);
         }
+        // Call post-event handler
+        executeDataEventCallback(getEventHandler(EventId::EventProcessingCompleted), {event});
     } else if (isDebugOn()) {
         std::cerr << "No callback associated with " << event << std::endl;
     }

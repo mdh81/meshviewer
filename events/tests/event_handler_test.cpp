@@ -27,12 +27,16 @@ class EventHandlerTest {
 
 } }
 
-class CallbackImplementer : public mv::MeshViewerObject {
-    public:
+struct CallbackImplementer : mv::MeshViewerObject {
         void handleOKey() { cout << "O was pressed"; }
         void handlePKey() { cout << "P was pressed"; }
         void handleLeftMouse() { cout << "Left mouse was pressed"; }
         void handleMiddleMouseWithShiftDown(std::vector<std::any>&& eventData) { cout << "Middle mouse was pressed with shift down"; }
+        void handleTestEvent() {}
+        void handlePostEventCallback(EventData&& eventData) {
+            Event event = std::any_cast<Event>(eventData[0]);
+            std::puts(std::format("{} called for event {} {}", __PRETTY_FUNCTION__, event.getId(), event.getModifier()).c_str());
+        }
 };
 
 TEST(EventHandler, CallbackRegistration) {
@@ -72,4 +76,15 @@ TEST(EventHandler, RaiseEvent) {
     testing::internal::CaptureStdout();
     EventHandlerTest().simulateMouseButtonPress(GLFW_MOUSE_BUTTON_MIDDLE, GLFW_MOD_SHIFT);
     ASSERT_EQ(testing::internal::GetCapturedStdout(), "Middle mouse was pressed with shift down");
+}
+
+TEST(EventHandler, WillCallPostEventHandlerAfterProcessingAnEvent) {
+    EventHandler eh;
+    CallbackImplementer tester;
+    eh.registerBasicEventCallback({100, 100}, tester, &CallbackImplementer::handleTestEvent);
+    eh.registerDataEventCallback(EventId::EventProcessingCompleted, tester, &CallbackImplementer::handlePostEventCallback);
+    testing::internal::CaptureStdout();
+    eh.raiseEvent({100, 100});
+    ASSERT_EQ(testing::internal::GetCapturedStdout(),
+              "void CallbackImplementer::handlePostEventCallback(EventData &&) called for event 100 100\n");
 }
