@@ -27,6 +27,7 @@ namespace mv::viewer {
         void notifyMouseWheelOrTouchPadScrolled(events::EventData&&);
         void notifyLeftMousePressed();
         void notifyLeftMouseReleased();
+        void notifyEventProcessingComplete(events::EventData&&);
 
 
     private:
@@ -73,7 +74,8 @@ namespace mv::viewer {
         common::Point2D cursorPositionDifference;
         common::UniquePointer<mv::scene::Scene> scene;
         bool printGLInfoOnStartup;
-        bool leftMouseDown{};
+        bool leftMouseDown;
+        bool needsRedraw;
 
         // Member functions
     private:

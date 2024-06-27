@@ -38,7 +38,10 @@ ViewerImpl::ViewerImpl(unsigned windowWidth, unsigned windowHeight)
     , frameBufferId(0)
     , imageTextureId(0)
     , windowResized{}
-    , printGLInfoOnStartup{true} {
+    , printGLInfoOnStartup{true}
+    , leftMouseDown{}
+    , needsRedraw{}
+    , window{} {
 
     // Register event handlers
     EventHandler eventHandler{};
@@ -57,9 +60,12 @@ ViewerImpl::ViewerImpl(unsigned windowWidth, unsigned windowHeight)
             Event{events::EventId::Scrolled}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
 
     eventHandler.registerBasicEventCallback(
-            Event(MouseButton::Left, ButtonAction::Press), *this, &ViewerImpl::notifyLeftMousePressed);
+            Event{MouseButton::Left, ButtonAction::Press}, *this, &ViewerImpl::notifyLeftMousePressed);
     eventHandler.registerBasicEventCallback(
-            Event(MouseButton::Left, ButtonAction::Release), *this, &ViewerImpl::notifyLeftMouseReleased);
+            Event{MouseButton::Left, ButtonAction::Release}, *this, &ViewerImpl::notifyLeftMouseReleased);
+
+    eventHandler.registerDataEventCallback(
+            Event{events::EventId::EventProcessingCompleted}, *this, &ViewerImpl::notifyEventProcessingComplete);
 
     ViewerImpl::RenderLoop::viewer = this;
 }
@@ -135,6 +141,7 @@ void ViewerImpl::notifyFrameBufferResized(mv::events::EventData&& eventData) {
     windowWidth = std::any_cast<unsigned>(eventData.at(2));
     windowHeight = std::any_cast<unsigned>(eventData.at(3));
     windowResized = true;
+    needsRedraw = true;
 }
 
 void ViewerImpl::notifyCursorMoved(events::EventData&& eventData) {
@@ -164,6 +171,19 @@ void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventDat
         eventHandler.raiseEvent(events::EventId::Panned, {cursorPosition, cursorPositionDifference});
     } else {
         eventHandler.raiseEvent(events::EventId::ScrollRotated, {cursorPosition, cursorPositionDifference});
+    }
+}
+
+void ViewerImpl::notifyEventProcessingComplete(events::EventData&& eventData) {
+    // Most events require redrawing the scene since they change the scene's display in some way. At the moment, cursor
+    // moved event by itself is not an event that changes the scene, so it is filtered out while the rest of the events
+    // once their processing is completed sets the "dirty" flag
+    if (eventData.size() != 1) {
+        throw std::runtime_error("Incorrect event data for event processing completed event. Id of processed event "
+                                 "must be specified");
+    }
+    if (std::any_cast<events::Event>(eventData[0]) != events::EventId::CursorMoved) {
+        needsRedraw = true;
     }
 }
 
@@ -234,32 +254,42 @@ void ViewerImpl::RenderLoop::draw() {
         }
 #endif
 
-        if (viewer->windowResized) {
-            viewer->scene->notifyDisplayResized(DisplayDimensions{viewer->windowWidth, viewer->windowHeight, viewer->frameBufferWidth, viewer->frameBufferHeight});
-            viewer->windowResized = false;
+        if (viewer->needsRedraw) {
+
+            if (viewer->isDebugOn()) {
+                std::puts(std::format("{}: Viewer was modified. Redrawing the scene...", __PRETTY_FUNCTION__).c_str());
+            }
+
+            if (viewer->windowResized) {
+                viewer->scene->notifyDisplayResized(DisplayDimensions{viewer->windowWidth, viewer->windowHeight,
+                                                                      viewer->frameBufferWidth, viewer->frameBufferHeight});
+                viewer->windowResized = false;
+            }
+
+            if (viewer->renderToImage) {
+                viewer->prepareOffscreenRender();
+                glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, viewer->frameBufferId);
+            }
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            viewer->scene->render();
+
+            if (viewer->renderToImage) {
+                viewer->saveAsImage();
+            }
+
+            // Swap buffers
+            glfwSwapBuffers(viewer->window);
+
+            viewer->needsRedraw = false;
         }
 
-        if (viewer->renderToImage) {
-            viewer->prepareOffscreenRender();
-            glCallWithErrorCheck(glBindFramebuffer, GL_FRAMEBUFFER, viewer->frameBufferId);
-        }
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        viewer->scene->render();
-
-        if (viewer->renderToImage) {
-            viewer->saveAsImage();
-        }
-
-        // Swap buffers
-        glfwSwapBuffers(viewer->window);
+#ifndef EMSCRIPTEN
         glfwPollEvents();
-
-#ifndef EMSCRIPTEN // Check if the ESC key was pressed or the window was closed
     }
     while (glfwGetKey(viewer->window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-           glfwWindowShouldClose(viewer->window) == 0);
+           glfwWindowShouldClose(viewer->window) == 0); // Check if the ESC key was pressed or the window was closed
 #endif
 }
 
@@ -283,8 +313,10 @@ void ViewerImpl::render() {
         scene->add(*renderable);
     }
 
+    // TODO: Replace with glCallWithErrorCheck
     glEnable(GL_DEPTH_TEST);
     windowResized = true;
+    needsRedraw = true;
 
 #ifndef EMSCRIPTEN
     RenderLoop().draw();
