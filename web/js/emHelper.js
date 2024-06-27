@@ -69,7 +69,12 @@ var argv = [];
 // Emscripten Module object
 var Module = {
 
-    preRun: [ function(){
+    preRun: [ function() {
+
+        // Prevent the wasm runtime from running until shaders are loaded. This fixes a synchronization issue that
+        // arises intermittently on the web, where the wasm code runs before the shaders.html file is downloaded and
+        // shaders are extracted and made available through DOM
+        Module.addRunDependency('loading shaders')
 
         // convert shaders to DOM objects so the c++ code get hold of them at runtime
         loadShaders('shaders/shaders.html')
@@ -83,9 +88,14 @@ var Module = {
                     scriptTag.textContent = shaderCodeMap[shaderId];
                     document.head.appendChild(scriptTag);
                 });
+
+                // Signal wasm that runtime dependencies are satisfied
+                Module.removeRunDependency('loading shaders')
             })
             .catch(function(error) {
                 console.error(error);
+                // Mark dependency resolved
+                Module.removeRunDependency('loading shaders')
             });
     }],
 

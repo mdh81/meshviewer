@@ -31,7 +31,7 @@ void mv::EmscriptenShaderLoader::loadShader(std::string const& shaderFileName,
                 var sourceString = Module.allocate(intArrayFromString(shaderCode), ALLOC_STACK);
                 return sourceString;
             } else {
-                console.log('Failed to load shader!' + 'Shader resource ' + UTF8ToString($0) + ' was not found in DOM');
+                console.log('Failed to load shader.', 'Shader resource', UTF8ToString($0), 'was not found in DOM');
                 return Module.allocate(intArrayFromString(' '), ALLOC_STACK);
             }
         }, shaderName.data()
