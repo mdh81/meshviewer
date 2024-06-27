@@ -113,7 +113,7 @@ def deploy():
 
     # Push the artifacts to remote
     repo.git.add(all=True)
-    repo.index.commit(f'Updating web viewer to version {sys.argv[3][:SHORT_SHA_LENGTH]} ({SOURCE_URL}/{sys.argv[3]})')
+    repo.index.commit(f'Updating web viewer to version {sys.argv[2][:SHORT_SHA_LENGTH]} ({SOURCE_URL}/{sys.argv[2]})')
     origin.push()
 
 
