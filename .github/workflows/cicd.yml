@@ -39,8 +39,10 @@ jobs:
 
       - name: Assemble Web Viewer Artifacts
         run: docker exec cicd python3 web/py/artifacts.py assemble
+        if: github.event_name != 'pull_request'
 
       - name: Publish Web Viewer Artifacts
         env:
           GITHUB_TOKEN: ${{secrets.WEB_VIEWER_DEPLOYMENT_GH_TOKEN}}
         run: docker exec -e GITHUB_TOKEN cicd python3 web/py/artifacts.py deploy
+        if: github.event_name != 'pull_request'
