@@ -145,7 +145,7 @@ relies on Cloudfare's [Page Rules](https://developers.cloudflare.com/rules/page-
 that Cloudflare supports is called "Always use HTTPS". Page rules can be created and updated from Cloudfare's dashboard.
 
 
-### URL forwarding
+### URL Forwarding
 
 Web viewer deployment, specifically, the use of Cloudflare workers to set custom headers relies on the use of a 
 canonical URL so that the route definition for our 
