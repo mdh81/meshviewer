@@ -52,7 +52,6 @@ namespace mv::readers {
                 };
 
         if (isExtension(file, "stl")) {
-            std::puts("Reading STL");
             return std::unique_ptr<Reader>(new STLReader(fileName, getMeshFactory()));
         } else if (isExtension(file, "ply")) {
             return std::unique_ptr<Reader>(new PLYReader(fileName, getMeshFactory()));
