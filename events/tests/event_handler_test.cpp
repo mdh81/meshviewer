@@ -35,7 +35,7 @@ struct CallbackImplementer : mv::MeshViewerObject {
         void handleTestEvent() {}
         void handlePostEventCallback(EventData&& eventData) {
             Event event = std::any_cast<Event>(eventData[0]);
-            std::puts(std::format("{} called for event {} {}", __PRETTY_FUNCTION__, event.getId(), event.getModifier()).c_str());
+            std::puts(std::format("handlePostEventCallback called for event {} {}", event.getId(), event.getModifier()).c_str());
         }
 };
 
@@ -86,5 +86,5 @@ TEST(EventHandler, WillCallPostEventHandlerAfterProcessingAnEvent) {
     testing::internal::CaptureStdout();
     eh.raiseEvent({100, 100});
     ASSERT_EQ(testing::internal::GetCapturedStdout(),
-              "void CallbackImplementer::handlePostEventCallback(EventData &&) called for event 100 100\n");
+              "handlePostEventCallback called for event 100 100\n");
 }
