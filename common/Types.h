@@ -13,7 +13,7 @@
 #include "3dmath/ProjectionMatrix.h"
 #include "3dmath/RotationMatrix.h"
 #include "OpenGLCall.h"
-
+#include "TransformMatrix.h"
 
 // TODO: Time to split this into multiple headers.
 
@@ -37,8 +37,7 @@ namespace mv::common {
     using Point2DUniquePointer = std::unique_ptr<Point2D>;
     using ProjectionMatrixPointer = std::shared_ptr<ProjectionMatrix>;
     using Point4D = math3d::Vector<float, 4>;
-    using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float>;
-    using TransformMatrix = math3d::IdentityMatrix<float, 4, 4>;
+    using OrthographicProjectionMatrix = math3d::OrthographicProjectionMatrix<float, math3d::CoordinateSystemHandedness::LeftHanded>;
     using Vector4D = math3d::Vector4<float>;
 
     constexpr const char* AppName = "MeshViewer";

@@ -163,7 +163,7 @@ namespace mv::objects {
         float height = 1.f;
         float width = height * aspectRatio;
         if (!projectionMatrix) {
-            projectionMatrix = std::make_shared<math3d::OrthographicProjectionMatrix<float>>();
+            projectionMatrix = std::make_shared<common::OrthographicProjectionMatrix>();
         }
         projectionMatrix->update({{-width, -height, -1.f}, {width, height, 1.f}});
         inverseProjectionMatrix = projectionMatrix->inverse();
