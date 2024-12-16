@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "EventHandler.h"
 #include "ConfigurationReader.h"
+#include "UserInterface.h"
 
 #ifdef OSX
 #pragma clang diagnostic push
@@ -26,6 +27,7 @@ using namespace std;
 namespace mv::viewer {
 using namespace common;
 using namespace events;
+using namespace ui;
 
 ViewerImpl* ViewerImpl::RenderLoop::viewer = nullptr;
 
@@ -175,16 +177,11 @@ void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventDat
 }
 
 void ViewerImpl::notifyEventProcessingComplete(events::EventData&& eventData) {
-    // Most events require redrawing the scene since they change the scene's display in some way. At the moment, cursor
-    // moved event by itself is not an event that changes the scene, so it is filtered out while the rest of the events
-    // once their processing is completed sets the "dirty" flag
     if (eventData.size() != 1) {
         throw std::runtime_error("Incorrect event data for event processing completed event. Id of processed event "
                                  "must be specified");
     }
-    if (std::any_cast<events::Event>(eventData[0]) != events::EventId::CursorMoved) {
-        needsRedraw = true;
-    }
+    needsRedraw = true;
 }
 
 void ViewerImpl::setColors() {
@@ -273,11 +270,15 @@ void ViewerImpl::RenderLoop::draw() {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+            UserInterface::beginDraw(viewer->window);
+
             viewer->scene->render();
 
             if (viewer->renderToImage) {
                 viewer->saveAsImage();
             }
+
+            UserInterface::endDraw();
 
             // Swap buffers
             glfwSwapBuffers(viewer->window);
@@ -290,6 +291,7 @@ void ViewerImpl::RenderLoop::draw() {
     }
     while (glfwGetKey(viewer->window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(viewer->window) == 0); // Check if the ESC key was pressed or the window was closed
+    UserInterface::stop();
 #endif
 }
 
@@ -439,12 +441,12 @@ math3d::Matrix<float, 3, 3> ViewerImpl::getViewportToWindowTransform() const {
     // formula:
     // window.x = viewport.x * windowWidth + 0;
     // window.y = -viewport.y * windowHeight + windowHeight
-    float windowWidth = static_cast<float>(this->windowWidth);
-    float windowHeight = static_cast<float>(this->windowHeight);
+    auto width = static_cast<float>(this->windowWidth);
+    auto height = static_cast<float>(this->windowHeight);
     return math3d::Matrix<float, 3, 3> {
-            {windowWidth,   0.f,            0.f},
-            {0.f,           -windowHeight,  windowHeight},
-            {0.f,            0.f,           1.f}
+            {width,   0.f,      0.f},
+            {0.f,     -height,  height},
+            {0.f,     0.f,      1.f}
     };
 
 
