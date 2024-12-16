@@ -49,7 +49,11 @@ namespace mv::ui {
         ImGui::StyleColorsDark();
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
+#ifndef EMSCRIPTEN
         ImGui_ImplOpenGL3_Init("#version 410 core");
+#else
+        ImGui_ImplOpenGL3_Init("#version 300 es");
+#endif
 
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowRounding = WindowCornerRadius;
