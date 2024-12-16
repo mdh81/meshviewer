@@ -5,18 +5,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(MeshViewer VERSION 1.0.0)
+
 # Load platform specific configuration
 # NOTE: Order is important to make sure emscripten build is configured as such
 # on all platforms
 if (EMSCRIPTEN)
     message(STATUS "Configuring Emscripten build")
-    include(emscripten.cmake)
+    include(cmake/emscripten.cmake)
 elseif (APPLE)
     message(STATUS "Configuring macOS build")
-    include(macOS.cmake)
+    include(cmake/macOS.cmake)
 elseif (LINUX)
     message(STATUS "Configuring Linux build")
-    include(ubuntu.cmake)
+    include(cmake/ubuntu.cmake)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
@@ -37,20 +38,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 endif()
 
-# get gtest
-if (enableTesting)
-    enable_testing()
-    include(FetchContent)
-    FetchContent_Declare(
-      googletest
-      GIT_REPOSITORY https://github.com/google/googletest.git
-      GIT_TAG release-1.11.0
-    )
-    FetchContent_MakeAvailable(googletest)
-    include(common/testsupport/TestSupport.cmake)
-endif()
-
-
 # Define app name as a variable so submodules can set target properties for the app
 set(appName meshViewer)
 
@@ -58,12 +45,14 @@ set(appName meshViewer)
 add_subdirectory(3dmath)
 # Every other submodule is dependent on 3dmath
 include_directories(3dmath/include)
+include(${CMAKE_SOURCE_DIR}/common/testsupport/TestSupport.cmake)
 add_subdirectory(events)
 add_subdirectory(mesh)
 add_subdirectory(objects)
 add_subdirectory(common)
 add_subdirectory(readers)
 add_subdirectory(shaders)
+add_subdirectory(ui)
 add_subdirectory(viewer)
 add_subdirectory(config)
 add_subdirectory(writers)
@@ -91,6 +80,7 @@ target_link_libraries(
     viewer
     events
     models
+    ui
     ${glLibs}
 )
 

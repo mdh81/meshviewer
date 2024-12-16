@@ -15,6 +15,7 @@ target_include_directories(
     ../shaders
     ../objects
     ../config
+    ../ui
 )
 
 if (enableTesting)

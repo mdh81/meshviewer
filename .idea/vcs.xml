@@ -5,6 +5,7 @@
     <mapping directory="$PROJECT_DIR$/3dmath" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/asan_build/_deps/googletest-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/googletest-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/dependencies/imgui" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/deployment" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/linux_build_Release/_deps/googletest-src" vcs="Git" />
   </component>
