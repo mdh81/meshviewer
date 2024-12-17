@@ -3,6 +3,7 @@
 #   GCC is the compiler of choice just to make sure the code is conformant with both clang and gcc
 #   Mesa GL is used as the OpenGL implementation
 
+include(${CMAKE_SOURCE_DIR}/cmake/dependencies.cmake)
 
 set(LIBRARY_PATH /usr/lib/x86_64-linux-gnu/)
 add_library(GLEW::glew SHARED IMPORTED GLOBAL)
