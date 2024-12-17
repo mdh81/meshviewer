@@ -1,6 +1,7 @@
 #include "UserInterface.h"
 #include "Texture.h"
 #include "OpenGLCall.h"
+#include "Util.h"
 
 #include "GLFW/glfw3.h"
 #include "imgui.h"
@@ -27,12 +28,6 @@ namespace mv::ui {
     }
 
     void UserInterface::initialize(GLFWwindow* window) {
-        int windowWidth {}, windowHeight{};
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-        windowSize.x = static_cast<float>(windowWidth);
-        windowSize.y = static_cast<float>(windowHeight);
-        setPosition(Position::Bottom);
-
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
@@ -44,7 +39,7 @@ namespace mv::ui {
 
         io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto-Medium.ttf", 16.f);
 
-       loadButtonTextures("assets/textures");
+        loadButtonTextures("assets/textures");
 
         ImGui::StyleColorsDark();
 
@@ -54,10 +49,8 @@ namespace mv::ui {
 #else
         ImGui_ImplOpenGL3_Init("#version 300 es");
 #endif
-
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowRounding = WindowCornerRadius;
-
         initialized = true;
     }
 
@@ -105,7 +98,6 @@ namespace mv::ui {
             origin.y = windowSize.y - ButtonSize - PanelMargin - 2 * ButtonMargin;
             dimension.x = static_cast<float>(panelSize);
             dimension.y = ButtonSize + 2 * ButtonMargin;
-            std::puts(std::format("Origin: {} Dimension: {}", origin.asString(), dimension.asString()).c_str());
             isVerticallyOriented = false;
         } else if (position == Position::Right) {
             origin.x = windowSize.x - ButtonSize - PanelMargin - 2 * ButtonMargin;
@@ -136,15 +128,12 @@ namespace mv::ui {
     }
 
     void UserInterface::beginDraw(GLFWwindow* window) {
-
         if (!initialized) {
             initialize(window);
         }
-
         if (wasResized(window)) {
             handleResize(window);
         }
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -220,7 +209,6 @@ namespace mv::ui {
         ImVec2 labelSize = ImGui::GetWindowSize();
         ImGui::End();
         ImGui::PopStyleVar();
-
 
         // Triangle decoration
         ImVec2 triangleBaseCenter {labelOrigin.x + labelSize.x * 0.5f, labelOrigin.y + labelSize.y + HoverTriangleFudge};
