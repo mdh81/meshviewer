@@ -166,4 +166,6 @@ class Util {
         return true;
     }
 
+#define debugPrint(fmtString, args...) \
+    std::puts(std::format(fmtString, args).c_str());
 }
