@@ -5,12 +5,13 @@
 #include "ViewerFactory.h"
 #include "../common/Environment.h"
 #include "Util.h"
+#include "MockUserInterface.h"
 using namespace std;
 using namespace mv::scene;
 namespace mv::scene {
     class ViewportTest : public ::testing::Test {
     public:
-        bool isViewportEvent(Viewport const &viewport, mv::common::Point2D const &cursorPosition) {
+        static bool isViewportEvent(Viewport const &viewport, common::Point2D const &cursorPosition) {
             return viewport.isViewportEvent(cursorPosition);
         }
 
@@ -56,7 +57,7 @@ namespace mv::scene {
     }
 
     TEST_F(ViewportTest, IsViewportEvent) {
-        auto& v = viewer::ViewerFactory{}.getViewer();
+        auto& v = viewer::ViewerFactory::getViewer(ui::MockUserInterface{});
         Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
         viewport.notifyDisplayResized({1024, 768, 1024, 768});
         ASSERT_TRUE(isViewportEvent(viewport, common::Point2D {1024.f/2.f, 768.f/2.f}))
@@ -78,7 +79,7 @@ namespace mv::scene {
     TEST_F(ViewportTest, SharedCamera) {
         mv::common::Environment env{};
         ASSERT_TRUE(env.isUnitTestingInProgress());
-        auto& v = viewer::ViewerFactory{}.getViewer();
+        auto& v = viewer::ViewerFactory::getViewer(ui::MockUserInterface{});
         Viewport viewport({{0.0f, 0.0f}, {1.0f, 1.0f}});
         viewport.enableGradientBackground(false);
         Mock3DDrawable d1, d2;
@@ -89,7 +90,7 @@ namespace mv::scene {
     }
 
     TEST_F(ViewportTest, WindowToViewportCoordinates) {
-        auto& v = viewer::ViewerFactory{}.getViewer();
+        auto& v = viewer::ViewerFactory::getViewer(ui::MockUserInterface{});
         Viewport viewport({{0.f, 0.f}, {1.0f, 1.0f}});
         viewport.notifyDisplayResized({1024, 768, 1024, 768});
         auto windowToViewport = viewport.getWindowToViewportTransform();
@@ -112,7 +113,7 @@ namespace mv::scene {
     }
 
     TEST_F(ViewportTest, ViewportToDeviceCoordinates) {
-        auto& v = viewer::ViewerFactory{}.getViewer();
+        auto& v = viewer::ViewerFactory::getViewer(ui::MockUserInterface{});
         Viewport viewport({{0.f, 0.f}, {0.5f, 0.5f}});
         viewport.notifyDisplayResized({1024, 768, 1024, 768});
         auto viewportToDevice = viewport.getViewportToDeviceTransform();
