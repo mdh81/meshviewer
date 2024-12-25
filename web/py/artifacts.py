@@ -18,7 +18,6 @@ WEB_VIEWER_ARTIFACTS = [
     'meshViewer.data',
     'meshViewer.js',
     'meshViewer.wasm',
-    'meshViewer.worker.js',
     'shaders/shaders.html',
     'js/'
 ]
