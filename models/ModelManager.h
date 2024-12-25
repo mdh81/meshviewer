@@ -7,7 +7,10 @@
 #include <filesystem>
 #include <vector>
 #include <string>
-#include "Viewer.h"
+
+namespace mv::viewer {
+    class Viewer;
+}
 
 namespace mv::models {
 
@@ -19,9 +22,9 @@ namespace mv::models {
             DisplaySingleModel,
             DisplayMultipleModels
         };
-        ModelManager(Mode = Mode::DisplaySingleModel,
+        explicit ModelManager(Mode = Mode::DisplaySingleModel,
                      std::unique_ptr<readers::IReaderFactory const>&& = std::make_unique<readers::ReaderFactory>(),
-                     viewer::Viewer& = viewer::ViewerFactory{}.getViewer());
+                     viewer::Viewer& = viewer::ViewerFactory::getViewer());
         void setMode(Mode);
         void loadModelFiles(std::vector<std::string> const&);
         void loadModelFilesFromDirectory(std::filesystem::path const&);
@@ -47,7 +50,7 @@ namespace mv::models {
         Mode mode;
         std::unique_ptr<readers::IReaderFactory const> readerFactory;
         bool loaded;
-        mv::viewer::Viewer& viewer;
+        viewer::Viewer& viewer;
         std::mutex modelLoadMutex;
     };
 
