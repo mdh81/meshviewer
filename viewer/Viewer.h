@@ -7,6 +7,7 @@ namespace mv::viewer {
     // A viewer is a collection of scenes
     class Viewer {
         public:
+            virtual ~Viewer() = default;
             // Add drawables to the scene
             virtual void add(Drawable::DrawablePointer&& drawable) = 0;
             virtual void add(Drawable::DrawablePointers const& newDrawables) = 0;
