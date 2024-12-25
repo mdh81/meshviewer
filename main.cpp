@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     }
 
     // Render loop
-    ViewerFactory{}.getViewer().render();
+    ViewerFactory::getViewer().render();
 
     return EXIT_SUCCESS;
 }
