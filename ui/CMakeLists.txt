@@ -16,7 +16,9 @@ target_link_libraries(ui events)
 
 target_include_directories(ui PUBLIC
     ${glIncludeDirectories}
-    ${imgui_SOURCE_DIR})
+    ${imgui_SOURCE_DIR}
+    .
+)
 
 file(
     COPY
