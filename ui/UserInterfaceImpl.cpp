@@ -122,7 +122,7 @@ namespace mv::ui {
         windowSize.x = windowWidth; // NOLINT: narrowing conversion
         windowSize.y = windowHeight; // NOLINT: narrowing conversion
         float scaleX, scaleY;
-        glfwGetWindowContentScale(window, &scaleX, & scaleY);
+        glfwGetWindowContentScale(window, &scaleX, &scaleY);
         ImGui::GetIO().DisplaySize = ImVec2{windowSize.x * scaleX, windowSize.y * scaleY};
         setPosition(position);
     }
