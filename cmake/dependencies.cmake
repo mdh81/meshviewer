@@ -26,7 +26,7 @@ FetchContent_MakeAvailable(imgui)
 
 # GL libraries
 # TODO: Manage GLEW, GLFW3 through fetch content
-if (NOT DEFINED EMSCRIPTEN)
+if (NOT DEFINED EMSCRIPTEN AND NOT DEFINED LINUX)
     find_package(GLEW REQUIRED)
     find_package(GLFW3 REQUIRED)
     find_package(OpenGL REQUIRED)
