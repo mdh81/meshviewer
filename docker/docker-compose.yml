@@ -16,6 +16,7 @@ services:
       - "6911:6901"
   # Service to run the container used for CI/CD builds
   cicd:
+    container_name: mvlinux 
     image: mdh81/mvlinux-cicd
     volumes:
       - ../:/meshviewer
