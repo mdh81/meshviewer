@@ -18,7 +18,7 @@ foreach(test ${allTests})
         gtest_main
         shaders
         common
-        GLEW::GLEW
+        ${glLibs}
     )
     gtest_discover_tests(${test})
 endforeach(test)
