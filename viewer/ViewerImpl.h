@@ -2,6 +2,7 @@
 #include "Viewer.h"
 #include "EventTypes.h"
 #include "Scene.h"
+#include "UserInterface.h"
 #include <memory>
 
 class GLFWwindow;
@@ -33,11 +34,10 @@ namespace mv::viewer {
     private:
         class RenderLoop {
         public:
-            RenderLoop() {}
             static void draw();
         private:
-            static mv::viewer::ViewerImpl* viewer;
-            friend class mv::viewer::ViewerImpl;
+            static ViewerImpl* viewer;
+            friend class ViewerImpl;
         };
 
         void createWindow();
@@ -50,12 +50,13 @@ namespace mv::viewer {
     // the friend factory class
     private:
         friend class ViewerFactory;
-        explicit ViewerImpl(unsigned winWidth=1024, unsigned winHeight=768);
+        explicit ViewerImpl(ui::UserInterface& ui, unsigned winWidth=1024, unsigned winHeight=768);
         ~ViewerImpl() = default;
-        ViewerImpl(const Viewer&) = delete;
-        ViewerImpl(Viewer&&) = delete;
-        ViewerImpl& operator=(const Viewer&) = delete;
-        ViewerImpl& operator=(Viewer&&) = delete;
+    public:
+        ViewerImpl(ViewerImpl const&) = delete;
+        ViewerImpl(ViewerImpl&&) = delete;
+        ViewerImpl& operator=(ViewerImpl const&) = delete;
+        ViewerImpl& operator=(ViewerImpl&&) = delete;
 
         // Member data
     private:
@@ -76,6 +77,7 @@ namespace mv::viewer {
         bool printGLInfoOnStartup;
         bool leftMouseDown;
         bool needsRedraw;
+        ui::UserInterface& ui;
 
         // Member functions
     private:

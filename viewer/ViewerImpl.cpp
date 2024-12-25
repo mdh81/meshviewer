@@ -31,7 +31,7 @@ using namespace ui;
 
 ViewerImpl* ViewerImpl::RenderLoop::viewer = nullptr;
 
-ViewerImpl::ViewerImpl(unsigned windowWidth, unsigned windowHeight)
+ViewerImpl::ViewerImpl(mv::ui::UserInterface& ui, unsigned windowWidth, unsigned windowHeight)
     : windowWidth(windowWidth)
     , windowHeight(windowHeight)
     , frameBufferWidth(windowWidth)
@@ -43,7 +43,8 @@ ViewerImpl::ViewerImpl(unsigned windowWidth, unsigned windowHeight)
     , printGLInfoOnStartup{true}
     , leftMouseDown{}
     , needsRedraw{}
-    , window{} {
+    , window{}
+    , ui(ui) {
 
     // Register event handlers
     EventHandler eventHandler{};
@@ -69,7 +70,7 @@ ViewerImpl::ViewerImpl(unsigned windowWidth, unsigned windowHeight)
     eventHandler.registerDataEventCallback(
             Event{events::EventId::EventProcessingCompleted}, *this, &ViewerImpl::notifyEventProcessingComplete);
 
-    ViewerImpl::RenderLoop::viewer = this;
+    RenderLoop::viewer = this;
 }
 
 void ViewerImpl::createWindow() {
@@ -112,8 +113,9 @@ void ViewerImpl::createWindow() {
 #ifndef EMSCRIPTEN
     // Initialize GLEW
     glewExperimental = true;
-    if (glewInit() != GLEW_OK) {
-        throw std::runtime_error("Unable to initialize GLEW");
+    auto status = glewInit();
+    if (status != GLEW_OK) {
+        throw std::runtime_error(std::format("Unable to initialize GLEW. Encountered error {}", status));
     }
 #endif
 
@@ -270,7 +272,7 @@ void ViewerImpl::RenderLoop::draw() {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            UserInterface::beginDraw(viewer->window);
+            viewer->ui.beginDraw(viewer->window);
 
             viewer->scene->render();
 
@@ -278,7 +280,7 @@ void ViewerImpl::RenderLoop::draw() {
                 viewer->saveAsImage();
             }
 
-            UserInterface::endDraw();
+            viewer->ui.endDraw();
 
             // Swap buffers
             glfwSwapBuffers(viewer->window);
@@ -291,7 +293,7 @@ void ViewerImpl::RenderLoop::draw() {
     }
     while (glfwGetKey(viewer->window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(viewer->window) == 0); // Check if the ESC key was pressed or the window was closed
-    UserInterface::stop();
+    viewer->ui.stop();
 #endif
 }
 
@@ -321,7 +323,7 @@ void ViewerImpl::render() {
     needsRedraw = true;
 
 #ifndef EMSCRIPTEN
-    RenderLoop().draw();
+    RenderLoop::draw();
 #else
     std::cerr << "Setting RenderLoop::draw() as emscripten main loop" << std::endl;
     emscripten_set_main_loop(RenderLoop::draw, 0, 1);
