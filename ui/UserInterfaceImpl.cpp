@@ -1,4 +1,4 @@
-#include "UserInterface.h"
+#include "UserInterfaceImpl.h"
 #include "Texture.h"
 #include "OpenGLCall.h"
 #include "Util.h"
@@ -15,19 +15,19 @@ namespace mv::ui {
 
     static constexpr int MandatoryGLZeroBorder{};
 
-    std::unordered_map<std::string, UserInterface::Button> UserInterface::buttons = {
+    std::unordered_map<std::string, UserInterfaceImpl::Button> UserInterfaceImpl::buttons = {
             {"models",   {0, "Models",   "Select Models"}},
             {"colors",   {1, "Colors",   "Select Colors"}},
             {"camera",   {2, "Camera",   "Set View"}},
             {"settings", {3, "Settings", "Configure Viewer"}}
     };
 
-    void UserInterface::Button::BoundingBox::assign(ImVec2 const& upperLeft, ImVec2 const& lowerRight) {
+    void UserInterfaceImpl::Button::BoundingBox::assign(ImVec2 const& upperLeft, ImVec2 const& lowerRight) {
         upperLeftCorner.x = upperLeft.x; upperLeftCorner.y = upperLeft.y;
         lowerRightCorner.x = lowerRight.x; lowerRightCorner.y = lowerRight.y;
     }
 
-    void UserInterface::initialize(GLFWwindow* window) {
+    void UserInterfaceImpl::initialize(GLFWwindow* window) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
@@ -54,7 +54,7 @@ namespace mv::ui {
         initialized = true;
     }
 
-    void UserInterface::loadButtonTextures(std::filesystem::path const& textureDir) {
+    void UserInterfaceImpl::loadButtonTextures(std::filesystem::path const& textureDir) {
         identifyButtonTextures(textureDir);
         for (auto const& [textureName, texture] : textures) {
             GLuint textureId;
@@ -77,7 +77,7 @@ namespace mv::ui {
         textures.clear();
     }
 
-    void UserInterface::identifyButtonTextures(std::filesystem::path const& textureDir) {
+    void UserInterfaceImpl::identifyButtonTextures(std::filesystem::path const& textureDir) {
         std::filesystem::directory_iterator directoryIterator{textureDir};
         for (auto& entry : directoryIterator) {
             if (entry.is_regular_file()) {
@@ -90,7 +90,7 @@ namespace mv::ui {
         }
     }
 
-    void UserInterface::setPosition(Position newPosition) {
+    void UserInterfaceImpl::setPosition(Position newPosition) {
         position = newPosition;
         auto panelSize = static_cast<float>(ButtonSize * NumButtons + ((NumButtons +1) * ButtonSpacing));
         if (position == Position::Bottom) {
@@ -110,13 +110,13 @@ namespace mv::ui {
         }
     }
 
-    bool UserInterface::wasResized(GLFWwindow* window) {
+    bool UserInterfaceImpl::wasResized(GLFWwindow* window) {
         int windowWidth {}, windowHeight{};
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         return (windowWidth != windowSize.x || windowHeight != windowSize.y); // NOLINT: narrowing conversion
     }
 
-    void UserInterface::handleResize(GLFWwindow* window) {
+    void UserInterfaceImpl::handleResize(GLFWwindow* window) {
         int windowWidth {}, windowHeight{};
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         windowSize.x = windowWidth; // NOLINT: narrowing conversion
@@ -127,7 +127,7 @@ namespace mv::ui {
         setPosition(position);
     }
 
-    void UserInterface::beginDraw(GLFWwindow* window) {
+    void UserInterfaceImpl::beginDraw(GLFWwindow* window) {
         if (!initialized) {
             initialize(window);
         }
@@ -144,7 +144,7 @@ namespace mv::ui {
         ImGui::EndFrame();
     }
 
-    void UserInterface::drawPanel() {
+    void UserInterfaceImpl::drawPanel() {
         ImGui::Begin("ButtonBar", nullptr,
                      ImGuiWindowFlags_NoTitleBar |
                      ImGuiWindowFlags_NoMove |
@@ -153,7 +153,7 @@ namespace mv::ui {
         ImGui::End();
     }
 
-    void UserInterface::setNextPosition(unsigned char buttonIndex) {
+    void UserInterfaceImpl::setNextPosition(unsigned char buttonIndex) {
         if (buttonIndex == 0) {
             ImGui::SetCursorScreenPos({origin.x + ButtonMargin, origin.y + ButtonMargin});
         } else {
@@ -169,7 +169,7 @@ namespace mv::ui {
         }
     }
 
-    void UserInterface::drawButtons() {
+    void UserInterfaceImpl::drawButtons() {
         calculateHoverLabelWidth();
         drawModelControls();
         drawColorControls();
@@ -177,7 +177,7 @@ namespace mv::ui {
         drawSettingsControls();
     }
 
-    void UserInterface::calculateHoverLabelWidth() {
+    void UserInterfaceImpl::calculateHoverLabelWidth() {
         auto maxWidth = 0.f;
         for (auto& [buttonId, button] : buttons) {
             auto textSize = ImGui::CalcTextSize(button.hoverLabel.c_str());
@@ -188,7 +188,7 @@ namespace mv::ui {
         hoverLabelWidth = maxWidth;
     }
 
-    void UserInterface::drawButtonLabel(std::string const& text) {
+    void UserInterfaceImpl::drawButtonLabel(std::string const& text) {
         auto textSize = ImGui::CalcTextSize(text.c_str());
         auto buttonMin = ImGui::GetItemRectMin();
         ImVec2 buttonCenter = { buttonMin.x + ButtonSize * 0.5f,
@@ -225,7 +225,7 @@ namespace mv::ui {
         ImGui::End();
     }
 
-    void UserInterface::drawModelControls() {
+    void UserInterfaceImpl::drawModelControls() {
         setNextPosition(buttons["models"].position);
         ImGui::Image(openglTextures["models"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
@@ -234,7 +234,7 @@ namespace mv::ui {
         buttons["models"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
-    void UserInterface::drawColorControls() {
+    void UserInterfaceImpl::drawColorControls() {
         setNextPosition(buttons["colors"].position);
         ImGui::Image(openglTextures["colors"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
@@ -243,7 +243,7 @@ namespace mv::ui {
         buttons["colors"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
-    void UserInterface::drawCameraControls() {
+    void UserInterfaceImpl::drawCameraControls() {
         setNextPosition(buttons["camera"].position);
         ImGui::Image(openglTextures["camera"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
@@ -252,7 +252,7 @@ namespace mv::ui {
         buttons["camera"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
-    void UserInterface::drawSettingsControls() {
+    void UserInterfaceImpl::drawSettingsControls() {
         setNextPosition(buttons["settings"].position);
         ImGui::Image(openglTextures["settings"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
@@ -261,13 +261,13 @@ namespace mv::ui {
         buttons["settings"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
-    void UserInterface::stop() {
+    void UserInterfaceImpl::stop() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
 
-    void UserInterface::endDraw() {
+    void UserInterfaceImpl::endDraw() {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
