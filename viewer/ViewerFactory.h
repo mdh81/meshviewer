@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Viewer.h"
+#include "../ui/UserInterfaceImpl.h"
 
 namespace mv::viewer {
     struct ViewerFactory {
-        Viewer& getViewer();
+        static Viewer& getViewer(ui::UserInterface&& = ui::UserInterfaceImpl{});
     };
 }
