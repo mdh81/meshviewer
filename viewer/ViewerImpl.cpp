@@ -221,8 +221,12 @@ bool ViewerImpl::isCanvasResized(CanvasDimensions& canvasDimensions) const {
     emscripten_get_canvas_element_size("#canvas", &canvasWidth, &canvasHeight);
     emscripten_get_element_css_size("#canvas", &deviceWidth, &deviceHeight);
     double pixelRatio = emscripten_get_device_pixel_ratio();
-    if (canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
-     canvasHeight != static_cast<int>(deviceHeight * pixelRatio)) {
+    bool canvasSizeChanged = canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
+            canvasHeight != static_cast<int>(deviceHeight * pixelRatio);
+    int winWidth{}, winHeight{};
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    bool windowSizeChanged = this->windowWidth != winWidth || this->windowHeight != winHeight;
+    if (canvasSizeChanged) {
         std::cout << "Emscripten Canvas Resized: "
                   << "Canvas width = " << canvasWidth << ' '
                   << "Canvas height = " << canvasHeight << ' '
@@ -237,6 +241,15 @@ bool ViewerImpl::isCanvasResized(CanvasDimensions& canvasDimensions) const {
         return true;
     } else {
         return false;
+    }
+    // NOTE: Emscripten 3.1.67 has this strange behavior where the glfw framebuffer is set external to the
+    // application
+    if (windowSizeChanged) {
+        int fbWidth{}, fbHeight{};
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+        EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized},
+                                  {static_cast<unsigned>(winWidth), static_cast<unsigned>(winHeight),
+                                   static_cast<unsigned>(fbWidth), static_cast<unsigned>(fbHeight)});
     }
 }
 #endif
