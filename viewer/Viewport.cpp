@@ -284,7 +284,7 @@ namespace mv::scene {
         if (rotateEventData.size() != 1) {
             throw std::runtime_error("Drag rotate event data is incorrect. Need the current cursor position");
         }
-        common::Point2D cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
+        auto cursorPosition = std::any_cast<common::Point2D>(rotateEventData[0]);
         if (!isViewportEvent(cursorPosition)) return;
 
         arcballController->handleDragEvent(
@@ -306,8 +306,8 @@ namespace mv::scene {
 
     math3d::Matrix<float, 3, 3> Viewport::getWindowToViewportTransform() const {
         return math3d::Matrix<float, 3, 3> {
-                {getWidth() / displayDimensions.windowWidth, 0.f,                                           0.f},
-                {0.f,                                        -getHeight() / displayDimensions.windowHeight, getHeight()},
+                {getWidth() / displayDimensions.windowWidth, 0.f,                                           0.f},         // NOLINT: Window size can be comfortably be represented in float
+                {0.f,                                        -getHeight() / displayDimensions.windowHeight, getHeight()}, // NOLINT: Ditto
                 {0.f,                                        0.f,                                           0.f}
         };
     }
