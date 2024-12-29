@@ -27,6 +27,12 @@ namespace mv::ui {
         lowerRightCorner.x = lowerRight.x; lowerRightCorner.y = lowerRight.y;
     }
 
+    void UserInterfaceImpl::calculateScaleFactor(GLFWwindow* window) {
+        float scale{};
+        glfwGetWindowContentScale(window, &scale, &scale);
+        scaleFactor = 1 / scale;
+    }
+
     void UserInterfaceImpl::initialize(GLFWwindow* window) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -51,6 +57,7 @@ namespace mv::ui {
 #endif
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowRounding = WindowCornerRadius;
+        calculateScaleFactor(window);
         initialized = true;
     }
 
@@ -92,16 +99,18 @@ namespace mv::ui {
 
     void UserInterfaceImpl::setPosition(Position newPosition) {
         position = newPosition;
+        auto displayWidth = displaySize.x * scaleFactor;
+        auto displayHeight = displaySize.y * scaleFactor;
         auto panelSize = static_cast<float>(ButtonSize * NumButtons + ((NumButtons +1) * ButtonSpacing));
         if (position == Position::Bottom) {
-            origin.x = (windowSize.x - panelSize) * 0.5f;
-            origin.y = windowSize.y - ButtonSize - PanelMargin - 2 * ButtonMargin;
+            origin.x = (displayWidth - panelSize) * 0.5f;
+            origin.y = displayHeight - ButtonSize - PanelMargin - 2 * ButtonMargin;
             dimension.x = static_cast<float>(panelSize);
             dimension.y = ButtonSize + 2 * ButtonMargin;
             isVerticallyOriented = false;
         } else if (position == Position::Right) {
-            origin.x = windowSize.x - ButtonSize - PanelMargin - 2 * ButtonMargin;
-            origin.y = (windowSize.y - panelSize) * 0.5f;
+            origin.x = displayWidth - ButtonSize - PanelMargin - 2 * ButtonMargin;
+            origin.y = (displayHeight - panelSize) * 0.5f;
             dimension.x = ButtonSize + 2 * ButtonMargin;
             dimension.y = static_cast<float>(panelSize);
             isVerticallyOriented = true;
@@ -111,19 +120,16 @@ namespace mv::ui {
     }
 
     bool UserInterfaceImpl::wasResized(GLFWwindow* window) {
-        int windowWidth {}, windowHeight{};
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-        return (windowWidth != windowSize.x || windowHeight != windowSize.y); // NOLINT: narrowing conversion
+        int displayWidth {}, displayHeight{};
+        glfwGetFramebufferSize(window, &displayWidth, &displayHeight);
+        return (displayWidth != displaySize.x || displayHeight != displaySize.y); // NOLINT: narrowing conversion
     }
 
     void UserInterfaceImpl::handleResize(GLFWwindow* window) {
-        int windowWidth {}, windowHeight{};
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-        windowSize.x = windowWidth; // NOLINT: narrowing conversion
-        windowSize.y = windowHeight; // NOLINT: narrowing conversion
-        float scaleX, scaleY;
-        glfwGetWindowContentScale(window, &scaleX, &scaleY);
-        ImGui::GetIO().DisplaySize = ImVec2{windowSize.x * scaleX, windowSize.y * scaleY};
+        int displayWidth{}, displayHeight{};
+        glfwGetFramebufferSize(window, &displayWidth, &displayHeight);
+        displaySize.x = displayWidth; // NOLINT: narrowing conversion
+        displaySize.y = displayHeight; // NOLINT: narrowing conversion
         setPosition(position);
     }
 
@@ -136,6 +142,17 @@ namespace mv::ui {
         }
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
+#ifdef EMSCRIPTEN
+        // ImGui_ImplGlfw_NewFrame sets the display size by calling glfwGetWindowSize(). ViewerImpl sets glfwWindowSize
+        // to actual frame buffer size when using emscripten. Without this change, the display is blurry on retina
+        // displays because contents are rendered into a small window and stretched to fit a larger canvas (canvas size
+        // is automtaically set by browsers to be window size * window content scale). But, this change confuses imgui
+        // since it expects glfwGetWindowSize() to return the actual window size and not the frame buffer size. This
+        // three lines tell imgui the window size and the content scale to keep its window coordinate calculations correct
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2(displaySize.x * scaleFactor, displaySize.y * scaleFactor);
+        io.DisplayFramebufferScale = ImVec2(1.f / scaleFactor, 1.f / scaleFactor);
+#endif
         ImGui::NewFrame();
         ImGui::SetNextWindowBgAlpha(PanelOpacity);
         ImGui::SetNextWindowPos({origin.x, origin.y}, ImGuiCond_Always);
@@ -149,6 +166,7 @@ namespace mv::ui {
                      ImGuiWindowFlags_NoTitleBar |
                      ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoDecoration);
+        ImGui::ShowMetricsWindow();
         drawButtons();
         ImGui::End();
     }

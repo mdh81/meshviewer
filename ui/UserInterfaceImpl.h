@@ -36,6 +36,7 @@ namespace mv::ui {
         void drawSettingsControls();
         void drawButtonLabel(std::string const& text);
         void calculateHoverLabelWidth();
+        void calculateScaleFactor(GLFWwindow*);
 
     private:
         static constexpr unsigned char NumButtons{4};
@@ -55,7 +56,7 @@ namespace mv::ui {
         inline static common::Point2D dimension{};
         inline static Position position{Position::Bottom};
         inline static bool initialized{};
-        inline static common::Point2D windowSize{};
+        inline static common::Point2D displaySize{};
         inline static bool isVerticallyOriented{};
         inline static std::unordered_map<std::string, common::Texture> textures;
         inline static std::unordered_map<std::string, unsigned> openglTextures;
@@ -72,6 +73,7 @@ namespace mv::ui {
         };
         static std::unordered_map<std::string, Button> buttons;
         static inline float hoverLabelWidth{};
+        static inline float scaleFactor{1.f};
     };
 
 }

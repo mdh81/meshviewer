@@ -146,6 +146,8 @@ void ViewerImpl::notifyFrameBufferResized(mv::events::EventData&& eventData) {
     windowHeight = std::any_cast<unsigned>(eventData.at(3));
     windowResized = true;
     needsRedraw = true;
+    std::puts(std::format("{}::{}, Window Width = {}, Window Height = {}, Fb Width = {}, Fb Height = {}",
+                          __FILE__, __FUNCTION__, windowWidth, windowHeight, frameBufferWidth, frameBufferHeight).c_str());
 }
 
 void ViewerImpl::notifyCursorMoved(events::EventData&& eventData) {
@@ -167,7 +169,7 @@ void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventDat
                                  "to correctly process the scroll event");
     }
     cursorPositionDifference = {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
-    unsigned modifierKeys = std::any_cast<unsigned>(eventData[2]);
+    auto modifierKeys = std::any_cast<unsigned>(eventData[2]);
     EventHandler eventHandler;
     if (modifierKeys & GLFW_MOD_CONTROL) {
         eventHandler.raiseEvent(events::EventId::Zoomed, {cursorPosition, cursorPositionDifference});
@@ -223,9 +225,6 @@ bool ViewerImpl::isCanvasResized(CanvasDimensions& canvasDimensions) const {
     double pixelRatio = emscripten_get_device_pixel_ratio();
     bool canvasSizeChanged = canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
             canvasHeight != static_cast<int>(deviceHeight * pixelRatio);
-    int winWidth{}, winHeight{};
-    glfwGetWindowSize(window, &winWidth, &winHeight);
-    bool windowSizeChanged = this->windowWidth != winWidth || this->windowHeight != winHeight;
     if (canvasSizeChanged) {
         std::cout << "Emscripten Canvas Resized: "
                   << "Canvas width = " << canvasWidth << ' '
@@ -236,21 +235,13 @@ bool ViewerImpl::isCanvasResized(CanvasDimensions& canvasDimensions) const {
         canvasWidth = static_cast<int> (deviceWidth * pixelRatio);
         canvasHeight = static_cast<int> (deviceHeight * pixelRatio);
         emscripten_set_canvas_element_size("#canvas", canvasWidth, canvasHeight);
-        canvasDimensions.windowWidth = canvasWidth;
-        canvasDimensions.windowHeight = canvasHeight;
+        canvasDimensions.windowWidth = deviceWidth;
+        canvasDimensions.windowHeight = deviceHeight;
+        canvasDimensions.frameBufferWidth = canvasWidth;
+        canvasDimensions.frameBufferHeight = canvasHeight;
         return true;
-    } else {
-        return false;
     }
-    // NOTE: Emscripten 3.1.67 has this strange behavior where the glfw framebuffer is set external to the
-    // application
-    if (windowSizeChanged) {
-        int fbWidth{}, fbHeight{};
-        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-        EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized},
-                                  {static_cast<unsigned>(winWidth), static_cast<unsigned>(winHeight),
-                                   static_cast<unsigned>(fbWidth), static_cast<unsigned>(fbHeight)});
-    }
+    return false;
 }
 #endif
 
@@ -262,7 +253,7 @@ void ViewerImpl::RenderLoop::draw() {
 #ifdef EMSCRIPTEN
         CanvasDimensions canvasDimensions;
         if ((viewer->windowResized = viewer->isCanvasResized(canvasDimensions))) {
-            glfwSetWindowSize(viewer->window, canvasDimensions.windowWidth, canvasDimensions.windowHeight);
+            glfwSetWindowSize(viewer->window, canvasDimensions.frameBufferWidth, canvasDimensions.frameBufferHeight);
         }
 #endif
 
