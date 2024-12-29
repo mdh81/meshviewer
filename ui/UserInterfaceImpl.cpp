@@ -166,7 +166,6 @@ namespace mv::ui {
                      ImGuiWindowFlags_NoTitleBar |
                      ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoDecoration);
-        ImGui::ShowMetricsWindow();
         drawButtons();
         ImGui::End();
     }
