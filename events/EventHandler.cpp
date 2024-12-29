@@ -31,8 +31,10 @@ namespace {
     };
 
     auto frameBufferResizeListener = [](GLFWwindow *window, int width, int height) {
-        int windowWidth, windowHeight;
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        float xScale{}, yScale{};
+        glfwGetWindowContentScale(window, &xScale, &yScale);
+        int windowWidth = static_cast<int>(width / xScale);
+        int windowHeight = static_cast<int>(height / yScale);
         EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized},
                                   {static_cast<unsigned>(width), static_cast<unsigned>(height),
                                    static_cast<unsigned>(windowWidth), static_cast<unsigned>(windowHeight)});
