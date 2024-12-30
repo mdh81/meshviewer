@@ -102,7 +102,7 @@ file(
 endforeach()
 
 # Copy textures to the binary directory
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/textures/)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/assets/textures/)
 
 file(
     GLOB
@@ -113,7 +113,7 @@ file(
 
 add_custom_target(
     textureCopy
-    ${CMAKE_COMMAND} -E copy ${textures} ${CMAKE_BINARY_DIR}/textures/
+    ${CMAKE_COMMAND} -E copy ${textures} ${CMAKE_BINARY_DIR}/assets/textures/
 )
 
 add_dependencies(${appName} textureCopy shaderCopy)
