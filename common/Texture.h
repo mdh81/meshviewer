@@ -12,7 +12,7 @@ namespace mv::common {
 
         explicit Texture(std::filesystem::path const& path) : data {nullptr, nullptr} {
             if (!exists(path)) {
-                throw std::runtime_error("Unable to load texture" + path.string());
+                throw std::runtime_error(std::format("Unable to load texture {}", path.c_str()));
             }
             int nrChannels, w, h;
             data = std::unique_ptr<pixel, decltype(&stbi_image_free)>(
@@ -23,9 +23,13 @@ namespace mv::common {
             height = static_cast<unsigned>(h);
         }
 
-        explicit Texture(char const* fileName)
+        explicit Texture(const char* fileName)
         : Texture(std::filesystem::path(mv::config::ConfigurationReader::getInstance().getValue("texturePath")) /
-                                                       fileName) {
+                  fileName) {
+        }
+
+        explicit Texture(std::string const& fileName)
+        : Texture(fileName.c_str()) {
         }
 
         Texture(Texture const&) = delete;
