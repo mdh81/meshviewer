@@ -21,11 +21,11 @@ foreach(sampleFile ${sampleFiles})
     get_filename_component(destinationFile ${sampleFile} NAME)
     set(preloadedFiles "${preloadedFiles} --preload-file ${sampleFile}@testfiles/${destinationFile}")
 endforeach(sampleFile)
-# Object Textures TODO: Make this read from assets
+# Object Textures
 file(GLOB textureFiles ${CMAKE_CURRENT_SOURCE_DIR}/objects/textures/*)
 foreach(textureFile ${textureFiles})
     get_filename_component(destinationFile ${textureFile} NAME)
-    set(preloadedFiles "${preloadedFiles} --preload-file ${textureFile}@textures/${destinationFile}")
+    set(preloadedFiles "${preloadedFiles} --preload-file ${textureFile}@assets/textures/${destinationFile}")
 endforeach(textureFile)
 # UI Textures
 file(GLOB textureFiles ${CMAKE_CURRENT_SOURCE_DIR}/ui/textures/icons/*)
