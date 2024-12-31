@@ -1,8 +1,12 @@
 #pragma once
 
-class Models {
+namespace mv::ui {
 
-public:
+    class ModelList {
 
+    public:
+        void show();
 
-};
+    };
+
+}
