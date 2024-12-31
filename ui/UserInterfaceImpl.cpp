@@ -2,6 +2,7 @@
 #include "Texture.h"
 #include "OpenGLCall.h"
 #include "Util.h"
+#include "ModelList.h"
 
 #include "GLFW/glfw3.h"
 #include "imgui.h"
@@ -247,6 +248,8 @@ namespace mv::ui {
         ImGui::Image(openglTextures["models"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
             drawButtonLabel(buttons["models"].hoverLabel);
+        } else if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+            ModelList{}.show();
         }
         buttons["models"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
