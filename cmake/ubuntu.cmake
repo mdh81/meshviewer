@@ -5,7 +5,10 @@
 
 include(${CMAKE_SOURCE_DIR}/cmake/dependencies.cmake)
 
-set(LIBRARY_PATH /usr/lib/x86_64-linux-gnu/)
+# Get system architecture to compose the correct library path
+execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set(LIBRARY_PATH "/usr/lib/${arch}-linux-gnu")
 add_library(GLEW::glew SHARED IMPORTED GLOBAL)
 set_target_properties(GLEW::glew PROPERTIES IMPORTED_LOCATION ${LIBRARY_PATH}/libGLEW.so)
 target_include_directories(GLEW::glew INTERFACE /usr/include)
