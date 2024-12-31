@@ -7,6 +7,9 @@
 
 namespace mv::events {
 
+
+// NOLINTBEGIN(readability-convert-member-functions-to-static)
+
 namespace {
     auto keyListener = [](GLFWwindow* window, int key, int scancode, int action, int modifiers) {
         EventHandler eventHandler;
@@ -33,8 +36,8 @@ namespace {
     auto frameBufferResizeListener = [](GLFWwindow *window, int width, int height) {
         float xScale{}, yScale{};
         glfwGetWindowContentScale(window, &xScale, &yScale);
-        int windowWidth = static_cast<int>(width / xScale);
-        int windowHeight = static_cast<int>(height / yScale);
+        int windowWidth = static_cast<int>(static_cast<float>(width) / xScale);
+        int windowHeight = static_cast<int>(static_cast<float>(height) / yScale);
         EventHandler{}.raiseEvent(Event{EventId::FrameBufferResized},
                                   {static_cast<unsigned>(width), static_cast<unsigned>(height),
                                    static_cast<unsigned>(windowWidth), static_cast<unsigned>(windowHeight)});
@@ -73,9 +76,9 @@ void EventHandler::start(GLFWwindow* window) {
         glfwSetScrollCallback(window, scrollListener);
         glfwSetCursorPosCallback(window, cursorPositionListener);
         started = true;
-    } else {
-        std::runtime_error("Event handler already initialized");
+        return;
     }
+    throw std::runtime_error("Event handler already initialized");
 }
 
 Callback::ObservingPointer EventHandler::getEventHandler(Event const& event) const {
@@ -87,44 +90,61 @@ Callback::ObservingPointer EventHandler::getEventHandler(Event const& event) con
     return callback;
 }
 
-std::string EventHandler::executeBasicEventCallback(Callback::ObservingPointer callback) const {
+void EventHandler::executeBasicEventCallback(Callback::ObservingPointer callback) const {
     bool isCompatible;
     auto basicEventCallback = std::dynamic_pointer_cast<BasicEventCallback>(callback.lock());
     if ((isCompatible = (basicEventCallback != nullptr))) {
         basicEventCallback->call();
     }
-    return !isCompatible ? "Basic event callbacks cannot be executed with dynamic data" : std::string{};
+    if (!isCompatible) {
+        throw std::runtime_error("Basic event callbacks cannot be executed with dynamic data");
+    }
 }
 
-std::string EventHandler::executeDataEventCallback(Callback::ObservingPointer callback, EventData&& eventData) const {
+void EventHandler::executeDataEventCallback(Callback::ObservingPointer callback, EventData&& eventData) const {
     bool isCompatible;
     auto dataEventCallback = std::dynamic_pointer_cast<DataEventCallback>(callback.lock());
     if ((isCompatible = (dataEventCallback != nullptr))) {
         dataEventCallback->call(std::move(eventData));
     }
-    return !isCompatible ? "Data event callbacks cannot be executed without event data" : std::string{};
+    if (!isCompatible) {
+        throw std::runtime_error("Data event callbacks cannot be executed without event data");
+    }
 }
 
-std::string EventHandler::executeCallback(Callback::ObservingPointer callback, EventData&& eventData) const {
+void EventHandler::executeCallback(Callback::ObservingPointer callback, EventData&& eventData) const {
     return eventData.empty() ? executeBasicEventCallback(callback) :
                                executeDataEventCallback(callback, std::move(eventData));
 }
 
-void EventHandler::raiseEvent(Event const& event, EventData&& eventData) {
+void EventHandler::raiseEvent(Event const& event, EventData&& eventData) const {
     // Call event handler
     auto callback = getEventHandler(event);
     if (!callback.expired()) {
-        std::string error = executeCallback(callback, std::move(eventData));
-        if (!error.empty()) {
-            std::stringstream ss;
-            ss << event;
-            throw std::runtime_error("Incompatible event data " + ss.str() + ' ' + error);
-        }
+        executeCallback(callback, std::move(eventData));
         // Call post-event handler
-        executeDataEventCallback(getEventHandler(EventId::EventProcessingCompleted), {event});
+        auto postEventCallback = getEventHandler(EventId::EventProcessingCompleted);
+        if (!postEventCallback.expired()) {
+            executeDataEventCallback(postEventCallback, {event});
+        }
     } else if (isDebugOn()) {
         std::cerr << "No callback associated with " << event << std::endl;
     }
 }
+
+// Check if modifier key is currently pressed
+bool EventHandler::isModifierKeyPressed(unsigned modifierKey) const {
+    return modifierKeys & modifierKey;
+}
+
+void EventHandler::notifyModifierKeyPressed(unsigned modifierKey) {
+    modifierKeys |= modifierKey;
+}
+
+void EventHandler::notifyModifierKeyReleased(unsigned modifierKey) {
+    modifierKeys &= ~modifierKey;
+}
+
+// NOLINTEND(readability-convert-member-functions-to-static)
 
 }
