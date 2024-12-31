@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 if [[ -z "$1" ]]; then
     echo "Usage: $0 <build dir>"
     exit -1
@@ -7,6 +10,6 @@ testDirs=$(find . -name CTestTestfile.cmake -exec dirname {} \; | grep -E -v "_d
 for testDir in $testDirs; 
 do 
     pushd "$testDir"
-    ctest .
+    ctest . --stop-on-failure --output-on-failure
     popd 
 done
