@@ -4,6 +4,7 @@
 #include "Types.h"
 #include <format>
 #include <memory>
+#include <mutex>
 
 namespace mv::models {
 
