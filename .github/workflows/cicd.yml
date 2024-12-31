@@ -29,7 +29,7 @@ jobs:
         run: docker exec cicd cmake --build build --config Release --parallel 
 
       - name: Test
-        run: docker exec cicd ctest  --test-dir build --rerun-failed --output-on-failure
+        run: docker exec cicd ctest --test-dir build --rerun-failed --output-on-failure
 
       - name: Configure Emscripten Build
         run: docker exec cicd emcmake cmake -B build_web -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN=ON
