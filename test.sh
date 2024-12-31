@@ -6,10 +6,12 @@ if [[ -z "$1" ]]; then
     exit -1
 fi
 
-testDirs=$(find . -name CTestTestfile.cmake -exec dirname {} \; | grep -E -v "_deps|tests")
+buildDir="$1"
+
+testDirs=$(find "$buildDir" -name CTestTestfile.cmake -exec dirname {} \; | grep -E -v "_deps|tests")
 for testDir in $testDirs; 
 do 
-    pushd "$testDir"
+    pushd "$testDir" &> /dev/null
     ctest . --stop-on-failure --output-on-failure
-    popd 
+    popd &> /dev/null
 done
