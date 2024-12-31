@@ -16,3 +16,5 @@ venv
 octave-workspace
 Testing/*
 __pycache__*
+dependencies/
+web/response_headers/node_modules/
