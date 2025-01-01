@@ -3,7 +3,6 @@
 #include "EventTypes.h"
 #include "Scene.h"
 #include "UserInterface.h"
-#include <memory>
 
 class GLFWwindow;
 
@@ -51,7 +50,7 @@ namespace mv::viewer {
     private:
         friend class ViewerFactory;
         explicit ViewerImpl(ui::UserInterface& ui, unsigned winWidth=1024, unsigned winHeight=768);
-        ~ViewerImpl() = default;
+        ~ViewerImpl() override = default;
     public:
         ViewerImpl(ViewerImpl const&) = delete;
         ViewerImpl(ViewerImpl&&) = delete;

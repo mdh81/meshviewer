@@ -15,6 +15,8 @@
 
 #include "GLFW/glfw3.h"
 
+// TODO: Move emscripten specific logic into a new subclass named EmscriptenViewerImpl.
+
 #ifdef EMSCRIPTEN
 #include "emscripten.h"
 #include "emscripten/html5.h"
@@ -52,15 +54,15 @@ ViewerImpl::ViewerImpl(mv::ui::UserInterface& ui, unsigned windowWidth, unsigned
             Event{GLFW_KEY_S, GLFW_MOD_CONTROL | GLFW_MOD_SHIFT}, *this, &ViewerImpl::saveSnapshot);
 
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::FrameBufferResized}, *this, &ViewerImpl::notifyFrameBufferResized);
+            Event{EventId::FrameBufferResized}, *this, &ViewerImpl::notifyFrameBufferResized);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::CursorMoved}, *this, &ViewerImpl::notifyCursorMoved);
+            Event{EventId::CursorMoved}, *this, &ViewerImpl::notifyCursorMoved);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
+            Event{EventId::Scrolled, GLFW_MOD_CONTROL}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
+            Event{EventId::Scrolled, GLFW_MOD_SHIFT}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::Scrolled}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
+            Event{EventId::Scrolled}, *this, &ViewerImpl::notifyMouseWheelOrTouchPadScrolled);
 
     eventHandler.registerBasicEventCallback(
             Event{MouseButton::Left, ButtonAction::Press}, *this, &ViewerImpl::notifyLeftMousePressed);
@@ -68,7 +70,7 @@ ViewerImpl::ViewerImpl(mv::ui::UserInterface& ui, unsigned windowWidth, unsigned
             Event{MouseButton::Left, ButtonAction::Release}, *this, &ViewerImpl::notifyLeftMouseReleased);
 
     eventHandler.registerDataEventCallback(
-            Event{events::EventId::EventProcessingCompleted}, *this, &ViewerImpl::notifyEventProcessingComplete);
+            Event{EventId::EventProcessingCompleted}, *this, &ViewerImpl::notifyEventProcessingComplete);
 
     RenderLoop::viewer = this;
 }
@@ -86,11 +88,6 @@ void ViewerImpl::createWindow() {
 
     int width = static_cast<int>(windowWidth);
     int height = static_cast<int>(windowHeight);
-
-#ifdef EMSCRIPTEN
-    emscripten_get_canvas_element_size("#canvas", &width, &height);
-    std::cerr << "Canvas element size = " << width << ", " << height << std::endl;
-#endif
 
     // Create GLFW window
     glfwWindowHint(GLFW_SAMPLES, 4);
@@ -131,11 +128,26 @@ void ViewerImpl::createWindow() {
     frameBufferWidth = static_cast<unsigned>(width);
     frameBufferHeight = static_cast<unsigned>(height);
 
+#ifdef EMSCRIPTEN
+    // Emscripten is configured to create a "glfw window" that takes up the entire browser canvas. The default
+    // windowWidth and windowHeight values passed to glfwCreateWindow are ignored. Therefore, to get the window
+    // coordinate calculations correct, it's critical to get the correct initial size of the window.
+    // Additionally, on retina displays, emscripten reports frame buffer size instead of window size when glfwGetWindowSize()
+    // is called that leads to errors in window coordinate calculations that require physical window dimensions.
+    // To overcome these problems, it's critical to set windowWidth and windowHeight to correct values
+    // NOTE: There is no support for rectangular scale factors in the logic below -- unclear if such displays exist
+    float scale{1};
+    glfwGetWindowContentScale(window, &scale, &scale);
+    windowWidth = static_cast<unsigned>(frameBufferWidth / scale);
+    windowHeight = static_cast<unsigned>(frameBufferHeight / scale);
+    windowResized = true;
+#endif
+
     // Start handling events
     EventHandler().start(window);
 }
 
-void ViewerImpl::notifyFrameBufferResized(mv::events::EventData&& eventData) {
+void ViewerImpl::notifyFrameBufferResized(EventData&& eventData) {
     if (eventData.size() != 4) {
         throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height "
                                  "of the resized frame buffer must be specified");
@@ -146,16 +158,18 @@ void ViewerImpl::notifyFrameBufferResized(mv::events::EventData&& eventData) {
     windowHeight = std::any_cast<unsigned>(eventData.at(3));
     windowResized = true;
     needsRedraw = true;
-    std::puts(std::format("{}::{}, Window Width = {}, Window Height = {}, Fb Width = {}, Fb Height = {}",
-                          __FILE__, __FUNCTION__, windowWidth, windowHeight, frameBufferWidth, frameBufferHeight).c_str());
+    if (isDebugOn()) {
+        std::puts(std::format("{}::{}, Window Width = {}, Window Height = {}, Framebuffer Width = {}, Framebuffer Height = {}",
+                              __FILE__, __FUNCTION__, windowWidth, windowHeight, frameBufferWidth, frameBufferHeight).c_str());
+    }
 }
 
-void ViewerImpl::notifyCursorMoved(events::EventData&& eventData) {
+void ViewerImpl::notifyCursorMoved(EventData&& eventData) {
     if (eventData.size() != 2) {
         throw std::runtime_error("Incorrect event data for frame buffer resize event. Width and height of the resized "
                                  "frame buffer must be specified");
     }
-    common::Point2D currentCursorPosition {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
+    Point2D currentCursorPosition {std::any_cast<float>(eventData[0]), std::any_cast<float>(eventData[1])};
     cursorPositionDifference = currentCursorPosition - cursorPosition;
     cursorPosition = currentCursorPosition;
     if (leftMouseDown) {
@@ -163,7 +177,7 @@ void ViewerImpl::notifyCursorMoved(events::EventData&& eventData) {
     }
 }
 
-void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventData) {
+void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(EventData&& eventData) {
     if (eventData.size() != 3) {
         throw std::runtime_error("Incorrect event data for scroll event. Scroll offsets and modifier keys are required "
                                  "to correctly process the scroll event");
@@ -180,7 +194,7 @@ void ViewerImpl::notifyMouseWheelOrTouchPadScrolled(events::EventData&& eventDat
     }
 }
 
-void ViewerImpl::notifyEventProcessingComplete(events::EventData&& eventData) {
+void ViewerImpl::notifyEventProcessingComplete(EventData&& eventData) {
     if (eventData.size() != 1) {
         throw std::runtime_error("Incorrect event data for event processing completed event. Id of processed event "
                                  "must be specified");
@@ -226,12 +240,9 @@ bool ViewerImpl::isCanvasResized(CanvasDimensions& canvasDimensions) const {
     bool canvasSizeChanged = canvasWidth != static_cast<int>(deviceWidth * pixelRatio) ||
             canvasHeight != static_cast<int>(deviceHeight * pixelRatio);
     if (canvasSizeChanged) {
-        std::cout << "Emscripten Canvas Resized: "
-                  << "Canvas width = " << canvasWidth << ' '
-                  << "Canvas height = " << canvasHeight << ' '
-                  << "CSS width = " << deviceWidth << ' '
-                  << "CSS height = " << deviceHeight << ' '
-                  << "Pixel ratio = " << pixelRatio << std::endl;
+        std::puts(std::format("Emscripten canvas resized: Canvas Width = {} Canvas Height = {} CSS Width = {} "
+                              "CSS Height = {} Pixel Ratio = {}", canvasWidth, canvasHeight, deviceWidth, deviceHeight,
+                              pixelRatio).c_str());
         canvasWidth = static_cast<int> (deviceWidth * pixelRatio);
         canvasHeight = static_cast<int> (deviceHeight * pixelRatio);
         emscripten_set_canvas_element_size("#canvas", canvasWidth, canvasHeight);
@@ -252,7 +263,7 @@ void ViewerImpl::RenderLoop::draw() {
 
 #ifdef EMSCRIPTEN
         CanvasDimensions canvasDimensions;
-        if ((viewer->windowResized = viewer->isCanvasResized(canvasDimensions))) {
+        if (!viewer->windowResized && (viewer->windowResized = viewer->isCanvasResized(canvasDimensions))) {
             glfwSetWindowSize(viewer->window, canvasDimensions.frameBufferWidth, canvasDimensions.frameBufferHeight);
         }
 #endif
