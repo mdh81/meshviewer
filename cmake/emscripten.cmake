@@ -1,3 +1,6 @@
+# Tests are disabled for emscripten builds
+set(enableTesting OFF)
+
 include(${CMAKE_SOURCE_DIR}/cmake/dependencies.cmake)
 
 # set experimental flag on, without this std::format doesn't compile

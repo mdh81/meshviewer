@@ -1,12 +1,14 @@
-include(${CMAKE_SOURCE_DIR}/cmake/dependencies.cmake)
+# Tests are enabled for macOS
+set(enableTesting ON)
 
-# macOS specific configuration options
+include(${CMAKE_SOURCE_DIR}/cmake/dependencies.cmake)
 
 # Add a macro to indicate that we are on OSX
 add_compile_options(-DOSX)
 
-# OSX is a dev environment and we need to be able to run tests
-set(enableTesting ON)
+if (buildType STREQUAL debug)
+    add_compile_definitions("-DLLDB")
+endif()
 
 # set include directories explicitly for desktop builds this avoids reliance on
 # subprojects having to use target_link_libraries command to set include paths

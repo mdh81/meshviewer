@@ -3,6 +3,9 @@
 #   GCC is the compiler of choice just to make sure the code is conformant with both clang and gcc
 #   Mesa GL is used as the OpenGL implementation
 
+# Tests are enabled for Linux builds
+set(enableTesting ON)
+
 include(${CMAKE_SOURCE_DIR}/cmake/dependencies.cmake)
 
 # Get system architecture to compose the correct library path

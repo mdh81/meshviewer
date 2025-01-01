@@ -1,5 +1,10 @@
 include(FetchContent)
 
+# NOTE:
+# 1. enableTesting must be defined by platform-specific cmake scripts before this file is included
+# 2. Cmake call enable_testing() has to be called before any add_subdirectory calls, otherwise ctest test discovery
+#    won't work (https://cmake.org/pipermail/cmake/2010-February/034919.html)
+
 # Gtest
 if (enableTesting)
     enable_testing()

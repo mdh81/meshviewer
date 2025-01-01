@@ -6,6 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(MeshViewer VERSION 1.0.0)
 
+# Set default build type to debug
+if (NOT DEFINED CMAKE_BUILD_TYPE)
+    message(STATUS "No build type specified. Setting build type to debug")
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+string(TOLOWER "${CMAKE_BUILD_TYPE}" buildType)
+
 # Load platform specific configuration
 # NOTE: Order is important to make sure emscripten build is configured as such
 # on all platforms
@@ -22,13 +29,7 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
-# Set default build type to debug
-if (NOT DEFINED CMAKE_BUILD_TYPE)
-    message(STATUS "No build type specified. Setting build type to debug")
-    set(CMAKE_BUILD_TYPE Debug)
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (buildType STREQUAL debug)
     add_compile_options(-DDEBUG)
     # Enable address sanitizer if requested
     if (USE_ADDRESS_SANITIZER)
@@ -45,7 +46,6 @@ set(appName meshViewer)
 add_subdirectory(3dmath)
 # Every other submodule is dependent on 3dmath
 include_directories(3dmath/include)
-include(${CMAKE_SOURCE_DIR}/common/testsupport/TestSupport.cmake)
 add_subdirectory(events)
 add_subdirectory(mesh)
 add_subdirectory(objects)
