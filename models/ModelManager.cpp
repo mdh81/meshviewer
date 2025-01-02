@@ -37,7 +37,7 @@ namespace mv::models {
     }
 
     void ModelManager::loadModelFiles(std::vector<std::string> const& modelFiles) {
-        std::lock_guard<std::mutex> lock{modelLoadMutex};
+        std::lock_guard lock{modelLoadMutex};
         if (loaded) {
             throw std::runtime_error(std::format("Error in {}. "
                                                  "At this time, {} does not support loading models "

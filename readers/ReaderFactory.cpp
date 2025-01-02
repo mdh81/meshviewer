@@ -18,10 +18,11 @@ namespace mv::readers {
             std::string lowerCaseExtension = file.extension();
             for (auto &c: lowerCaseExtension) {
                 if (c >= 'A' && c <= 'Z') {
-                    c += ('a' - 'A');
+                    c += 'a' - 'A';
                 }
             }
-            return supportedExtensions.find(lowerCaseExtension.substr(1)) != supportedExtensions.end();
+            return !lowerCaseExtension.empty() &&
+                supportedExtensions.contains(lowerCaseExtension.substr(1));
         }
         return false;
     }
