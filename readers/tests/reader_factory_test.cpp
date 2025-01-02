@@ -62,7 +62,7 @@ TEST_F(ReaderFixture, SupportedFormats) {
     {
         try {
             ReaderFactory{MOCK_MESH_FACTORY}.getReader((m_modelsDir/"cube.stl").string());
-            ReaderFactory{MOCK_MESH_FACTORY}.getReader((m_modelsDir/"cube.ply").string());
+            ReaderFactory{MOCK_MESH_FACTORY}.getReader((m_modelsDir/"Armadillo.ply").string());
         } catch (std::runtime_error& ex) {
             throw;
         }
