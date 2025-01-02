@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MeshViewerObject.h"
 #include "Reader.h"
 
 namespace mv::readers {
@@ -15,9 +14,10 @@ class PLYReader : public Reader {
     private:
         explicit PLYReader(std::string fileName, IMeshFactory const&);
         MeshPointer getOutput(std::istream& inputStream, MeshPointer&);
-        MeshPointer readBinary(std::istream& inputStream, MeshPointer&);
-        MeshPointer readASCII(std::istream&inputStream, MeshPointer&);
+        MeshPointer readBinary(std::istream& inputStream, MeshPointer&) const;
+        MeshPointer readASCII(std::istream&inputStream, MeshPointer&) const;
         void readHeader(std::istream& ifs);
+        void createMesh(MeshPointer&) const;
 
     private:
         bool isBinary;

@@ -44,20 +44,57 @@ MeshPointer mv::readers::PLYReader::getOutput(std::istream& inputStream, MeshPoi
     return isBinary ? readBinary(inputStream, mesh) : readASCII(inputStream, mesh);
 }
 
-MeshPointer mv::readers::PLYReader::readBinary(std::istream&, MeshPointer&) {
-    std::cout << "Parsing PLY data in binary format" << std::endl;
-    return {};
-}
-
-MeshPointer mv::readers::PLYReader::readASCII(std::istream& inputStream, MeshPointer& mesh) {
-    std::cout << "Parsing PLY data in ASCII format" << std::endl;
-
+void mv::readers::PLYReader::createMesh(MeshPointer& mesh) const {
     // This is to allow a mock mesh to be injected into this object for unit testing
     if (!mesh) {
         mesh = meshFactory.createMesh();
     }
     mesh->initialize(numVertices, numFaces);
+}
 
+MeshPointer mv::readers::PLYReader::readBinary(std::istream& ifs, MeshPointer& mesh) const {
+    std::cout << "Parsing PLY data in binary format" << std::endl;
+    createMesh(mesh);
+    // Assumptions:
+    // 1. Vertex data type is float
+    // 2. Mesh is a triangle mesh
+    // 3. Num Vertices entry is a byte
+    // 5. Vertex indices are 4-bytes
+    {
+        auto const vertexDataNumBytes = numVertices * sizeof(float) * 3;
+        std::unique_ptr<char[]> const vertexData{new char[vertexDataNumBytes]};
+        ifs.read(vertexData.get(), vertexDataNumBytes);
+        for (unsigned i = 0; i < numVertices; ++i) {
+            auto const xyz = reinterpret_cast<float*>(vertexData.get() + 3 * sizeof(float) * i);
+            mesh->addVertex(xyz[0], xyz[1], xyz[2]);
+        }
+    }
+    auto const currentPosition = ifs.tellg();
+    ifs.seekg(0, std::ios_base::end);
+    auto const size = ifs.tellg();
+    auto constexpr tupleSize = 3 * sizeof(unsigned int) + sizeof(char);
+    auto const indexDataNumBytes = numFaces * tupleSize;
+    if (size - currentPosition != indexDataNumBytes) {
+        throw std::runtime_error{"Data is invalid. It's possible mesh has mixed element types"
+                                 " Only triangle meshes are supported at this time"};
+    }
+
+    {
+        ifs.seekg(currentPosition, std::ios_base::beg);
+        std::unique_ptr<char[]> const indexData{new char[indexDataNumBytes]};
+        ifs.read(indexData.get(), indexDataNumBytes);
+        for (unsigned i = 0; i < numFaces; ++i) {
+            auto const tuple = indexData.get() + i * tupleSize;
+            auto const indices = reinterpret_cast<unsigned int*>(&tuple[1]);
+            mesh->addFace({indices[0], indices[1], indices[2]});
+        }
+    }
+    return std::move(mesh);
+}
+
+MeshPointer mv::readers::PLYReader::readASCII(std::istream& inputStream, MeshPointer& mesh) const {
+    std::cout << "Parsing PLY data in ASCII format" << std::endl;
+    createMesh(mesh);
     std::string line;
     for (unsigned i = 0; i < numVertices; ++i) {
         getline(inputStream, line);
@@ -82,8 +119,10 @@ void mv::readers::PLYReader::readHeader(std::istream& inputStream) {
     bool isPly = false;
     bool hasVertices = false;
     bool hasFaces = false;
+    bool hasFormat = false;
     std::string const vertexElementId = "element vertex ";
     std::string const faceElementId = "element face ";
+    std::string const formatId = "format ";
 
     auto isNumber = [](std::string const& str) {
         return std::all_of(str.cbegin(), str.cend(), [](auto c) { return c >= '0' && c <= '9'; });
@@ -95,6 +134,13 @@ void mv::readers::PLYReader::readHeader(std::istream& inputStream) {
         if (!isPly && headerLine == "ply") {
             isPly = true;
             continue;
+        }
+        if (isPly && !hasFormat) {
+            if (headerLine.starts_with(formatId)) {
+                auto format = headerLine.substr(formatId.size());
+                isBinary = format.starts_with("binary_little_endian");
+                hasFormat = true;
+            }
         }
         if (isPly && !hasVertices) {
             if (headerLine.starts_with(vertexElementId)) {
@@ -120,7 +166,7 @@ void mv::readers::PLYReader::readHeader(std::istream& inputStream) {
         }
         endHeader = headerLine == "end_header";
     }
-    if (!isPly || !hasVertices || !hasFaces) {
+    if (!isPly || !hasVertices || !hasFaces || !hasFormat) {
         throw std::runtime_error("Invalid PLY file. Header is incorrect!");
     }
 
