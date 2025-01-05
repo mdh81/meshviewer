@@ -34,7 +34,7 @@ endforeach(textureFile)
 file(GLOB textureFiles ${CMAKE_CURRENT_SOURCE_DIR}/ui/textures/icons/*)
 foreach(textureFile ${textureFiles})
     get_filename_component(destinationFile ${textureFile} NAME)
-    set(preloadedFiles "${preloadedFiles} --preload-file ${textureFile}@assets/textures/${destinationFile}")
+    set(preloadedFiles "${preloadedFiles} --preload-file ${textureFile}@assets/textures/icons/${destinationFile}")
 endforeach(textureFile)
 # Fonts
 file(GLOB fonts ${CMAKE_CURRENT_SOURCE_DIR}/ui/fonts/* )
