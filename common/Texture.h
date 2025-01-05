@@ -24,7 +24,7 @@ namespace mv::common {
         }
 
         explicit Texture(const char* fileName)
-        : Texture(std::filesystem::path(mv::config::ConfigurationReader::getInstance().getValue("texturePath")) /
+        : Texture(std::filesystem::path(mv::config::ConfigurationReader::getInstance().getValue("TexturePath")) /
                   fileName) {
         }
 
