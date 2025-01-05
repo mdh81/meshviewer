@@ -12,7 +12,7 @@ include_directories(../common)
 
 add_library(ui STATIC ${imGuiSrc} ${uiSrc})
 
-target_link_libraries(ui events)
+target_link_libraries(ui PUBLIC events configuration)
 
 target_include_directories(ui PUBLIC
     ${glIncludeDirectories}
