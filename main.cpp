@@ -26,10 +26,8 @@ void SetupTexturePath(std::string const& exeName) {
     // Set up the texture path.
 #ifndef EMSCRIPTEN
     // Cannot rely on the working directory being the parent of the app's executable.
-    auto parentDirectory = std::filesystem::canonical(std::filesystem::path(exeName).parent_path());
-    ConfigurationReader::getInstance().append("texturePath", parentDirectory / "textures");
-#else
-    ConfigurationReader::getInstance().append("texturePath", "textures");
+    auto parentDirectory = canonical(std::filesystem::path(exeName).parent_path());
+    ConfigurationReader::getInstance().append("TexturePath", parentDirectory / "textures");
 #endif
 }
 
