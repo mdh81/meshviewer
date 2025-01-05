@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Panel.h"
+
 namespace mv::ui {
 
-    class ModelList {
-
+    class ModelList : public Panel {
     public:
-        void show();
+        explicit ModelList(std::string title);
+        void draw(common::Point2D const& position) override;
 
     };
 

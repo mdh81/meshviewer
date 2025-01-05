@@ -3,6 +3,7 @@
 #include "OpenGLCall.h"
 #include "Util.h"
 #include "ModelList.h"
+#include "ConfigurationReader.h"
 
 #include "GLFW/glfw3.h"
 #include "imgui.h"
@@ -11,17 +12,24 @@
 
 #include <format>
 #include <filesystem>
+#include <memory>
+#include <algorithm>
+#include <ranges>
 
+// NOLINTBEGIN(readability-convert-member-functions-to-static)
 namespace mv::ui {
+
+    Position UserInterfaceImpl::position =
+        config::ConfigurationReader::getInstance().getValue("UIPosition") == "Bottom" ?
+            Position::Bottom : Position::Right;
 
     static constexpr int MandatoryGLZeroBorder{};
 
-    std::unordered_map<std::string, UserInterfaceImpl::Button> UserInterfaceImpl::buttons = {
-            {"models",   {0, "Models",   "Select Models"}},
-            {"colors",   {1, "Colors",   "Select Colors"}},
-            {"camera",   {2, "Camera",   "Set View"}},
-            {"settings", {3, "Settings", "Configure Viewer"}}
-    };
+    UserInterfaceImpl::ControlPanel::ControlPanel(unsigned char const position, std::string hoverLabel,
+        std::unique_ptr<Panel>&& panel)
+    : button {position, std::move(hoverLabel)}
+    , panel(std::move(panel)) {
+    }
 
     void UserInterfaceImpl::Button::BoundingBox::assign(ImVec2 const& upperLeft, ImVec2 const& lowerRight) {
         upperLeftCorner.x = upperLeft.x; upperLeftCorner.y = upperLeft.y;
@@ -46,7 +54,12 @@ namespace mv::ui {
 
         io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto-Medium.ttf", 16.f);
 
-        loadButtonTextures("assets/textures");
+        loadButtonTextures("assets/textures/icons/");
+
+        controlPanels.try_emplace("models", 0, "Models", std::make_unique<ModelList>("Select Models"));
+        controlPanels.try_emplace("colors", 1, "Colors", nullptr);
+        controlPanels.try_emplace("camera", 2, "Camera", nullptr);
+        controlPanels.try_emplace("settings", 3, "Settings", nullptr);
 
         ImGui::StyleColorsDark();
 
@@ -79,7 +92,7 @@ namespace mv::ui {
                                  GL_RGBA, GL_UNSIGNED_BYTE,
                                  texture.data.get())
             glCallWithErrorCheck(glGenerateMipmap, GL_TEXTURE_2D)
-           openglTextures.emplace(textureName, textureId);
+            openglTextures.emplace(textureName, textureId);
         }
         // Now that data has been loaded to the gpu, the cpu-side memory can be freed up
         textures.clear();
@@ -106,7 +119,7 @@ namespace mv::ui {
         if (position == Position::Bottom) {
             origin.x = (displayWidth - panelSize) * 0.5f;
             origin.y = displayHeight - ButtonSize - PanelMargin - 2 * ButtonMargin;
-            dimension.x = static_cast<float>(panelSize);
+            dimension.x = panelSize;
             dimension.y = ButtonSize + 2 * ButtonMargin;
             isVerticallyOriented = false;
         } else if (position == Position::Right) {
@@ -147,7 +160,7 @@ namespace mv::ui {
         // ImGui_ImplGlfw_NewFrame sets the display size by calling glfwGetWindowSize(). ViewerImpl sets glfwWindowSize
         // to actual frame buffer size when using emscripten. Without this change, the display is blurry on retina
         // displays because contents are rendered into a small window and stretched to fit a larger canvas (canvas size
-        // is automtaically set by browsers to be window size * window content scale). But, this change confuses imgui
+        // is automatically set by browsers to be window size * window content scale). But, this change confuses imgui
         // since it expects glfwGetWindowSize() to return the actual window size and not the frame buffer size. This
         // three lines tell imgui the window size and the content scale to keep its window coordinate calculations correct
         ImGuiIO& io = ImGui::GetIO();
@@ -171,20 +184,31 @@ namespace mv::ui {
         ImGui::End();
     }
 
-    void UserInterfaceImpl::setNextPosition(unsigned char buttonIndex) {
-        if (buttonIndex == 0) {
-            ImGui::SetCursorScreenPos({origin.x + ButtonMargin, origin.y + ButtonMargin});
-        } else {
-            if (isVerticallyOriented) {
+    void UserInterfaceImpl::setNextPosition(unsigned char const buttonIndex) {
+        if (isVerticallyOriented) {
+            if (buttonIndex == 0) {
+                ImGui::SetCursorScreenPos({origin.x + ButtonMargin,
+                    origin.y + ButtonMargin + ImGui::GetStyle().WindowPadding.y});
+            } else {
                 ImGui::SetCursorScreenPos(
                         {origin.x + ButtonMargin,
                          origin.y + static_cast<float>(buttonIndex * ButtonSize + (buttonIndex + 1) * ButtonSpacing)});
+            }
+        } else {
+            if (buttonIndex == 0) {
+                ImGui::SetCursorScreenPos({origin.x + ButtonMargin + ImGui::GetStyle().WindowPadding.x, origin.y + ButtonMargin});
             } else {
                 ImGui::SetCursorScreenPos(
                         {origin.x + static_cast<float>(buttonIndex * ButtonSize + (buttonIndex + 1) * ButtonSpacing),
                          origin.y + ButtonMargin});
             }
         }
+    }
+
+    bool UserInterfaceImpl::requiresRedraw() const {
+        return std::ranges::any_of(std::views::values(controlPanels), [](auto const& controlPanel) {
+            return controlPanel.panel && controlPanel.panel->requiresRedraw();
+        });
     }
 
     void UserInterfaceImpl::drawButtons() {
@@ -197,8 +221,8 @@ namespace mv::ui {
 
     void UserInterfaceImpl::calculateHoverLabelWidth() {
         auto maxWidth = 0.f;
-        for (auto& [buttonId, button] : buttons) {
-            auto textSize = ImGui::CalcTextSize(button.hoverLabel.c_str());
+        for (auto& [buttonId, controlPanel] : controlPanels) {
+            auto textSize = ImGui::CalcTextSize(controlPanel.button.hoverLabel.c_str());
             if (textSize.x > maxWidth) {
                 maxWidth = textSize.x;
             }
@@ -244,47 +268,54 @@ namespace mv::ui {
     }
 
     void UserInterfaceImpl::drawModelControls() {
-        setNextPosition(buttons["models"].position);
+        auto& modelControlPanel = controlPanels["models"];
+        setNextPosition(modelControlPanel.button.position);
         ImGui::Image(openglTextures["models"], {ButtonSize, ButtonSize});
-        if (ImGui::IsItemHovered()) {
-            drawButtonLabel(buttons["models"].hoverLabel);
-        } else if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-            ModelList{}.show();
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left) || modelControlPanel.panel->isActive()) {
+#ifndef EMSCRIPTEN
+            // NOTE: Temporarily disable from the web build until feature is ready
+            modelControlPanel.panel->draw({512, 334});
+#endif
+        } else if (ImGui::IsItemHovered()) {
+            drawButtonLabel(controlPanels["models"].button.hoverLabel);
         }
-        buttons["models"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+
+        controlPanels["models"].button.bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
     void UserInterfaceImpl::drawColorControls() {
-        setNextPosition(buttons["colors"].position);
+        setNextPosition(controlPanels["colors"].button.position);
         ImGui::Image(openglTextures["colors"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
-            drawButtonLabel(buttons["colors"].hoverLabel);
+            drawButtonLabel(controlPanels["colors"].button.hoverLabel);
         }
-        buttons["colors"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        controlPanels["colors"].button.bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
     void UserInterfaceImpl::drawCameraControls() {
-        setNextPosition(buttons["camera"].position);
+        setNextPosition(controlPanels["camera"].button.position);
         ImGui::Image(openglTextures["camera"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
-            drawButtonLabel(buttons["camera"].hoverLabel);
+            drawButtonLabel(controlPanels["camera"].button.hoverLabel);
         }
-        buttons["camera"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        controlPanels["camera"].button.bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
     void UserInterfaceImpl::drawSettingsControls() {
-        setNextPosition(buttons["settings"].position);
+        setNextPosition(controlPanels["settings"].button.position);
         ImGui::Image(openglTextures["settings"], {ButtonSize, ButtonSize});
         if (ImGui::IsItemHovered()) {
-            drawButtonLabel(buttons["settings"].hoverLabel);
+            drawButtonLabel(controlPanels["settings"].button.hoverLabel);
         }
-        buttons["settings"].bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        controlPanels["settings"].button.bounds.assign(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
     void UserInterfaceImpl::stop() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        initialized = false;
+
     }
 
     void UserInterfaceImpl::endDraw() {
@@ -292,3 +323,4 @@ namespace mv::ui {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 }
+// NOLINTEND(readability-convert-member-functions-to-static)

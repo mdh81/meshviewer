@@ -11,5 +11,6 @@ namespace mv::ui {
         virtual void endDraw() = 0;
         virtual void stop() = 0;
         virtual ~UserInterface() = default;
+        [[nodiscard]] virtual bool requiresRedraw() const = 0;
     };
 }

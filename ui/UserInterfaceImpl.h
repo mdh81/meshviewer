@@ -2,6 +2,7 @@
 #include "Types.h"
 #include "Texture.h"
 #include "UserInterface.h"
+#include "Panel.h"
 
 class GLFWwindow;
 struct ImVec2;
@@ -13,12 +14,14 @@ namespace mv::ui {
         Right,
     };
 
+    // NOLINTBEGIN(readability-convert-member-functions-to-static)
     class UserInterfaceImpl : public UserInterface {
 
     public:
         void beginDraw(GLFWwindow*) override;
         void endDraw() override;
         void stop() override;
+        [[nodiscard]] bool requiresRedraw() const override;
 
     private:
         void initialize(GLFWwindow*);
@@ -54,7 +57,7 @@ namespace mv::ui {
         static constexpr float HoverTriangleFudge{5};
         inline static common::Point2D origin{};
         inline static common::Point2D dimension{};
-        inline static Position position{Position::Bottom};
+        static Position position;
         inline static bool initialized{};
         inline static common::Point2D displaySize{};
         inline static bool isVerticallyOriented{};
@@ -63,17 +66,27 @@ namespace mv::ui {
         struct Button {
             unsigned char position;
             std::string hoverLabel;
-            std::string windowTitle;
             struct BoundingBox {
                 common::Point2D upperLeftCorner;
                 common::Point2D lowerRightCorner;
-                bool isHovering(common::Point2D const& mouseLocation);
                 void assign(ImVec2 const& widgetUpperLeft, ImVec2 const& widgetLowerRight);
             } bounds;
         };
-        static std::unordered_map<std::string, Button> buttons;
+        struct ControlPanel {
+            Button button;
+            std::unique_ptr<Panel> panel;
+            ControlPanel(unsigned char position, std::string hoverLabel, std::unique_ptr<Panel>&& panel);
+            ControlPanel() = default; // dummy to satisfy the map's subscript operator, which expects the object to
+                                      // default constructible
+            ControlPanel(ControlPanel const&) = delete;
+            ControlPanel& operator=(ControlPanel const&) = delete;
+            ControlPanel(ControlPanel&&) = default;
+            ControlPanel& operator=(ControlPanel&&) = default;
+        };
+        static inline std::unordered_map<std::string, ControlPanel> controlPanels{};
         static inline float hoverLabelWidth{};
         static inline float scaleFactor{1.f};
     };
+    // NOLINTEND(readability-convert-member-functions-to-static)
 
 }
