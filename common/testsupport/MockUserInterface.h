@@ -8,5 +8,6 @@ namespace mv::ui {
         MOCK_METHOD(void, beginDraw, (GLFWwindow*), (override));
         MOCK_METHOD(void, endDraw, (), (override));
         MOCK_METHOD(void, stop, (), (override));
+        MOCK_METHOD(bool, requiresRedraw, (), (override, const));
     };
 };
