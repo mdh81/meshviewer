@@ -47,9 +47,8 @@ namespace mv::viewer {
 
     // Construction semantics. No copies or moves supported. Private constructor and destructor only available to
     // the friend factory class
-    private:
         friend class ViewerFactory;
-        explicit ViewerImpl(ui::UserInterface& ui, unsigned winWidth=1024, unsigned winHeight=768);
+        explicit ViewerImpl(ui::UserInterface& ui, unsigned windowWidth=1024, unsigned windowHeight=768);
         ~ViewerImpl() override = default;
     public:
         ViewerImpl(ViewerImpl const&) = delete;
