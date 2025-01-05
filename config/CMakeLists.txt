@@ -12,6 +12,7 @@ target_include_directories(
     configuration
     PUBLIC
     ../common
+    .
 )
 
 target_link_libraries(
