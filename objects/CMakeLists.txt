@@ -31,10 +31,13 @@ if (enableTesting)
 endif()
 
 # Copy textures to binary directory
-file(
-    COPY
-    textures/
-    DESTINATION
-    ${CMAKE_BINARY_DIR}/assets/textures
-)
-
+# In emscripten builds, assets are managed through emscripten's pre-loaded files paradigm
+# See cmake/emscripten.cmake for details
+if (NOT DEFINED EMSCRIPTEN)
+    file(
+        COPY
+        textures/
+        DESTINATION
+        ${CMAKE_BINARY_DIR}/assets/textures
+    )
+endif()

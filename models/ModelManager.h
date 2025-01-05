@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <vector>
 #include <string>
+#include <unordered_set>
 
 namespace mv::viewer {
     class Viewer;
@@ -43,7 +44,7 @@ namespace mv::models {
         struct ModelDrawablePair {
             std::filesystem::path modelFile;
             Drawable::DrawablePointer modelDrawable;
-            ModelDrawablePair(std::filesystem::path const& file, Drawable::DrawablePointer&& drawable);
+            ModelDrawablePair(std::filesystem::path  file, Drawable::DrawablePointer&& drawable);
         };
         std::vector<ModelDrawablePair> modelDrawables;
         std::vector<ModelDrawablePair>::size_type currentModel;
@@ -52,6 +53,7 @@ namespace mv::models {
         bool loaded;
         viewer::Viewer& viewer;
         std::mutex modelLoadMutex;
+        std::unordered_set<std::string> modelNames;
     };
 
 }

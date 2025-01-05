@@ -26,18 +26,22 @@ if (enableTesting)
 endif()
 
 # Copy sample ply and stl files to binary directory
-file(
-    GLOB
-    models
-    ${CMAKE_CURRENT_SOURCE_DIR}/samples/*.stl
-    ${CMAKE_CURRENT_SOURCE_DIR}/samples/*.ply
-)
 
-foreach(model ${models})
+# In emscripten builds, assets are managed through emscripten's pre-loaded files paradigm
+# See cmake/emscripten.cmake for details
+if (NOT DEFINED EMSCRIPTEN)
     file(
-        COPY
-        ${model}
-        DESTINATION
-        ${CMAKE_BINARY_DIR}/testfiles/
+        GLOB
+        models
+        ${CMAKE_CURRENT_SOURCE_DIR}/samples/*.stl
+        ${CMAKE_CURRENT_SOURCE_DIR}/samples/*.ply
     )
-endforeach()
+    foreach(model ${models})
+        file(
+            COPY
+            ${model}
+            DESTINATION
+            ${CMAKE_BINARY_DIR}/testfiles/
+        )
+    endforeach()
+endif()

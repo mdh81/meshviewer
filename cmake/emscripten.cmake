@@ -19,7 +19,7 @@ add_compile_options(
 # Preloaded assets
 set(preloadedFiles "")
 # Sample files
-file(GLOB sampleFiles ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*)
+file(GLOB sampleFiles ${CMAKE_CURRENT_SOURCE_DIR}/models/samples/*)
 foreach(sampleFile ${sampleFiles})
     get_filename_component(destinationFile ${sampleFile} NAME)
     set(preloadedFiles "${preloadedFiles} --preload-file ${sampleFile}@testfiles/${destinationFile}")

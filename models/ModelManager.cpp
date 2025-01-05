@@ -5,12 +5,13 @@
 #include <format>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 namespace mv::models {
 
-    ModelManager::ModelDrawablePair::ModelDrawablePair(std::filesystem::path const& file,
+    ModelManager::ModelDrawablePair::ModelDrawablePair(std::filesystem::path file,
                                                        Drawable::DrawablePointer&& drawable)
-    : modelFile(file)
+    : modelFile(std::move(file))
     , modelDrawable(std::move(drawable)) {}
 
     ModelManager::ModelManager(Mode mode, std::unique_ptr<readers::IReaderFactory const>&& readerFactory,
@@ -45,11 +46,15 @@ namespace mv::models {
         }
 
         for (decltype(currentModel) i = 0; i < modelFiles.size(); ++i) {
-            if (mode == Mode::DisplayMultipleModels) {
-                modelDrawables.emplace_back(modelFiles[i], readerFactory->getReader(modelFiles[i])->getOutput());
-            } else {
-                modelDrawables.emplace_back(modelFiles[i],
-                                            !i ? readerFactory->getReader(modelFiles[i])->getOutput() : nullptr);
+            // Filter out duplicates (including models with same name and different extension)
+            if (auto modelName = std::filesystem::path{modelFiles[i]}.stem(); !modelNames.contains(modelName)) {
+                modelNames.insert(modelName);
+                if (mode == Mode::DisplayMultipleModels) {
+                    modelDrawables.emplace_back(modelFiles[i], readerFactory->getReader(modelFiles[i])->getOutput());
+                } else {
+                    modelDrawables.emplace_back(modelFiles[i],
+                                                !i ? readerFactory->getReader(modelFiles[i])->getOutput() : nullptr);
+                }
             }
         }
 
