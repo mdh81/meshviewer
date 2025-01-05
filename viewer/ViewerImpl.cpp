@@ -33,11 +33,12 @@ using namespace ui;
 
 ViewerImpl* ViewerImpl::RenderLoop::viewer = nullptr;
 
-ViewerImpl::ViewerImpl(mv::ui::UserInterface& ui, unsigned windowWidth, unsigned windowHeight)
+ViewerImpl::ViewerImpl(UserInterface& ui, unsigned const windowWidth, unsigned const windowHeight)
     : windowWidth(windowWidth)
     , windowHeight(windowHeight)
     , frameBufferWidth(windowWidth)
     , frameBufferHeight(windowHeight)
+    , window{}
     , renderToImage{}
     , frameBufferId(0)
     , imageTextureId(0)
@@ -45,7 +46,6 @@ ViewerImpl::ViewerImpl(mv::ui::UserInterface& ui, unsigned windowWidth, unsigned
     , printGLInfoOnStartup{true}
     , leftMouseDown{}
     , needsRedraw{}
-    , window{}
     , ui(ui) {
 
     // Register event handlers
@@ -268,7 +268,7 @@ void ViewerImpl::RenderLoop::draw() {
         }
 #endif
 
-        if (viewer->needsRedraw) {
+        if (viewer->needsRedraw || viewer->ui.requiresRedraw()) {
 
             if (viewer->isDebugOn()) {
                 std::puts(std::format("{}: Viewer was modified. Redrawing the scene...", __PRETTY_FUNCTION__).c_str());
@@ -395,14 +395,14 @@ void ViewerImpl::prepareOffscreenRender() {
 void ViewerImpl::saveAsImage() {
 #ifdef OSX
     // Create directory if it doesn't exist
-    string outputDir = config::ConfigurationReader::getInstance().getValue("snapshotsDirectory");
+    string outputDir = config::ConfigurationReader::getInstance().getValue("SnapshotsDirectory");
     if (!filesystem::exists(outputDir)) {
         cerr << "Creating directory: " << outputDir << endl;
         filesystem::create_directory(outputDir);
     }
     // Find the image file name with the largest suffix and append 1 to it to arrive at
     // the name for the new snapshot
-    auto snapshotPrefix = config::ConfigurationReader::getInstance().getValue("snapshotPrefix");
+    auto snapshotPrefix = config::ConfigurationReader::getInstance().getValue("SnapshotPrefix");
     unsigned long numericSuffix = 1;
     for (auto& dirEntry : filesystem::directory_iterator(outputDir)) {
         if (dirEntry.path().extension() == ".jpg") {
