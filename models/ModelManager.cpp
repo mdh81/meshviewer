@@ -13,8 +13,8 @@ namespace mv::models {
     : modelFile(file)
     , modelDrawable(std::move(drawable)) {}
 
-    ModelManager::ModelManager(ModelManager::Mode mode, std::unique_ptr<readers::IReaderFactory const>&& readerFactory,
-                               mv::viewer::Viewer& viewer)
+    ModelManager::ModelManager(Mode mode, std::unique_ptr<readers::IReaderFactory const>&& readerFactory,
+                               viewer::Viewer& viewer)
     : currentModel{}
     , mode(mode)
     , loaded(false)
@@ -27,7 +27,7 @@ namespace mv::models {
     }
 
     void ModelManager::setMode(Mode m) {
-        std::lock_guard<std::mutex> lock{modelLoadMutex};
+        std::lock_guard lock{modelLoadMutex};
         if (!loaded) {
              mode = m;
         } else {
@@ -70,7 +70,7 @@ namespace mv::models {
             auto const& path = dirEntry.path();
             if (readerFactory->isFileTypeSupported(path)) {
                 modelsToLoad.push_back(path);
-            } else {
+            } else if (isDebugOn()) {
                 std::puts(std::format("Skipping file {} from the model directory\n", path.c_str()).c_str());
             }
         }
