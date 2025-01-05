@@ -30,6 +30,8 @@ add_custom_target(
     ${CMAKE_COMMAND} -E copy ${shaders} ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
+add_dependencies(${appName} shaderCopy)
+
 # Install shaders
 INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders/ DESTINATION ${INSTALL_PATH}/shaders)
 

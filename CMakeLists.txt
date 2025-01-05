@@ -42,6 +42,11 @@ endif()
 # Define app name as a variable so submodules can set target properties for the app
 set(appName meshViewer)
 
+add_executable(
+    ${appName}
+    main.cpp
+)
+
 # Submodules
 add_subdirectory(3dmath)
 # Every other submodule is dependent on 3dmath
@@ -58,9 +63,7 @@ add_subdirectory(config)
 add_subdirectory(writers)
 add_subdirectory(models)
 
-add_executable(
-    ${appName}
-    main.cpp)
+
 
 target_include_directories(
     ${appName}
@@ -83,41 +86,6 @@ target_link_libraries(
     ui
     ${glLibs}
 )
-
-# Copy test files to binary directory
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testfiles/)
-file(
-    GLOB
-    models
-    ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.stl
-    ${CMAKE_CURRENT_SOURCE_DIR}/testfiles/*.ply
-)
-foreach(model ${models})
-file(
-    COPY
-    ${model}
-    DESTINATION
-    ${CMAKE_BINARY_DIR}/testfiles/
-)
-endforeach()
-
-# Copy textures to the binary directory
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/assets/textures/)
-
-file(
-    GLOB
-    textures
-    ${CMAKE_CURRENT_SOURCE_DIR}/objects/textures/*.png
-    # Add new directories containing textures here
-)
-
-add_custom_target(
-    textureCopy
-    ${CMAKE_COMMAND} -E copy ${textures} ${CMAKE_BINARY_DIR}/assets/textures/
-)
-
-add_dependencies(${appName} textureCopy shaderCopy)
-
 
 if (EMSCRIPTEN)
     #TODO: Resolve the order dependency issue between web and shaders submodules

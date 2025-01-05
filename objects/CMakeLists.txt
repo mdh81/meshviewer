@@ -29,3 +29,12 @@ if (enableTesting)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+# Copy textures to binary directory
+file(
+    COPY
+    textures/
+    DESTINATION
+    ${CMAKE_BINARY_DIR}/assets/textures
+)
+
