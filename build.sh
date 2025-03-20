@@ -42,6 +42,7 @@ done
 if [[ "$verbose" -eq 1 ]]; then
     buildOpts="--verbose"
 fi
+
 if [[ "$cleanFirst" -eq 1 ]]; then
     buildOpts="$buildOpts --clean-first"
 fi
