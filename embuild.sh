@@ -16,7 +16,7 @@ buildDir="./build_web"
 buildDir+="_${buildType}"
 mkdir -p "$buildDir"
 pushd "$buildDir" || exit
-emcmake cmake -S ../ -B . -DEMSCRIPTEN=On -DCMAKE_BUILD_TYPE="$buildType" &&
+emcmake cmake -S ../ -B . -DEMSCRIPTEN=On -DCMAKE_BUILD_TYPE="$buildType" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON &&
 
 if make -j 10 VERBOSE=1
 then

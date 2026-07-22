@@ -31,7 +31,7 @@ while [[ ! $# -eq 0 ]]; do
         -t|--type)
             buildType="$2"
             shift 2
-            ;;    
+            ;;
         *)
             echo "Ignoring unknown argument $1"
             shift
@@ -56,7 +56,7 @@ pushd "$srcDir" || exit
 mkdir -p "$buildDir"
 
 git submodule update --init --recursive
-cmake -S "$srcDir" -B "$buildDir" -DCMAKE_BUILD_TYPE="$buildType"
+cmake -S "$srcDir" -B "$buildDir" -DCMAKE_BUILD_TYPE="$buildType" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build "$buildDir" $buildOpts --parallel
 
 popd || exit
