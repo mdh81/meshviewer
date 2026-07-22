@@ -1,6 +1,8 @@
 #include "Viewport.h"
+#include <algorithm>
 #include <functional>
 #include <vector>
+#include <ranges>
 #include "EventHandler.h"
 #include "Types.h"
 #include "Util.h"
@@ -75,8 +77,7 @@ namespace mv::scene {
     Drawable::DrawableReferences Viewport::getDrawables() const {
         Drawable::DrawableReferences drawableList;
         drawableList.reserve(drawables.size());
-        std::for_each(drawables.begin(), drawables.end(),
-                      [&drawableList](auto& drawable) {
+        std::ranges::for_each(drawables, [&drawableList](auto& drawable) {
             drawableList.push_back(drawable);
         });
         return drawableList;
